@@ -1,4 +1,4 @@
-import{I as s,s as m}from"./index-CDx2cV7o.js";async function P(S,I={}){const{windowManager:f,vfs:k,appLoader:h,loader:E}=S,b=E;if(f.windows.get("app-center")){f.focusWindow("app-center");return}const d=document.createElement("div");d.style.cssText=`
+import{I as s,s as m}from"./index-GtZ1kKMR.js";async function P(S,I={}){const{windowManager:f,vfs:k,appLoader:h,loader:E}=S,b=E;if(f.windows.get("app-center")){f.focusWindow("app-center");return}const d=document.createElement("div");d.style.cssText=`
     height: 100%;
     display: flex;
     background: var(--bg-surface);

@@ -1,4 +1,4 @@
-import{I as m,s as y}from"./index-CDx2cV7o.js";async function B(M,q={}){const{windowManager:D,vfs:w,loader:T,appLoader:$,filePicker:F}=M,j={app:{name:"Full Application",icon:"archive",files:{"app.js":`/**
+import{I as m,s as y}from"./index-GtZ1kKMR.js";async function B(M,q={}){const{windowManager:D,vfs:w,loader:T,appLoader:$,filePicker:F}=M,j={app:{name:"Full Application",icon:"archive",files:{"app.js":`/**
  * Full Application Template with Settings & About
  */
 

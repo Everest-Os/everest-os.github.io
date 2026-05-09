@@ -1,4 +1,4 @@
-import{I as p,s as A}from"./index-CDx2cV7o.js";async function D(P,L={}){const{windowManager:S,vfs:f,loader:l,filePicker:w}=P,$=L.type||"applets",u=document.createElement("div");u.style.height="100%",u.style.display="flex",u.style.flexDirection="column",u.innerHTML=`
+import{I as p,s as A}from"./index-GtZ1kKMR.js";async function D(P,L={}){const{windowManager:S,vfs:f,loader:l,filePicker:w}=P,$=L.type||"applets",u=document.createElement("div");u.style.height="100%",u.style.display="flex",u.style.flexDirection="column",u.innerHTML=`
     <div style="display:flex; border-bottom:1px solid var(--border); background:var(--bg-surface-hover);">
       <button class="plugin-tab" data-tab="applets" style="
         flex:1; padding:12px 16px; border:none; background:transparent; color:var(--text-primary);
