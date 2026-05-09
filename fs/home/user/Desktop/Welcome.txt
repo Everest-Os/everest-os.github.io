@@ -1,5 +1,13 @@
-Welcome to the Web OS Sandbox!
+Welcome to EverestOS! 🏔️✨
 
-This file is stored in your Virtual File System.
-You can edit it, delete it, or create new files.
-Try double clicking folders in the File Manager to browse around!
+You are currently exploring a premium, modular web-based desktop environment.
+This desktop is running entirely in your browser, powered by a custom Virtual File System (VFS).
+
+Quick Tips:
+- Drag icons to rearrange them.
+- Right-click for context menus.
+- Use the Terminal (Alt+T) for power commands.
+- Check the App Center for more tools.
+
+Thank you for being part of the EverestOS journey!
+🏔️🏜️🏔️
