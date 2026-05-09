@@ -13,16 +13,17 @@ if (!fs.existsSync(fsRoot)) {
 function walk(dir) {
   let results = [];
   const list = fs.readdirSync(dir);
+  
+  // Add the current directory itself (relative to fsRoot)
+  const relativeDirPath = '/' + path.relative(fsRoot, dir);
+  if (relativeDirPath !== '/') {
+    results.push({ path: dir, type: 'dir' });
+  }
+
   list.forEach(file => {
     const fullPath = path.join(dir, file);
     const stat = fs.statSync(fullPath);
     
-    // Add the directory itself
-    const relativeDirPath = '/' + path.relative(fsRoot, dir);
-    if (relativeDirPath !== '/') {
-        results.push({ path: relativeDirPath, type: 'dir' });
-    }
-
     if (stat && stat.isDirectory()) {
       results = results.concat(walk(fullPath));
     } else {
@@ -35,12 +36,15 @@ function walk(dir) {
 console.log('Packing VFS from fs/ directory...');
 const rawItems = walk(fsRoot);
 
-// Deduplicate directories and process files
+// Deduplicate and process items
 const seen = new Set();
 const finalFiles = [];
 
 for (const item of rawItems) {
-  const relPath = '/' + path.relative(fsRoot, item.path);
+  let relPath = '/' + path.relative(fsRoot, item.path);
+  // Clean up any potential backslashes from Windows paths (if applicable) or double slashes
+  relPath = relPath.replace(/\\/g, '/').replace(/\/+/g, '/');
+  
   const skipList = ['Trash'];
   if (skipList.some(s => relPath.includes(s))) continue;
 
@@ -71,7 +75,8 @@ for (const item of rawItems) {
       type: 'file',
       content,
       isBinary,
-      size: fs.statSync(item.path).size
+      size: fs.statSync(item.path).size,
+      mtime: fs.statSync(item.path).mtimeMs
     });
   }
 }
