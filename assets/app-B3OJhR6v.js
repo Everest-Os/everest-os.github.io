@@ -1,4 +1,4 @@
-import{I as y}from"./index-Cxhu8mxZ.js";async function H(k,E={}){const{windowManager:x,vfs:$,filePicker:I}=k;let i=E.path||null,g=!1;const o=document.createElement("div");o.style.cssText=`
+import{I as y}from"./index-CzAWk2Jy.js";async function H(k,E={}){const{windowManager:x,vfs:$,filePicker:I}=k;let i=E.path||null,g=!1;const o=document.createElement("div");o.style.cssText=`
     height: 100%;
     display: flex;
     flex-direction: column;

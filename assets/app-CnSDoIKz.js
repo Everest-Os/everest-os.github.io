@@ -1,4 +1,4 @@
-import{I as s,s as m}from"./index-Cxhu8mxZ.js";async function P(S,I={}){const{windowManager:f,vfs:k,appLoader:h,loader:E}=S,b=E;if(f.windows.get("app-center")){f.focusWindow("app-center");return}const d=document.createElement("div");d.style.cssText=`
+import{I as s,s as m}from"./index-CzAWk2Jy.js";async function P(S,I={}){const{windowManager:f,vfs:k,appLoader:h,loader:E}=S,b=E;if(f.windows.get("app-center")){f.focusWindow("app-center");return}const d=document.createElement("div");d.style.cssText=`
     height: 100%;
     display: flex;
     background: var(--bg-surface);
@@ -119,7 +119,7 @@ import{I as s,s as m}from"./index-Cxhu8mxZ.js";async function P(S,I={}){const{wi
           <button class="btn-primary" id="btn-learn-more" style="background: #fff; color: var(--accent);">Learn More</button>
         </div>
         <h3 style="margin-bottom: 16px; font-size: 15px;">Trending Now</h3>
-      `,i.querySelector("#btn-learn-more").onclick=()=>{document.dispatchEvent(new CustomEvent("launch-app",{detail:{id:"web-browser",args:["/fs/home/user/Documents/app-center-details.html"]}}))};const r=document.createElement("div");r.style.display="grid",r.style.gridTemplateColumns="repeat(auto-fill, minmax(280px, 1fr))",r.style.gap="16px",t.forEach(o=>{const a=document.createElement("div");a.className="app-card",a.innerHTML=`
+      `,i.querySelector("#btn-learn-more").onclick=()=>{document.dispatchEvent(new CustomEvent("launch-app",{detail:{id:"web-browser",args:["/home/user/Documents/app-center-details.html"]}}))};const r=document.createElement("div");r.style.display="grid",r.style.gridTemplateColumns="repeat(auto-fill, minmax(280px, 1fr))",r.style.gap="16px",t.forEach(o=>{const a=document.createElement("div");a.className="app-card",a.innerHTML=`
           <div style="width: 48px; height: 48px; font-size: 32px; display: flex; align-items: center; justify-content: center; background: var(--bg-input); border-radius: 12px;">
             ${s.getIcon(o.icon||(n?"plugin":"archive"),{size:32})}
           </div>

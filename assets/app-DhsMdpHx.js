@@ -1,4 +1,4 @@
-import{I as i}from"./index-Cxhu8mxZ.js";async function h(n){const{windowManager:x,vfs:f,loader:b}=n,r=n.console,e=document.createElement("div");e.style.padding="20px",e.style.height="100%",e.style.display="flex",e.style.flexDirection="column",e.style.gap="15px",e.style.overflowY="auto",e.innerHTML=`
+import{I as i}from"./index-CzAWk2Jy.js";async function h(n){const{windowManager:x,vfs:f,loader:b}=n,r=n.console,e=document.createElement("div");e.style.padding="20px",e.style.height="100%",e.style.display="flex",e.style.flexDirection="column",e.style.gap="15px",e.style.overflowY="auto",e.innerHTML=`
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <h3 style="margin:0;">System Overview</h3>
       <button id="si-refresh" class="btn-secondary" style="display:flex; align-items:center; gap:6px;">${i.getIcon("refresh",{size:14})} Refresh</button>
