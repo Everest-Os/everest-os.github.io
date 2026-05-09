@@ -303,13 +303,22 @@ export class VirtualFileSystem {
       } catch (e) { }
     }
 
-    // IDB list simulation (filter by parent path)
-    const items = await this._idbGetAll();
-    const result = items.filter(i => {
-      const parent = i.path.substring(0, i.path.lastIndexOf('/')) || '/';
-      return parent === p && i.path !== p;
-    });
-    return result.sort((a, b) => {
+    const all = await this._idbGetAll();
+    const targetPath = p.endsWith('/') ? p.slice(0, -1) : p;
+    
+    return all
+      .filter(f => {
+        const parent = f.path.substring(0, f.path.lastIndexOf('/')) || '/';
+        const cleanParent = parent.endsWith('/') && parent !== '/' ? parent.slice(0, -1) : parent;
+        return cleanParent === (targetPath || '/') && f.path !== targetPath;
+      })
+      .map(f => ({
+        name: f.name || f.path.split('/').pop(),
+        path: f.path,
+        type: f.type,
+        size: f.size || 0,
+        mtime: f.mtime || Date.now()
+      })).sort((a, b) => {
       if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
