@@ -18,13 +18,14 @@ export class VirtualFileSystem {
     this.useLocalStorage = false;
     this.serverAvailable = false;
     // Detect static hosting (GitHub Pages)
-    this.staticMode = window.location.hostname.includes('github.io');
+    this.staticMode = window.location.hostname.includes('github.io') || window.location.hostname.includes('github.com');
+    console.log(`[VFS] Mode: ${this.staticMode ? 'Static (GitHub Pages)' : 'Full (Local API)'}`);
     this._initDB();
   }
 
   async _initDB() {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open('EverestOS_VFS', 4);
+      const request = indexedDB.open('EverestOS_VFS', 5);
       request.onupgradeneeded = (e) => {
         const db = e.target.result;
         if (!db.objectStoreNames.contains('files')) {
