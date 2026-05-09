@@ -1,0 +1,8 @@
+{
+  "uuid": "clock@playground",
+  "name": "Simple Clock",
+  "description": "A simple time and date desklet.",
+  "version": "1.0",
+  "type": "desklet",
+  "prevent-decorations": true
+}

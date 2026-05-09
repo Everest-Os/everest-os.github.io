@@ -1,0 +1,10 @@
+{
+  "icon": "menu",
+  "showLabel": false,
+  "menuWidth": 494,
+  "menuOpacity": 0.86,
+  "menuBlur": 29,
+  "showCategoryIcons": true,
+  "enableSearch": true,
+  "iconSize": 37
+}

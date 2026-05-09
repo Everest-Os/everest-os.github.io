@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="EverestOs, feature rich web based operating system" />
+  <title>EverestOs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="manifest" href="site.webmanifest">
+  <script type="module" crossorigin src="/assets/index-BX5Da8PK.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BKJI6B33.css">
+</head>
+
+<body>
+  <div class="app-shell" id="app-shell">
+    <button class="fullscreen-btn" id="fullscreen-btn" title="Toggle Fullscreen">
+      <span class="fs-icon">⛶</span>
+    </button>
+    <!-- Main Desktop Area -->
+    <main class="desktop-area" id="desktop-area">
+      <!-- Desktop Surface -->
+      <div class="everest-desktop" id="everest-desktop">
+        <!-- Desklet layer -->
+        <div class="desklet-layer" id="desklet-layer"></div>
+
+        <!-- Desktop watermark -->
+        <div class="desktop-watermark">
+          Everest OS <span>Web operating system</span>
+        </div>
+
+
+
+        <!-- Code Editor overlay -->
+        <div class="code-editor" id="code-editor"></div>
+      </div>
+
+      <!-- Looking Glass Console -->
+      <div class="looking-glass" id="looking-glass"></div>
+
+      <!-- Panel -->
+      <div class="everest-panel is-dock" id="everest-panel">
+        <div class="panel-left" id="panel-left">
+          <!-- Applets will be injected here -->
+        </div>
+        <div class="panel-center" id="panel-center"></div>
+        <div class="panel-right" id="panel-right">
+          <!-- System tray -->
+          <div class="system-tray-group" id="system-tray">
+            <!-- Applets will be injected here -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Settings Dialog -->
+  <div class="settings-overlay" id="settings-overlay">
+    <div class="settings-dialog">
+      <div class="settings-header">
+        <h3 id="settings-title">Extension Settings</h3>
+        <button class="lg-btn" id="settings-close">✕</button>
+      </div>
+      <div class="settings-body" id="settings-body"></div>
+    </div>
+  </div>
+
+</body>
+
+</html>

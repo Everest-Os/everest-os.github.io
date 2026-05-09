@@ -1,0 +1,8 @@
+{
+  "uuid": "battery@playground",
+  "name": "Battery",
+  "description": "Monitor battery status",
+  "icon": "battery-full",
+  "version": "1.0",
+  "type": "applet"
+}

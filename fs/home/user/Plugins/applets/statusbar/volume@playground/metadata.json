@@ -1,0 +1,8 @@
+{
+  "uuid": "volume@playground",
+  "name": "Volume",
+  "description": "Control system volume",
+  "icon": "audio-volume-high",
+  "version": "1.0",
+  "type": "applet"
+}

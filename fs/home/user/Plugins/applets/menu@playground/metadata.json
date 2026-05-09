@@ -1,0 +1,8 @@
+{
+  "uuid": "menu@playground",
+  "name": "Menu",
+  "description": "The main OS menu",
+  "icon": "system-run",
+  "version": "1.0",
+  "type": "applet"
+}

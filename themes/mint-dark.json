@@ -1,0 +1,17 @@
+{
+  "id": "mint",
+  "name": "Mint-Y-Dark",
+  "mode": "dark",
+  "panelMode": "dark",
+  "variables": {
+    "--bg-desktop-rgb": "26, 26, 46",
+    "--bg-surface-rgb": "36, 36, 36",
+    "--bg-panel-rgb": "30, 30, 30",
+    "--bg-menu-rgb": "30, 30, 30",
+    "--accent-rgb": "53, 132, 228",
+    "--text-primary-rgb": "232, 232, 232",
+    "--mint-green": "#8ff0a4",
+    "--panel-blur": "20px",
+    "--radius-main": "12px"
+  }
+}

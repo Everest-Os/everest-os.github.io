@@ -1,0 +1,17 @@
+{
+  "id": "mint",
+  "name": "Mint-Y",
+  "mode": "light",
+  "panelMode": "light",
+  "variables": {
+    "--bg-desktop-rgb": "220, 220, 220",
+    "--bg-surface-rgb": "245, 245, 245",
+    "--bg-panel-rgb": "240, 240, 240",
+    "--bg-menu-rgb": "240, 240, 240",
+    "--accent-rgb": "53, 132, 228",
+    "--text-primary-rgb": "40, 40, 40",
+    "--mint-green": "#26a269",
+    "--panel-blur": "20px",
+    "--radius-main": "12px"
+  }
+}

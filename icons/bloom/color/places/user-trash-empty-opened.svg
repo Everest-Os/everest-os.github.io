@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128px" height="128px" viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>places/128/user-trash-empty-opened</title>
+    <defs>
+        <filter x="-8.6%" y="-7.4%" width="117.2%" height="118.5%" filterUnits="objectBoundingBox" id="filter-1">
+            <feOffset dx="0" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0" type="matrix" in="shadowBlurOuter1" result="shadowMatrixOuter1"></feColorMatrix>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+        </filter>
+        <radialGradient cx="50%" cy="33.5196055%" fx="50%" fy="33.5196055%" r="66.4803945%" id="radialGradient-2">
+            <stop stop-color="#B8C6E3" stop-opacity="0.798295455" offset="0%"></stop>
+            <stop stop-color="#BCC9E5" stop-opacity="0.808877585" offset="17.6611632%"></stop>
+            <stop stop-color="#BFCAE5" stop-opacity="0.814572356" offset="29.8956866%"></stop>
+            <stop stop-color="#E8EBF2" stop-opacity="0.921209162" offset="100%"></stop>
+        </radialGradient>
+        <path d="M5.03483136,0 L102.965169,8.8817842e-16 C105.341617,8.89447399e-15 107.26811,1.92649239 107.26811,4.30294118 C107.26811,4.52743857 107.250541,4.75159171 107.215564,4.97334761 L93.1193298,94.3438543 C91.8789892,102.207647 85.1014112,108 77.1404011,108 L30.8595989,108 C22.8985888,108 16.1210108,102.207647 14.8806702,94.3438543 L0.784436317,4.97334761 C0.414181068,2.62591925 2.01699656,0.422801387 4.36442492,0.052546138 C4.58618083,0.0175690163 4.81033396,9.29417922e-16 5.03483136,8.8817842e-16 Z" id="path-3"></path>
+        <filter x="-1.2%" y="-1.9%" width="102.3%" height="103.7%" filterUnits="objectBoundingBox" id="filter-5">
+            <feGaussianBlur stdDeviation="1" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="2" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1  0 0 0 0.6 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="places/128/user-trash-empty-opened" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="编组" filter="url(#filter-1)" transform="translate(10, 10)">
+            <mask id="mask-4" fill="white">
+                <use xlink:href="#path-3"></use>
+            </mask>
+            <g id="蒙版">
+                <use fill="url(#radialGradient-2)" fill-rule="evenodd" xlink:href="#path-3"></use>
+                <use fill="black" fill-opacity="1" filter="url(#filter-5)" xlink:href="#path-3"></use>
+            </g>
+        </g>
+        <g id="Guide/128" transform="translate(4, 4)"></g>
+    </g>
+</svg>

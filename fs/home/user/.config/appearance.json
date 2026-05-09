@@ -1,0 +1,19 @@
+{
+  "panelHeight": 56,
+  "panelColor": "#1e1e1e",
+  "panelOpacity": 0.65,
+  "panelBlur": 19,
+  "panelBorderColor": "#2359cd",
+  "panelBorderOpacity": 0.73,
+  "panelMarginY": 12,
+  "panelMarginX": 60,
+  "panelRadius": 12,
+  "menuColor": "#1e1e1e",
+  "menuOpacity": 1,
+  "menuIcon": "🌿",
+  "shellTheme": "light",
+  "appTheme": "light",
+  "contextMenuColor": "#19191e",
+  "contextMenuOpacity": 0.55,
+  "contextMenuBlur": 12
+}

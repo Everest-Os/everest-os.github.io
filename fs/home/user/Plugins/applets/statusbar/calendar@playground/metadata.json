@@ -1,0 +1,8 @@
+{
+  "uuid": "calendar@playground",
+  "name": "Calendar",
+  "description": "Clock and calendar",
+  "icon": "x-office-calendar",
+  "version": "1.0",
+  "type": "applet"
+}

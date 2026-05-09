@@ -1,0 +1,21 @@
+{
+  "id": "win95",
+  "name": "Windows 95",
+  "mode": "light",
+  "panelMode": "light",
+  "variables": {
+    "--bg-desktop-rgb": "0, 128, 128",
+    "--bg-panel-rgb": "192, 192, 192",
+    "--bg-surface-rgb": "192, 192, 192",
+    "--accent-rgb": "0, 0, 128",
+    "--text-primary-rgb": "0, 0, 0",
+    "--radius-main": "0px",
+    "--radius-md": "0px",
+    "--radius-sm": "0px",
+    "--panel-blur": "0px",
+    "--panel-opacity": "1",
+    "--window-opacity": "1",
+    "--window-blur": "0px",
+    "--border": "#000000"
+  }
+}

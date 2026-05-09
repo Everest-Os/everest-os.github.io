@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>EverestOS — App Center Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            background: #f4f7f9;
+        }
+        .container {
+            background: white;
+            padding: 48px 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+        }
+        h1, h2, h3, h4 { color: #1a1a1a; }
+        h1 { margin-top: 0; border-bottom: 3px solid #3584e4; padding-bottom: 12px; font-size: 2em; }
+        h2 { margin-top: 2em; padding-bottom: 8px; border-bottom: 1px solid #e0e0e0; font-size: 1.5em; }
+        h3 { margin-top: 1.5em; font-size: 1.15em; color: #2a2a2a; }
+        p { margin: 0.8em 0; }
+        .accent { color: #3584e4; }
+        .badge { display: inline-block; font-size: 0.7em; padding: 2px 8px; border-radius: 4px; font-weight: 600; margin-left: 6px; vertical-align: middle; color: white; }
+        .badge-system { background: #6366f1; }
+        .badge-media { background: #ec4899; }
+        .badge-util { background: #14b8a6; }
+        .badge-dev { background: #f59e0b; }
+        .badge-office { background: #3b82f6; }
+        .badge-net { background: #22c55e; }
+        code {
+            background: #f0f4f8;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: "JetBrains Mono", Consolas, monospace;
+            font-size: 0.88em;
+            color: #c7254e;
+        }
+        .nav-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 20px 0 10px;
+        }
+        .nav-bar a {
+            display: inline-block;
+            padding: 8px 18px;
+            background: #f0f4f8;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            color: #3584e4;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-bar a:hover { background: #3584e4; color: white; border-color: #3584e4; }
+        .nav-bar a.active { background: #3584e4; color: white; border-color: #3584e4; }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .app-card {
+            padding: 20px;
+            background: #fafbfc;
+            border-radius: 12px;
+            border: 1px solid #e8ecf0;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .app-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        .app-card h4 { margin: 0 0 6px; font-size: 1.05em; display: flex; align-items: center; gap: 8px; }
+        .app-card p { margin: 0; font-size: 0.88em; color: #555; }
+        .app-icon { font-size: 1.4em; }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf0 100%);
+            border-radius: 12px;
+            border-left: 4px solid #3584e4;
+        }
+        .feature-card h4 { margin: 0 0 8px; font-size: 1em; color: #1a1a1a; }
+        .feature-card p { margin: 0; font-size: 0.88em; color: #555; }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 5px solid #3584e4;
+            padding: 20px 24px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .info-box h4 { margin-top: 0; color: #1a56db; }
+        .warn-box {
+            background: #fff8e1;
+            border-left: 5px solid #f59e0b;
+            padding: 20px 24px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .warn-box h4 { margin-top: 0; color: #b45309; }
+        .ext-box {
+            background: #fef3e2;
+            border-left: 5px solid #e67e22;
+            padding: 20px 24px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .ext-box h4 { margin-top: 0; color: #c05621; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.92em;
+        }
+        th { background: #f0f4f8; text-align: left; padding: 10px 14px; font-weight: 600; border-bottom: 2px solid #ddd; }
+        td { padding: 10px 14px; border-bottom: 1px solid #eee; }
+        tr:hover td { background: #fafbfc; }
+        ul { margin: 8px 0; padding-left: 20px; }
+        li { margin: 4px 0; }
+        hr { border: none; border-top: 1px solid #e0e0e0; margin: 2em 0; }
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #888;
+            font-size: 0.85em;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏔️ EverestOS <span class="accent">Documentation</span></h1>
+
+        <p>Welcome to the official documentation for <strong>EverestOS</strong> — a premium, modular web-based desktop environment born in Nepal.</p>
+
+        <div class="nav-bar">
+            <a href="/fs/home/user/Documents/app-center-details.html" class="active">📦 App Catalog</a>
+            <a href="/fs/home/user/Documents/system-guide.html">🖥️ User Guide</a>
+            <a href="/fs/home/user/Documents/developer-guides.html">🛠️ Developer Guide</a>
+        </div>
+
+        <hr>
+
+        <!-- ─── FEATURES ─── -->
+        <h2>✨ Platform Features</h2>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>⚡ Native Performance</h4>
+                <p>Built with vanilla JavaScript and modern web standards — no heavy frameworks, maximum speed.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🔒 Sandboxed Execution</h4>
+                <p>Every application runs in isolation. Extensions use a controlled CommonJS runtime environment.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🎨 Adaptive Theming</h4>
+                <p>Full light/dark mode with 600+ high-fidelity Bloom SVG icons that adapt to your theme automatically.</p>
+            </div>
+            <div class="feature-card">
+                <h4>💾 Virtual File System</h4>
+                <p>A complete filesystem abstraction supporting IndexedDB and native Node.js backends.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🧩 Extension System</h4>
+                <p>Cinnamon-compatible applets and desklets powered by a custom CJS loader and mock St libraries.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🛠️ Developer Tools</h4>
+                <p>Built-in Developer Center, Looking Glass console (Alt+F2), and live code editor for rapid prototyping.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ─── APP CATALOG ─── -->
+        <h2>📦 Built-in Application Catalog</h2>
+        <p>EverestOS ships with <strong>18 built-in applications</strong>, each designed for performance and visual consistency.</p>
+
+        <h3>System &amp; Administration</h3>
+        <div class="app-grid">
+            <div class="app-card">
+                <h4><span class="app-icon">📁</span> Files <span class="badge badge-system">System</span></h4>
+                <p>Full-featured file manager inspired by Nemo. Browse, copy, move, rename, and trash files with keyboard shortcuts.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">💻</span> Terminal <span class="badge badge-system">System</span></h4>
+                <p>Command-line shell with built-in commands like <code>ls</code>, <code>cd</code>, <code>cat</code>, <code>mkdir</code>, <code>rm</code>, and more.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">⚙️</span> System Settings <span class="badge badge-system">System</span></h4>
+                <p>Centralized configuration hub — appearance, themes, display scaling, night light, panel position, and About page.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">🛒</span> App Center <span class="badge badge-system">Administration</span></h4>
+                <p>Discover, install, and uninstall applications. Browse curated apps and manage your software library.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">🧩</span> Plugin Settings <span class="badge badge-system">System</span></h4>
+                <p>Manage applets, desklets, and system extensions. Enable, disable, configure, and remove plugins.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">📊</span> System Inspector <span class="badge badge-system">System</span></h4>
+                <p>View system statistics, loaded plugins, extension errors, and performance information.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">⚙️</span> Desktop Settings <span class="badge badge-system">Preferences</span></h4>
+                <p>Configure desktop wallpaper, icon visibility, and desktop-specific appearance options.</p>
+            </div>
+        </div>
+
+        <h3>Productivity &amp; Office</h3>
+        <div class="app-grid">
+            <div class="app-card">
+                <h4><span class="app-icon">📝</span> Text Editor <span class="badge badge-office">Accessories</span></h4>
+                <p>Lightweight text and code editor with Markdown preview support.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">💼</span> Office <span class="badge badge-office">Office</span></h4>
+                <p>Professional document editor with rich formatting and cinematic design.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">📕</span> PDF Reader <span class="badge badge-office">Office</span></h4>
+                <p>Read and navigate PDF documents within the desktop environment.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">🧮</span> Calculator <span class="badge badge-util">Utilities</span></h4>
+                <p>Simple mathematical calculator for everyday calculations.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">📦</span> Archive Manager <span class="badge badge-util">Accessories</span></h4>
+                <p>View and extract ZIP archives directly in the file system.</p>
+            </div>
+        </div>
+
+        <h3>Multimedia</h3>
+        <div class="app-grid">
+            <div class="app-card">
+                <h4><span class="app-icon">🖼️</span> Image Viewer <span class="badge badge-media">Graphics</span></h4>
+                <p>View images and photos with zoom, rotate, and fullscreen support.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">🎵</span> Music Player <span class="badge badge-media">Multimedia</span></h4>
+                <p>Audio player for your music files with playback controls.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">🎬</span> Video Player <span class="badge badge-media">Multimedia</span></h4>
+                <p>Watch video files with standard playback controls.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">🎬</span> Media Viewer <span class="badge badge-media">Media</span></h4>
+                <p>Universal media viewer for images, videos, and audio files.</p>
+            </div>
+        </div>
+
+        <h3>Internet &amp; Development</h3>
+        <div class="app-grid">
+            <div class="app-card">
+                <h4><span class="app-icon">🌐</span> Web Browser <span class="badge badge-net">Internet</span></h4>
+                <p>Embedded web browser for accessing websites and web applications. Also used to view internal documentation.</p>
+            </div>
+            <div class="app-card">
+                <h4><span class="app-icon">💻</span> Developer Center <span class="badge badge-dev">Development</span></h4>
+                <p>Integrated development environment for creating Apps, Desklets, and Applets. Export your creations to the VFS.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ─── EXTENSIONS ─── -->
+        <h2>🧩 System Extensions</h2>
+
+        <p>Beyond standalone apps, EverestOS supports <strong>three types of extensions</strong> that integrate directly into the desktop shell — modeled after the Cinnamon Desktop Environment.</p>
+
+        <div class="ext-box">
+            <h4>📌 Applets — Panel Widgets</h4>
+            <p>Small tools that live in the taskbar panel. Examples: clocks, date displays, system monitors, and the main application menu.</p>
+            <p><strong>Location:</strong> <code>~/Plugins/applets/&lt;uuid&gt;/</code></p>
+        </div>
+
+        <div class="ext-box">
+            <h4>🖥️ Desklets — Desktop Widgets</h4>
+            <p>Floating, draggable widgets on the desktop surface. Examples: seven-segment clocks, calendar displays, system info panels.</p>
+            <p><strong>Location:</strong> <code>~/Plugins/desklets/&lt;uuid&gt;/</code></p>
+        </div>
+
+        <div class="ext-box">
+            <h4>📱 User Applications</h4>
+            <p>Custom applications installed by the user or through the App Center. These appear in the App Menu and can be uninstalled.</p>
+            <p><strong>Location:</strong> <code>~/Apps/&lt;app-name&gt;/</code></p>
+        </div>
+
+        <h3>Included Extensions</h3>
+        <table>
+            <tr><th>Name</th><th>Type</th><th>Author</th><th>Description</th></tr>
+            <tr><td>Main Menu</td><td>Applet</td><td>EverestOS</td><td>Application launcher with search and categories</td></tr>
+            <tr><td>Status Bar</td><td>Applet</td><td>EverestOS</td><td>System tray indicators and quick settings</td></tr>
+            <tr><td>Nepali Date</td><td>Applet</td><td>Bishal Acharya</td><td>Bikram Sambat calendar in the panel</td></tr>
+            <tr><td>Seven Segment Clock</td><td>Desklet</td><td>lxs242</td><td>Retro digital clock display on the desktop</td></tr>
+            <tr><td>Nepali Date</td><td>Desklet</td><td>Khumnath</td><td>Nepali calendar widget on the desktop</td></tr>
+            <tr><td>Panchang</td><td>Desklet</td><td>Community</td><td>Indian calendar and panchang display</td></tr>
+            <tr><td>System Monitor</td><td>Desklet</td><td>EverestOS</td><td>System performance overview widget</td></tr>
+        </table>
+
+        <hr>
+
+        <!-- ─── HOW TO ─── -->
+        <h2>📥 How to Install &amp; Manage Apps</h2>
+
+        <h3>Installing</h3>
+        <ul>
+            <li>Open the <strong>App Center</strong> from the App Menu</li>
+            <li>Browse the <strong>Curated</strong> or <strong>Installed</strong> tabs</li>
+            <li>Click <strong>Install</strong> on any application card</li>
+            <li>The app will appear in your App Menu immediately</li>
+        </ul>
+
+        <h3>Uninstalling</h3>
+        <ul>
+            <li>Open the <strong>App Center</strong> and go to the <strong>Installed</strong> tab</li>
+            <li>Click <strong>Uninstall</strong> on any user-installed application</li>
+            <li>Built-in system applications cannot be uninstalled</li>
+        </ul>
+
+        <h3>Managing Extensions</h3>
+        <ul>
+            <li>Open <strong>Plugin Settings</strong> from the App Menu or System Settings</li>
+            <li>Toggle extensions on or off with the enable/disable controls</li>
+            <li>Right-click any applet or desklet for context menu options (Settings, About, Remove, Reload)</li>
+        </ul>
+
+        <div class="info-box">
+            <h4>💡 Creating Your Own Apps</h4>
+            <p>Use the <strong>Developer Center</strong> to create, edit, and export custom applications. Each app needs just two files: <code>app.json</code> (manifest) and <code>app.js</code> (entry point). See the <a href="/fs/home/user/Documents/developer-guides.html" style="color:#1a56db;">Developer Guide</a> for full API documentation.</p>
+        </div>
+
+        <div class="warn-box">
+            <h4>🚧 Coming Soon</h4>
+            <p>The <strong>App Center</strong> install functionality for remote/community apps currently operates as a UI preview. A centralized repository server for one-click community app installations is planned for a future release.</p>
+        </div>
+
+        <hr>
+
+        <!-- ─── MORE DOCS ─── -->
+        <h2>📚 More Documentation</h2>
+        <div class="nav-bar">
+            <a href="/fs/home/user/Documents/system-guide.html">🖥️ User Guide — Themes, Shortcuts, Settings</a>
+            <a href="/fs/home/user/Documents/developer-guides.html">🛠️ Developer Guide — APIs & Extension Development</a>
+        </div>
+
+        <footer>
+            &copy; 2026 EverestOS Project &bull; Built with &hearts; in Nepal for the Open Web<br>
+            Licensed under <strong>GPL-3.0-or-later</strong>
+        </footer>
+    </div>
+</body>
+</html>
