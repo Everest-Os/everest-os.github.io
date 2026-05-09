@@ -1,0 +1,5 @@
+Welcome to the Web OS Sandbox!
+
+This file is stored in your Virtual File System.
+You can edit it, delete it, or create new files.
+Try double clicking folders in the File Manager to browse around!

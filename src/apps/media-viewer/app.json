@@ -1,0 +1,7 @@
+{
+  "id": "media-viewer",
+  "name": "Media Viewer",
+  "icon": "video,\ud83c\udfac",
+  "category": "Media",
+  "description": "View images, videos, and listen to audio"
+}

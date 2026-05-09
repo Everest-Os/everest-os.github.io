@@ -1,0 +1,18 @@
+{
+  "id": "emoji",
+  "name": "Emoji (Default)",
+  "icons": {
+    "folder": "📂",
+    "file": "📄",
+    "home": "🏠",
+    "desktop": "🖥️",
+    "trash": "🗑️",
+    "computer": "💻",
+    "music": "🎵",
+    "video": "🎬",
+    "image": "🖼️",
+    "pdf": "📕",
+    "archive": "📦",
+    "size": 32
+  }
+}

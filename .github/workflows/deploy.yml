@@ -1,0 +1,50 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    concurrency: ci-${{ github.ref }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ⚙️
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install and Build 🔧
+        run: |
+          npm install
+          node scripts/pack-vfs.js
+          npm run build
+
+      - name: Verify Build 🔍
+        run: |
+          echo "Checking for essential build artifacts..."
+          test -f dist/index.html || (echo "❌ index.html is missing!" && exit 1)
+          test -f dist/vfs-seed.json || (echo "❌ vfs-seed.json is missing!" && exit 1)
+          
+          SEED_SIZE=$(wc -c < dist/vfs-seed.json)
+          if [ "$SEED_SIZE" -lt 100 ]; then
+            echo "❌ vfs-seed.json looks too small ($SEED_SIZE bytes). Something went wrong with packing."
+            exit 1
+          fi
+          
+          echo "✅ Build verified: index.html and vfs-seed.json are ready."
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: web
+          clean: true

@@ -1,0 +1,7 @@
+{
+  "id": "system-inspector",
+  "name": "System Inspector",
+  "icon": "system-inspector,\ud83d\udcca",
+  "category": "System",
+  "description": "View system statistics, loaded plugins, and errors"
+}

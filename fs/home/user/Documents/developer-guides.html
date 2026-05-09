@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>EverestOS Developer Guides</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            background: #f4f7f9;
+        }
+        .container {
+            background: white;
+            padding: 48px 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+        }
+        h1, h2, h3, h4 { color: #1a1a1a; }
+        h1 { margin-top: 0; border-bottom: 3px solid #3584e4; padding-bottom: 12px; font-size: 2em; }
+        h2 { margin-top: 2em; padding-bottom: 8px; border-bottom: 1px solid #e0e0e0; font-size: 1.5em; }
+        h3 { margin-top: 1.5em; font-size: 1.2em; color: #2a2a2a; }
+        h4 { margin-top: 1.2em; font-size: 1em; color: #444; }
+        p { margin: 0.8em 0; }
+        .accent { color: #3584e4; }
+        .badge { display: inline-block; background: #3584e4; color: white; font-size: 0.75em; padding: 2px 8px; border-radius: 4px; font-weight: 600; margin-left: 6px; vertical-align: middle; }
+        code {
+            background: #f0f4f8;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.88em;
+            color: #c7254e;
+        }
+        pre {
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 20px 24px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+            margin: 16px 0;
+        }
+        pre .comment { color: #6c7086; }
+        pre .keyword { color: #cba6f7; }
+        pre .string { color: #a6e3a1; }
+        pre .property { color: #89b4fa; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.92em;
+        }
+        th { background: #f0f4f8; text-align: left; padding: 10px 14px; font-weight: 600; border-bottom: 2px solid #ddd; }
+        td { padding: 10px 14px; border-bottom: 1px solid #eee; }
+        tr:hover td { background: #fafbfc; }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 5px solid #3584e4;
+            padding: 20px 24px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .info-box h4 { margin-top: 0; color: #1a56db; }
+        .warn-box {
+            background: #fff8e1;
+            border-left: 5px solid #f59e0b;
+            padding: 20px 24px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .warn-box h4 { margin-top: 0; color: #b45309; }
+        .cinnamon-note {
+            background: #f0fff0;
+            border-left: 5px solid #2ecc71;
+            padding: 20px 24px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .cinnamon-note h4 { margin-top: 0; color: #16a34a; }
+        .toc {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px 28px;
+            margin: 24px 0;
+        }
+        .toc h3 { margin-top: 0; font-size: 1.1em; }
+        .toc ol { padding-left: 20px; }
+        .toc li { margin: 6px 0; }
+        .toc a { color: #3584e4; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        .file-tree {
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 20px 24px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.85em;
+            line-height: 1.8;
+            margin: 16px 0;
+        }
+        .file-tree .dir { color: #89b4fa; }
+        .file-tree .file { color: #a6e3a1; }
+        .file-tree .comment { color: #6c7086; }
+        hr { border: none; border-top: 1px solid #e0e0e0; margin: 2em 0; }
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #888;
+            font-size: 0.85em;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>EverestOS <span class="accent">Developer Guides</span></h1>
+
+        <p>Welcome to the official development documentation for <strong>EverestOS</strong> — a premium, modular web-based desktop environment born in Nepal. This guide covers building applications, extensions, and working with the system APIs.</p>
+
+        <div class="nav-bar" style="display:flex; gap:12px; flex-wrap:wrap; margin:20px 0 10px;">
+            <a href="/fs/home/user/Documents/app-center-details.html" style="display:inline-block; padding:8px 18px; background:#f0f4f8; border:1px solid #d0d7de; border-radius:8px; color:#3584e4; text-decoration:none; font-size:0.9em; font-weight:500;">📦 App Catalog</a>
+            <a href="/fs/home/user/Documents/system-guide.html" style="display:inline-block; padding:8px 18px; background:#f0f4f8; border:1px solid #d0d7de; border-radius:8px; color:#3584e4; text-decoration:none; font-size:0.9em; font-weight:500;">🖥️ User Guide</a>
+            <a href="/fs/home/user/Documents/developer-guides.html" style="display:inline-block; padding:8px 18px; background:#3584e4; border:1px solid #3584e4; border-radius:8px; color:white; text-decoration:none; font-size:0.9em; font-weight:500;">🛠️ Developer Guide</a>
+        </div>
+
+        <div class="cinnamon-note">
+            <h4>🌿 Inspired by Cinnamon Desktop</h4>
+            <p>EverestOS draws heavy inspiration from the <strong>Cinnamon Desktop Environment</strong> by the Linux Mint team. We've ported the core extension concepts — <strong>Applets</strong>, <strong>Desklets</strong>, and the <strong>Settings Schema</strong> system — to the web using a custom CommonJS loader and mock <code>St</code> (Shell Toolkit) libraries.</p>
+        </div>
+
+        <div class="toc">
+            <h3>📑 Table of Contents</h3>
+            <ol>
+                <li><a href="#apps">Building Applications</a></li>
+                <li><a href="#applets">Building Applets (Panel Widgets)</a></li>
+                <li><a href="#desklets">Building Desklets (Desktop Widgets)</a></li>
+                <li><a href="#vfs">Virtual File System API</a></li>
+                <li><a href="#wm">Window Manager API</a></li>
+                <li><a href="#icons">Icon Helper API</a></li>
+                <li><a href="#themes">Theme System</a></li>
+                <li><a href="#dialogs">System Dialogs</a></li>
+                <li><a href="#config">Configuration Files</a></li>
+                <li><a href="#shortcuts">Keyboard Shortcuts</a></li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <!-- ─── APPLICATIONS ─── -->
+        <h2 id="apps">1. Building Applications</h2>
+
+        <p>Applications are the primary extension mechanism in EverestOS. Each app is a self-contained module with a manifest and entry point.</p>
+
+        <h3>App Directory Structure</h3>
+        <div class="file-tree">
+            <span class="dir">~/Apps/my-app/</span><br>
+            ├── <span class="file">app.json</span> <span class="comment"># Manifest (required)</span><br>
+            └── <span class="file">app.js</span> <span class="comment"># Entry point (required)</span>
+        </div>
+
+        <h3>Manifest (<code>app.json</code>)</h3>
+<pre>{
+  <span class="property">"id"</span>: <span class="string">"my-app"</span>,
+  <span class="property">"name"</span>: <span class="string">"My Application"</span>,
+  <span class="property">"description"</span>: <span class="string">"A sample EverestOS application"</span>,
+  <span class="property">"icon"</span>: <span class="string">"archive"</span>,
+  <span class="property">"category"</span>: <span class="string">"Utilities"</span>,
+  <span class="property">"version"</span>: <span class="string">"1.0.0"</span>
+}</pre>
+
+        <table>
+            <tr><th>Field</th><th>Required</th><th>Description</th></tr>
+            <tr><td><code>id</code></td><td>✅</td><td>Unique identifier (kebab-case)</td></tr>
+            <tr><td><code>name</code></td><td>✅</td><td>Display name shown in App Menu</td></tr>
+            <tr><td><code>description</code></td><td>❌</td><td>Short description</td></tr>
+            <tr><td><code>icon</code></td><td>❌</td><td>Bloom theme icon key or emoji (e.g., <code>"folder"</code>, <code>"📦"</code>)</td></tr>
+            <tr><td><code>category</code></td><td>❌</td><td>Menu category: Utilities, Development, System, Multimedia, Internet, Office</td></tr>
+            <tr><td><code>version</code></td><td>❌</td><td>Semantic version string</td></tr>
+        </table>
+
+        <h3>Entry Point (<code>app.js</code>)</h3>
+        <p>Your app must export an async <code>launch</code> function that receives the system context:</p>
+<pre><span class="keyword">export async function</span> launch(ctx, options = {}) {
+  <span class="keyword">const</span> { windowManager, vfs, appLoader } = ctx;
+
+  <span class="comment">// Create your UI</span>
+  <span class="keyword">const</span> content = document.createElement(<span class="string">'div'</span>);
+  content.style.cssText = <span class="string">'padding:20px; color:var(--text-primary);'</span>;
+  content.innerHTML = <span class="string">'&lt;h1&gt;Hello EverestOS!&lt;/h1&gt;'</span>;
+
+  <span class="comment">// Open a window</span>
+  windowManager.createWindow({
+    <span class="property">id</span>: <span class="string">'my-app-'</span> + Date.now(),
+    <span class="property">title</span>: <span class="string">'My Application'</span>,
+    <span class="property">icon</span>: <span class="string">'archive'</span>,
+    <span class="property">width</span>: 600,
+    <span class="property">height</span>: 400,
+    <span class="property">content</span>
+  });
+}</pre>
+
+        <h3>Context Object Properties</h3>
+        <table>
+            <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>windowManager</code></td><td>WindowManager</td><td>Create, close, minimize, and focus windows</td></tr>
+            <tr><td><code>vfs</code></td><td>VirtualFileSystem</td><td>Read/write the virtual filesystem</td></tr>
+            <tr><td><code>appLoader</code></td><td>AppLoader</td><td>Launch other applications programmatically</td></tr>
+            <tr><td><code>panelManager</code></td><td>PanelManager</td><td>Access the taskbar and system tray</td></tr>
+            <tr><td><code>filePicker</code></td><td>FilePickerApp</td><td>Open file/folder selection dialogs</td></tr>
+            <tr><td><code>console</code></td><td>LookingGlass</td><td>Log messages to the Looking Glass console</td></tr>
+            <tr><td><code>themeManager</code></td><td>ThemeManager</td><td>Get current theme information</td></tr>
+            <tr><td><code>showSystemDialog</code></td><td>Function</td><td>Display alert/confirm dialogs</td></tr>
+        </table>
+
+        <div class="info-box">
+            <h4>💡 Launching Other Apps</h4>
+            <p>You can launch any registered app from your code: <code>ctx.appLoader.launchApp('web-browser', { url: 'https://example.com' })</code></p>
+        </div>
+
+        <hr>
+
+        <!-- ─── APPLETS ─── -->
+        <h2 id="applets">2. Building Applets <span class="badge">Panel</span></h2>
+
+        <p>Applets are panel widgets that use the Cinnamon-compatible CommonJS pattern with <code>require()</code>.</p>
+
+        <h3>Applet Structure</h3>
+        <div class="file-tree">
+            <span class="dir">~/Plugins/applets/my-applet@author/</span><br>
+            ├── <span class="file">metadata.json</span> <span class="comment"># Extension metadata</span><br>
+            ├── <span class="file">applet.js</span> <span class="comment"># Entry point</span><br>
+            └── <span class="file">settings-schema.json</span> <span class="comment"># Optional settings</span>
+        </div>
+
+        <h3>Example Applet</h3>
+<pre><span class="keyword">const</span> Applet = require(<span class="string">'ui/applet'</span>);
+<span class="keyword">const</span> St = require(<span class="string">'gi/st'</span>);
+<span class="keyword">const</span> Main = require(<span class="string">'ui/main'</span>);
+
+<span class="keyword">class</span> MyApplet <span class="keyword">extends</span> Applet.TextIconApplet {
+  _init(orientation, panelHeight, instanceId) {
+    <span class="keyword">super</span>._init(orientation, panelHeight, instanceId);
+    <span class="keyword">this</span>.set_applet_icon_name(<span class="string">'preferences-system'</span>);
+    <span class="keyword">this</span>.set_applet_label(<span class="string">'Hello'</span>);
+    <span class="keyword">this</span>.set_applet_tooltip(<span class="string">'My custom applet'</span>);
+  }
+
+  on_applet_clicked() {
+    Main.notify(<span class="string">'Applet clicked!'</span>);
+  }
+}
+
+<span class="keyword">function</span> main(metadata, orientation, panelHeight, instanceId) {
+  <span class="keyword">return new</span> MyApplet(orientation, panelHeight, instanceId);
+}</pre>
+
+        <h3>Available <code>St</code> Widgets</h3>
+        <table>
+            <tr><th>Widget</th><th>Description</th></tr>
+            <tr><td><code>St.Label</code></td><td>Text label element</td></tr>
+            <tr><td><code>St.Icon</code></td><td>Icon display (supports theme keys)</td></tr>
+            <tr><td><code>St.Button</code></td><td>Clickable button with label/icon</td></tr>
+            <tr><td><code>St.BoxLayout</code></td><td>Horizontal/vertical container layout</td></tr>
+            <tr><td><code>St.Bin</code></td><td>Single-child container</td></tr>
+            <tr><td><code>St.Entry</code></td><td>Text input field</td></tr>
+            <tr><td><code>St.DrawingArea</code></td><td>Canvas-based drawing surface</td></tr>
+            <tr><td><code>St.ScrollView</code></td><td>Scrollable container</td></tr>
+        </table>
+
+        <h3>Available CJS Modules</h3>
+        <table>
+            <tr><th>Module</th><th>Description</th></tr>
+            <tr><td><code>gi/st</code></td><td>Shell Toolkit UI widgets</td></tr>
+            <tr><td><code>gi/clutter</code></td><td>Actor and event simulation</td></tr>
+            <tr><td><code>gi/gio</code></td><td>File and settings stubs</td></tr>
+            <tr><td><code>gi/glib</code></td><td>Timer utilities (<code>timeout_add</code>, <code>source_remove</code>)</td></tr>
+            <tr><td><code>gi/pango</code></td><td>Text layout constants</td></tr>
+            <tr><td><code>ui/main</code></td><td>Panel access, notifications</td></tr>
+            <tr><td><code>ui/applet</code></td><td>Applet base classes</td></tr>
+            <tr><td><code>ui/desklet</code></td><td>Desklet base classes</td></tr>
+            <tr><td><code>ui/popupMenu</code></td><td>Popup menu construction</td></tr>
+            <tr><td><code>ui/settings</code></td><td>Extension settings API</td></tr>
+            <tr><td><code>ui/tooltips</code></td><td>Tooltip support</td></tr>
+            <tr><td><code>ui/signalManager</code></td><td>Signal connection management</td></tr>
+            <tr><td><code>misc/util</code></td><td>Utility functions</td></tr>
+        </table>
+
+        <hr>
+
+        <!-- ─── DESKLETS ─── -->
+        <h2 id="desklets">3. Building Desklets <span class="badge">Desktop</span></h2>
+
+        <p>Desklets are floating desktop widgets. They can be dragged, configured, and persist across sessions.</p>
+
+<pre><span class="keyword">const</span> Desklet = require(<span class="string">'ui/desklet'</span>);
+<span class="keyword">const</span> St = require(<span class="string">'gi/st'</span>);
+
+<span class="keyword">class</span> MyDesklet <span class="keyword">extends</span> Desklet.Desklet {
+  _init(metadata, instanceId) {
+    <span class="keyword">super</span>._init(metadata, instanceId);
+    <span class="keyword">this</span>.setupUI();
+  }
+
+  setupUI() {
+    <span class="keyword">const</span> label = <span class="keyword">new</span> St.Label({
+      <span class="property">text</span>: <span class="string">'Hello Desktop!'</span>,
+      <span class="property">style</span>: <span class="string">'font-size: 24px; color: white;'</span>
+    });
+    <span class="keyword">this</span>.setContent(label);
+  }
+
+  on_desklet_removed() {
+    <span class="comment">// Cleanup timers, intervals, etc.</span>
+  }
+}
+
+<span class="keyword">function</span> main(metadata, instanceId) {
+  <span class="keyword">return new</span> MyDesklet(metadata, instanceId);
+}</pre>
+
+        <hr>
+
+        <!-- ─── VFS ─── -->
+        <h2 id="vfs">4. Virtual File System API</h2>
+
+        <p>The VFS provides a unified filesystem interface that works in both development (Node.js backend) and production (IndexedDB) modes.</p>
+
+<pre><span class="keyword">const</span> vfs = ctx.vfs;
+
+<span class="comment">// Read directory contents</span>
+<span class="keyword">const</span> items = <span class="keyword">await</span> vfs.readdir(<span class="string">'/home/user/Documents'</span>);
+
+<span class="comment">// Read a file</span>
+<span class="keyword">const</span> text = <span class="keyword">await</span> vfs.readFile(<span class="string">'~/Documents/notes.txt'</span>);
+
+<span class="comment">// Write a file</span>
+<span class="keyword">await</span> vfs.writeFile(<span class="string">'~/Documents/notes.txt'</span>, <span class="string">'Hello!'</span>);
+
+<span class="comment">// Check if path exists</span>
+<span class="keyword">const</span> stat = <span class="keyword">await</span> vfs.stat(<span class="string">'~/Documents'</span>);
+
+<span class="comment">// Create a directory</span>
+<span class="keyword">await</span> vfs.mkdir(<span class="string">'~/Documents/new-folder'</span>);
+
+<span class="comment">// Copy, rename, delete</span>
+<span class="keyword">await</span> vfs.copy(<span class="string">'~/file.txt'</span>, <span class="string">'~/Desktop/file.txt'</span>);
+<span class="keyword">await</span> vfs.rename(<span class="string">'~/old.txt'</span>, <span class="string">'~/new.txt'</span>);
+<span class="keyword">await</span> vfs.rm(<span class="string">'~/temp.txt'</span>);
+<span class="keyword">await</span> vfs.trash(<span class="string">'~/unwanted.txt'</span>);</pre>
+
+        <div class="info-box">
+            <h4>📁 Path Aliases</h4>
+            <p><code>~</code> resolves to <code>/home/user</code>. All paths are absolute within the VFS namespace.</p>
+        </div>
+
+        <hr>
+
+        <!-- ─── WINDOW MANAGER ─── -->
+        <h2 id="wm">5. Window Manager API</h2>
+
+<pre><span class="keyword">const</span> win = windowManager.createWindow({
+  <span class="property">id</span>: <span class="string">'unique-window-id'</span>,
+  <span class="property">title</span>: <span class="string">'My Window'</span>,
+  <span class="property">icon</span>: <span class="string">'folder'</span>,
+  <span class="property">width</span>: 600,
+  <span class="property">height</span>: 400,
+  <span class="property">content</span>: myDomElement
+});
+
+<span class="comment">// Close, focus, or minimize</span>
+windowManager.closeWindow(<span class="string">'unique-window-id'</span>);
+windowManager.focusWindow(<span class="string">'unique-window-id'</span>);
+windowManager.minimizeWindow(<span class="string">'unique-window-id'</span>);</pre>
+
+        <hr>
+
+        <!-- ─── ICONS ─── -->
+        <h2 id="icons">6. Icon Helper API</h2>
+
+        <p>Always use <code>IconHelper</code> for theme-aware icon rendering:</p>
+
+<pre><span class="comment">// Theme icon with emoji fallback</span>
+IconHelper.getIcon(<span class="string">'folder,📁'</span>, { <span class="property">size</span>: 24 });
+
+<span class="comment">// Fixed path (ignores theme)</span>
+IconHelper.getIcon(<span class="string">'/icons/everest-logo.svg'</span>, { <span class="property">size</span>: 64 });</pre>
+
+        <p>Icon keys use comma-separated format: <code>'bloom-theme-key,emoji-fallback'</code></p>
+
+        <hr>
+
+        <!-- ─── THEMES ─── -->
+        <h2 id="themes">7. Theme System</h2>
+
+        <p>Themes are JSON files in <code>public/themes/</code> that define CSS variables and icon packs:</p>
+
+<pre>{
+  <span class="property">"name"</span>: <span class="string">"Mint Dark"</span>,
+  <span class="property">"type"</span>: <span class="string">"dark"</span>,
+  <span class="property">"icon-theme"</span>: <span class="string">"bloom-dark"</span>,
+  <span class="property">"colors"</span>: {
+    <span class="property">"--bg-primary"</span>: <span class="string">"#1a1a2e"</span>,
+    <span class="property">"--text-primary"</span>: <span class="string">"#e8e8e8"</span>,
+    <span class="property">"--mint-green"</span>: <span class="string">"#6ecf8a"</span>
+  }
+}</pre>
+
+        <p>Key CSS variables: <code>--bg-primary</code>, <code>--bg-surface</code>, <code>--bg-card</code>, <code>--text-primary</code>, <code>--text-secondary</code>, <code>--text-accent</code>, <code>--border</code>, <code>--mint-green</code>.</p>
+
+        <hr>
+
+        <!-- ─── DIALOGS ─── -->
+        <h2 id="dialogs">8. System Dialogs</h2>
+
+<pre><span class="comment">// Alert</span>
+ctx.showSystemDialog({
+  <span class="property">title</span>: <span class="string">'Notice'</span>,
+  <span class="property">message</span>: <span class="string">'Operation complete.'</span>,
+  <span class="property">type</span>: <span class="string">'alert'</span>
+});
+
+<span class="comment">// Confirm</span>
+ctx.showSystemDialog({
+  <span class="property">title</span>: <span class="string">'Confirm'</span>,
+  <span class="property">message</span>: <span class="string">'Proceed?'</span>,
+  <span class="property">type</span>: <span class="string">'confirm'</span>,
+  <span class="property">confirmText</span>: <span class="string">'Yes'</span>,
+  <span class="property">onConfirm</span>: () => { <span class="comment">/* ... */</span> }
+});</pre>
+
+        <hr>
+
+        <!-- ─── CONFIG ─── -->
+        <h2 id="config">9. Configuration Files</h2>
+
+        <p>All user config lives in <code>~/.config/</code>:</p>
+
+        <table>
+            <tr><th>File</th><th>Purpose</th></tr>
+            <tr><td><code>theme.json</code></td><td>Active theme and icon theme</td></tr>
+            <tr><td><code>appearance.json</code></td><td>Panel opacity, blur, border radius</td></tr>
+            <tr><td><code>panel.json</code></td><td>Panel position (top/bottom)</td></tr>
+            <tr><td><code>desktop.json</code></td><td>Desktop icon visibility</td></tr>
+            <tr><td><code>display.json</code></td><td>UI scaling, night light</td></tr>
+            <tr><td><code>extensions.json</code></td><td>Extension load/remove state</td></tr>
+            <tr><td><code>startup.json</code></td><td>Apps to launch at boot</td></tr>
+            <tr><td><code>menu.json</code></td><td>App Menu favorites</td></tr>
+        </table>
+
+        <hr>
+
+        <!-- ─── SHORTCUTS ─── -->
+        <h2 id="shortcuts">10. Keyboard Shortcuts</h2>
+
+        <table>
+            <tr><th>Shortcut</th><th>Action</th></tr>
+            <tr><td><code>Alt + F2</code></td><td>Toggle Looking Glass debug console</td></tr>
+            <tr><td><code>Ctrl + A</code></td><td>Select all (desktop / file manager)</td></tr>
+            <tr><td><code>Ctrl + C</code></td><td>Copy selected items</td></tr>
+            <tr><td><code>Ctrl + X</code></td><td>Cut selected items</td></tr>
+            <tr><td><code>Ctrl + V</code></td><td>Paste items</td></tr>
+            <tr><td><code>Delete</code></td><td>Move to Trash</td></tr>
+            <tr><td><code>Escape</code></td><td>Close overlays and dialogs</td></tr>
+        </table>
+
+        <hr>
+
+        <div class="warn-box">
+            <h4>🚧 Work in Progress</h4>
+            <p>The <strong>App Center</strong> install functionality currently operates as a UI mock. A centralized extension repository server is planned for future releases.</p>
+        </div>
+
+        <footer>
+            &copy; 2026 EverestOS Project &bull; Built with &hearts; in Nepal for the Open Web<br>
+            Licensed under <strong>GPL-3.0-or-later</strong>
+        </footer>
+    </div>
+</body>
+</html>

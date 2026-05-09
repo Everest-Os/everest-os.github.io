@@ -1,0 +1,43 @@
+{
+  "layout": {
+    "type": "header",
+    "description": "Clock Layout"
+  },
+  "use-24h": {
+    "type": "switch",
+    "default": false,
+    "description": "Use 24-hour clock"
+  },
+  "show-seconds": {
+    "type": "switch",
+    "default": false,
+    "description": "Show seconds"
+  },
+  "show-date": {
+    "type": "switch",
+    "default": true,
+    "description": "Show date"
+  },
+  "custom": {
+    "type": "header",
+    "description": "Advanced Formatting"
+  },
+  "format-preset": {
+    "type": "combobox",
+    "default": "default",
+    "description": "Format Preset",
+    "options": {
+      "Basic (Use toggles above)": "default",
+      "24-Hour (14:30)": "%H:%M",
+      "12-Hour (02:30 PM)": "%I:%M %p",
+      "Short Date & Time (Mon Oct 14, 14:30)": "%a %b %d, %H:%M",
+      "Long Date & Time (Monday, October 14, 2024 - 02:30 PM)": "%A, %B %d, %Y - %I:%M %p",
+      "Custom (Use field below)": "custom"
+    }
+  },
+  "custom-format": {
+    "type": "format_builder",
+    "default": "%a %H:%M",
+    "description": "Custom format string (used when 'Custom' is selected)"
+  }
+}

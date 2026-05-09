@@ -1,0 +1,7 @@
+{
+  "id": "web-browser",
+  "name": "Web Browser",
+  "icon": "web,\ud83c\udf10",
+  "category": "Internet",
+  "description": "Browse the web"
+}

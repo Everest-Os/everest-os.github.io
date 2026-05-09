@@ -1,0 +1,8 @@
+{
+  "uuid": "network@playground",
+  "name": "Network",
+  "description": "Manage network connections",
+  "icon": "network-wireless",
+  "version": "1.0",
+  "type": "applet"
+}

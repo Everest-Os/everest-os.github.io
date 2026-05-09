@@ -1,0 +1,216 @@
+/* ── Design Tokens ──────────────────────────────────────────────────── */
+:root {
+  /* Color Components (R, G, B) */
+  --bg-desktop-rgb: 26, 26, 46;
+  --bg-surface-rgb: 36, 36, 36;
+  --bg-panel-rgb: 30, 30, 30;
+  --bg-menu-rgb: 30, 30, 30;
+  --accent-rgb: 53, 132, 228;
+  --text-primary-rgb: 232, 232, 232;
+
+  /* Opacity Overrides (Logical Transparency) */
+  --panel-opacity: 0.92;
+  --menu-opacity: 0.95;
+  --panel-blur: 20px;
+  --menu-blur: 20px;
+  
+  --panel-margin-x: 60px;
+  --panel-margin-y: 12px;
+  --panel-radius: 12px;
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-main: var(--radius-md);
+  
+  /* Derived Colors */
+  --bg-desktop: rgb(var(--bg-desktop-rgb));
+  --bg-panel-rgba: rgba(var(--bg-panel-rgb), var(--panel-opacity));
+  --bg-menu-rgba: rgba(var(--bg-menu-rgb), var(--menu-opacity));
+  
+  --bg-surface: rgb(var(--bg-surface-rgb));
+  --bg-surface-hover: rgba(var(--bg-surface-rgb), 1.15); /* Approximated */
+  --bg-surface-active: rgba(var(--bg-surface-rgb), 1.3);
+  --bg-elevated: #303030;
+  --bg-card: rgba(var(--bg-surface-rgb), 1.1);
+  --bg-card-hover: #333333;
+  --bg-input: rgba(var(--bg-surface-rgb), 0.8);
+  --bg-tooltip: rgba(var(--bg-surface-rgb), 0.95);
+
+  --text-primary: rgb(var(--text-primary-rgb));
+  --text-secondary: rgba(var(--text-primary-rgb), 0.65);
+  --text-tertiary: rgba(var(--text-primary-rgb), 0.4);
+  --text-accent: #6ec6ff;
+
+  --accent: rgb(var(--accent-rgb));
+  --accent-hover: rgba(var(--accent-rgb), 0.9);
+  --accent-active: rgba(var(--accent-rgb), 1.1);
+  --mint-green: #8ff0a4;
+  --mint-green-dim: rgba(143, 240, 164, 0.15);
+  --danger: #e74c3c;
+  --danger-hover: #ff6b5b;
+  --warning: #f9a825;
+  --success: #4caf50;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-accent: rgba(var(--accent-rgb), 0.4);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 20px rgba(53, 132, 228, 0.2);
+
+  --font-main: 'Inter', 'Cantarell', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  --panel-height: 42px;
+  --sidebar-width: 340px;
+
+  /* Dynamic values that change with theme but stay semi-transparent */
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-active: rgba(255, 255, 255, 0.14);
+  --bg-context-menu-rgba: rgba(var(--bg-menu-rgb), 0.97);
+  color-scheme: dark;
+}
+
+/* ── Light Themes ─────────────────────────────────────────────────── */
+
+/* Light Theme for Shell (Panel/Menu) */
+html.light-panel-theme, body.light-panel-theme {
+  --bg-panel-rgb: 255, 255, 255;
+  --bg-menu-rgb: 255, 255, 255;
+  --bg-context-menu-rgba: rgba(255, 255, 255, 0.75);
+  --border: rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --text-primary-rgb: 44, 62, 80;
+}
+
+/* Light Theme for Applications/Windows/Dialogs */
+html.light-theme, body.light-theme {
+  --bg-surface-rgb: 245, 245, 247;
+  --text-primary-rgb: 44, 62, 80;
+  
+  --bg-elevated: #e5e5e7;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f5f7;
+  --bg-input: #efeff1;
+  --bg-tooltip: rgba(255, 255, 255, 0.95);
+  
+  --border: rgba(0, 0, 0, 0.08);
+  --border-accent: rgba(53, 132, 228, 0.4);
+  
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.1);
+
+  --bg-hover: rgba(0, 0, 0, 0.05);
+  --bg-active: rgba(0, 0, 0, 0.08);
+  color-scheme: light;
+}
+
+/* ── Reset & Base ──────────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-main);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-desktop);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────── */
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  font-family: var(--font-main);
+}
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-primary:active { background: var(--accent-active); transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all var(--transition-fast);
+  font-family: var(--font-main);
+}
+.btn-secondary:hover { background: var(--bg-surface-hover); border-color: rgba(255,255,255,0.15); }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  font-family: var(--font-main);
+}
+.btn-danger:hover { background: var(--danger-hover); }
+
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+
+/* ── Night Light ──────────────────────────────────────────────────── */
+body.night-light::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 150, 0, 0.12);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 999999;
+  transition: opacity 0.5s ease;
+}

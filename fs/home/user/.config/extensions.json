@@ -1,0 +1,44 @@
+{
+  "enabled": [
+    {
+      "type": "applets",
+      "uuid": "calendar@playground",
+      "vfsPath": "~/Plugins/applets/statusbar/calendar@playground"
+    },
+    {
+      "type": "applets",
+      "uuid": "battery@playground",
+      "vfsPath": "~/Plugins/applets/statusbar/battery@playground"
+    },
+    {
+      "type": "applets",
+      "uuid": "network@playground",
+      "vfsPath": "~/Plugins/applets/statusbar/network@playground"
+    },
+    {
+      "type": "applets",
+      "uuid": "volume@playground",
+      "vfsPath": "~/Plugins/applets/statusbar/volume@playground"
+    },
+    {
+      "type": "applets",
+      "uuid": "menu@playground",
+      "vfsPath": "~/Plugins/applets/menu@playground"
+    },
+    {
+      "type": "desklets",
+      "uuid": "SevenSegmentClock@lxs242",
+      "vfsPath": "~/Plugins/desklets/SevenSegmentClock@lxs242"
+    },
+    {
+      "type": "applets",
+      "uuid": "nepali-date@bishalacharya",
+      "vfsPath": "~/Plugins/applets/nepali-date@bishalacharya"
+    }
+  ],
+  "removed": [
+    "clock@playground",
+    "panchang@india",
+    "nepali-date@khumnath"
+  ]
+}

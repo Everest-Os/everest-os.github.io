@@ -1,0 +1,7 @@
+{
+  "id": "desktop-settings",
+  "name": "Desktop Settings",
+  "icon": "settings,\u2699\ufe0f",
+  "category": "Preferences",
+  "description": "Change desktop background and appearance"
+}

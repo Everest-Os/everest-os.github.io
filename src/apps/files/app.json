@@ -1,0 +1,7 @@
+{
+  "id": "files",
+  "name": "Files",
+  "icon": "folder,\ud83d\udcc1",
+  "category": "System",
+  "description": "Browse and manage files"
+}

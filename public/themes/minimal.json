@@ -1,0 +1,16 @@
+{
+  "id": "minimal",
+  "name": "Minimal Light",
+  "mode": "light",
+  "panelMode": "light",
+  "variables": {
+    "--bg-desktop-rgb": "240, 242, 245",
+    "--bg-surface-rgb": "255, 255, 255",
+    "--bg-panel-rgb": "245, 245, 247",
+    "--bg-menu-rgb": "245, 245, 247",
+    "--accent-rgb": "0, 102, 255",
+    "--text-primary-rgb": "26, 26, 26",
+    "--panel-blur": "10px",
+    "--radius-main": "12px"
+  }
+}

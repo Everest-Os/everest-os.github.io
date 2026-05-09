@@ -1,0 +1,35 @@
+.main_container {
+    background-color: rgba(0,0,0,0.4);
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.calender-container {
+	padding: 0 10px;
+	text-align: center;
+}
+
+.date-container {
+	font-size: 48px;
+	color: pink;
+	text-align: right;
+}
+
+.month-container {
+	font-size: 16px;
+	color: pink;
+	text-align: right;
+}
+
+.time-container {
+	font-size: 20px;
+	color: pink;
+	text-align: right;
+}
+
+
+.panchang-container {
+	font-size: 16px;
+	color: orange;
+}

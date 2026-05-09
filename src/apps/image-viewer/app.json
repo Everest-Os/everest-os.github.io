@@ -1,0 +1,9 @@
+{
+  "id": "image-viewer",
+  "name": "Image Viewer",
+  "icon": "image,\ud83d\uddbc\ufe0f",
+  "description": "View your images and photos.",
+  "categories": [
+    "Graphics"
+  ]
+}

@@ -1,0 +1,176 @@
+{
+    "head0":
+    {
+        "type": "header",
+        "description": "Settings for Panchang Visual Style"
+    },
+
+    "head1":
+    {
+        "type": "header",
+        "description": "Visual"
+    },
+    "text-color":
+    {
+        "type": "colorchooser",
+        "default": "white",
+        "description": "Text color",
+        "tooltip": "Set the text color of this desklet."
+    },
+    "border-color":
+    {
+        "type": "colorchooser",
+        "default": "black",
+        "description": "Set the color of desklet border",
+        "tooltip": "Set the border color of this desklet."
+    },
+    "background-color":
+    {
+        "type": "colorchooser",
+        "default": "black",
+        "description": "Background color",
+        "tooltip": "Set the background color of this desklet."
+    },
+    "sunrise-color": {
+        "type": "colorchooser",
+        "default": "#ff9500",
+        "description": "Sunrise color"
+    },
+    "sunset-color": {
+        "type": "colorchooser",
+        "default": "#ff3b30",
+        "description": "Sunset color"
+    },
+    "tithi-color": {
+        "type": "colorchooser",
+        "default": "#5856d6",
+        "description": "Tithi color"
+    },
+    "nakshatra-color": {
+        "type": "colorchooser",
+        "default": "#4cd964",
+        "description": "Nakshatra color"
+    },
+    "yoga-color": {
+        "type": "colorchooser",
+        "default": "#5ac8fa",
+        "description": "Yoga color"
+    },
+    "karan-color": {
+        "type": "colorchooser",
+        "default": "#ffcc00",
+        "description": "Karan color"
+    },
+    "sun-color": {
+        "type": "colorchooser",
+        "default": "#ffcc00",
+        "description": "Sun degree color"
+    },
+    "moon-color": {
+        "type": "colorchooser",
+        "default": "#ffffff",
+        "description": "Moon degree color"
+    },
+     "show-in-degrees": {
+        "type": "checkbox",
+        "description": "Show the value in 360° degrees",
+        "default": false
+    },
+     "calculation-mode": {
+         "type": "combobox",
+         "default": "sunrise",
+         "description": "Panchang Calculation",
+         "options": {
+             "At Sunrise (Traditional)": "sunrise",
+             "Current Time": "current"
+         }
+     },
+     "background-opacity": {
+         "type": "spinbutton",
+         "default": 100,
+         "min": 0,
+         "max": 100,
+         "step": 5,
+         "units": "opacity",
+         "description": "Background Opacity"
+     },
+     "show-remaining-time": {
+        "type": "checkbox",
+        "description": "Show remaining time of tithi and nakshatra",
+        "default": true
+    },
+     "show-last-time": {
+        "type": "checkbox",
+        "description": "Show end time of tithi and nakshatra",
+        "default": false
+    },
+     "scale-size": {
+        "type": "spinbutton",
+        "default": 1.0,
+        "min": 0.4,
+        "max": 5.0,
+        "step": 0.05,
+        "units": "scale factor",
+        "description": "Desklet size",
+        "tooltip": "Increase or decrease the size of the desklet using this scale factor."
+    },
+      "refreshtime": {
+        "type": "spinbutton",
+        "default": 1,
+        "min": 1,
+        "max": 300,
+        "step": 1,
+        "units": "seconds",
+        "description": "Refresh panchang in every"
+    },
+    "head2":
+    {
+        "type": "header",
+        "description": "Place Coordinates"
+    },
+    "mylat":
+    {
+        "type": "spinbutton",
+        "default": 28.6139,
+        "min": -90.0,
+        "max": 90.0,
+        "step": 0.0001,
+        "units": "scale factor",
+        "description": "Select the latitude of your place",
+        "tooltip": "Select your latitude of place"
+    },
+    "mylong":
+    {
+        "type": "spinbutton",
+        "default": 77.2090,
+        "min": -180.0,
+        "max": 180.0,
+        "step": 0.0001,
+        "units": "scale factor",
+        "description": "Select the longitude of your place",
+        "tooltip": "Select your longitude of place"
+    },
+    "city": {
+        "type": "combobox",
+        "default": "delhi",
+        "description": "Select City",
+        "options": {
+            "Custom": "custom",
+            "New Delhi": "delhi",
+            "Mumbai": "mumbai",
+            "Kolkata": "kolkata",
+            "Chennai": "chennai",
+            "Bengaluru": "bengaluru",
+            "Hyderabad": "hyderabad",
+            "Ahmedabad": "ahmedabad",
+            "Pune": "pune",
+            "Kathmandu": "kathmandu",
+            "Varanasi": "varanasi",
+            "Hardwar": "hardwar",
+            "Ayodhya": "ayodhya",
+            "Puri": "puri"
+        }
+    }
+
+
+}

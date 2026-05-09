@@ -1,0 +1,8 @@
+{
+  "id": "office",
+  "name": "Office",
+  "description": "Professional document editor with cinematic design.",
+  "icon": "office,\ud83d\udcbc",
+  "category": "Office",
+  "version": "1.0.0"
+}

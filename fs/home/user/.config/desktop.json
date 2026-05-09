@@ -1,0 +1,14 @@
+{
+  "background": "url(\"/fs/home/user/images/backgrounds/bg_abstract_waves_1777608227911.png\")",
+  "backgroundSize": "cover",
+  "backgroundPosition": "center",
+  "gridSize": 98,
+  "iconSize": 37,
+  "labelSize": 13,
+  "labelColor": "#f0f0f0",
+  "labelShadow": true,
+  "autoArrange": false,
+  "showComputer": true,
+  "showTrash": true,
+  "showHome": true
+}

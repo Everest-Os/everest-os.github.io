@@ -1,0 +1,7 @@
+{
+  "id": "calculator",
+  "name": "Calculator",
+  "icon": "calculator,\ud83e\uddee",
+  "category": "Utilities",
+  "description": "Simple mathematical calculator"
+}

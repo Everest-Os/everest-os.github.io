@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>EverestOS — User Guide</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            background: #f4f7f9;
+        }
+        .container {
+            background: white;
+            padding: 48px 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+        }
+        h1, h2, h3 { color: #1a1a1a; }
+        h1 { margin-top: 0; border-bottom: 3px solid #3584e4; padding-bottom: 12px; font-size: 2em; }
+        h2 { margin-top: 2em; padding-bottom: 8px; border-bottom: 1px solid #e0e0e0; font-size: 1.5em; }
+        h3 { margin-top: 1.5em; font-size: 1.15em; }
+        p { margin: 0.8em 0; }
+        .accent { color: #3584e4; }
+        code {
+            background: #f0f4f8;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: "JetBrains Mono", Consolas, monospace;
+            font-size: 0.88em;
+            color: #c7254e;
+        }
+        .nav-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 20px 0 10px;
+        }
+        .nav-bar a {
+            display: inline-block;
+            padding: 8px 18px;
+            background: #f0f4f8;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            color: #3584e4;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-bar a:hover { background: #3584e4; color: white; border-color: #3584e4; }
+        .nav-bar a.active { background: #3584e4; color: white; border-color: #3584e4; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.92em;
+        }
+        th { background: #f0f4f8; text-align: left; padding: 10px 14px; font-weight: 600; border-bottom: 2px solid #ddd; }
+        td { padding: 10px 14px; border-bottom: 1px solid #eee; }
+        tr:hover td { background: #fafbfc; }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 5px solid #3584e4;
+            padding: 20px 24px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .info-box h4 { margin-top: 0; color: #1a56db; }
+        .tip-box {
+            background: #f0fff0;
+            border-left: 5px solid #22c55e;
+            padding: 20px 24px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .tip-box h4 { margin-top: 0; color: #16a34a; }
+        ul, ol { margin: 8px 0; padding-left: 24px; }
+        li { margin: 4px 0; }
+        hr { border: none; border-top: 1px solid #e0e0e0; margin: 2em 0; }
+        .toc {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px 28px;
+            margin: 24px 0;
+        }
+        .toc h3 { margin-top: 0; font-size: 1.1em; }
+        .toc ol { padding-left: 20px; }
+        .toc li { margin: 6px 0; }
+        .toc a { color: #3584e4; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        .theme-card {
+            display: inline-block;
+            padding: 12px 20px;
+            margin: 6px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .theme-dark { background: #1a1a2e; color: #e8e8e8; border-color: #333; }
+        .theme-light { background: #ffffff; color: #333; }
+        .theme-minimal { background: #fafafa; color: #666; }
+        .theme-retro { background: #c0c0c0; color: #000080; border-color: #808080; }
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #888;
+            font-size: 0.85em;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏔️ EverestOS <span class="accent">User Guide</span></h1>
+
+        <p>This guide covers everything you need to know to use EverestOS effectively — from navigating the desktop to customizing themes and managing your files.</p>
+
+        <div class="nav-bar">
+            <a href="/fs/home/user/Documents/app-center-details.html">📦 App Catalog</a>
+            <a href="/fs/home/user/Documents/system-guide.html" class="active">🖥️ User Guide</a>
+            <a href="/fs/home/user/Documents/developer-guides.html">🛠️ Developer Guide</a>
+        </div>
+
+        <div class="toc">
+            <h3>📑 Contents</h3>
+            <ol>
+                <li><a href="#desktop">The Desktop</a></li>
+                <li><a href="#panel">The Panel (Taskbar)</a></li>
+                <li><a href="#menu">App Menu</a></li>
+                <li><a href="#windows">Window Management</a></li>
+                <li><a href="#files">File Management</a></li>
+                <li><a href="#themes">Themes &amp; Appearance</a></li>
+                <li><a href="#shortcuts">Keyboard Shortcuts</a></li>
+                <li><a href="#extensions">Extensions &amp; Plugins</a></li>
+                <li><a href="#config">Configuration</a></li>
+                <li><a href="#debug">Debugging (Looking Glass)</a></li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <!-- ─── DESKTOP ─── -->
+        <h2 id="desktop">1. The Desktop</h2>
+        <p>The desktop is your main workspace. It displays:</p>
+        <ul>
+            <li><strong>Desktop icons</strong> — Shortcuts to Files, Terminal, App Center, and Trash</li>
+            <li><strong>Desklets</strong> — Floating widgets like clocks and calendars</li>
+            <li><strong>A watermark</strong> — Shows "EverestOS - Web operating system"</li>
+        </ul>
+        <p><strong>Right-click the desktop</strong> to access options like:</p>
+        <ul>
+            <li>Add/remove desklets</li>
+            <li>Change desktop settings (wallpaper, icon visibility)</li>
+            <li>Create new folders and files</li>
+            <li>Open the Looking Glass console</li>
+        </ul>
+
+        <div class="tip-box">
+            <h4>💡 Desktop Icon Positions</h4>
+            <p>Desktop icons can be dragged to custom positions. Your layout is automatically saved to <code>~/.config/desktop-positions.json</code>.</p>
+        </div>
+
+        <hr>
+
+        <!-- ─── PANEL ─── -->
+        <h2 id="panel">2. The Panel (Taskbar)</h2>
+        <p>The panel sits at the bottom (or top) of the screen and contains three zones:</p>
+        <table>
+            <tr><th>Zone</th><th>Contents</th></tr>
+            <tr><td><strong>Left</strong></td><td>App Menu button, quick-launch applets</td></tr>
+            <tr><td><strong>Center</strong></td><td>Window list (open application buttons)</td></tr>
+            <tr><td><strong>Right</strong></td><td>System tray — clock, date, status indicators</td></tr>
+        </table>
+        <p><strong>Right-click the panel</strong> to access:</p>
+        <ul>
+            <li>Panel position (move to top or bottom)</li>
+            <li>Add/remove applets</li>
+            <li>Extension manager</li>
+            <li>System settings</li>
+        </ul>
+
+        <hr>
+
+        <!-- ─── APP MENU ─── -->
+        <h2 id="menu">3. App Menu</h2>
+        <p>Click the <strong>App Menu</strong> button (bottom-left of the panel) to launch applications.</p>
+        <ul>
+            <li><strong>Quick Actions</strong> — Top row has buttons for Files, Terminal, Settings, and About</li>
+            <li><strong>Search</strong> — Type to filter apps by name</li>
+            <li><strong>Categories</strong> — Browse apps organized by type (System, Multimedia, Office, etc.)</li>
+            <li><strong>All Applications</strong> — See everything in one list</li>
+        </ul>
+
+        <hr>
+
+        <!-- ─── WINDOWS ─── -->
+        <h2 id="windows">4. Window Management</h2>
+        <p>Application windows behave like a traditional desktop:</p>
+        <ul>
+            <li><strong>Drag title bar</strong> — Move the window</li>
+            <li><strong>Drag edges/corners</strong> — Resize the window</li>
+            <li><strong>Close button (✕)</strong> — Close the window</li>
+            <li><strong>Minimize button (−)</strong> — Minimize to taskbar</li>
+            <li><strong>Click taskbar entry</strong> — Restore or focus window</li>
+            <li><strong>Click any window</strong> — Bring it to front</li>
+        </ul>
+
+        <hr>
+
+        <!-- ─── FILES ─── -->
+        <h2 id="files">5. File Management</h2>
+        <p>The <strong>Files</strong> app provides a familiar file browser:</p>
+        <ul>
+            <li><strong>Navigate</strong> — Click folders to open them, use breadcrumb path bar</li>
+            <li><strong>Home</strong> (<code>~/</code>) — Your personal directory</li>
+            <li><strong>Desktop</strong> (<code>~/Desktop</code>) — Items shown on the desktop</li>
+            <li><strong>Documents, Music, Videos, images</strong> — Organized content folders</li>
+            <li><strong>Trash</strong> — Deleted items can be restored or permanently removed</li>
+        </ul>
+
+        <h3>File Operations</h3>
+        <table>
+            <tr><th>Action</th><th>Method</th></tr>
+            <tr><td>Open file</td><td>Double-click (opens in associated app)</td></tr>
+            <tr><td>Select multiple</td><td>Ctrl+Click or Ctrl+A to select all</td></tr>
+            <tr><td>Copy</td><td>Right-click → Copy, or Ctrl+C</td></tr>
+            <tr><td>Cut</td><td>Right-click → Cut, or Ctrl+X</td></tr>
+            <tr><td>Paste</td><td>Right-click → Paste, or Ctrl+V</td></tr>
+            <tr><td>Delete</td><td>Right-click → Move to Trash, or Delete key</td></tr>
+            <tr><td>Rename</td><td>Right-click → Rename</td></tr>
+            <tr><td>New folder</td><td>Right-click → New Folder</td></tr>
+        </table>
+
+        <div class="info-box">
+            <h4>📁 Special Paths</h4>
+            <p><code>computer://</code> — Browse the filesystem root. <code>trash://</code> — View deleted files. Both are accessible from the Files app sidebar.</p>
+        </div>
+
+        <hr>
+
+        <!-- ─── THEMES ─── -->
+        <h2 id="themes">6. Themes &amp; Appearance</h2>
+        <p>Customize the look of EverestOS from <strong>System Settings → Appearance</strong>.</p>
+
+        <h3>Available Themes</h3>
+        <div style="margin: 16px 0;">
+            <span class="theme-card theme-dark">🌙 Mint Dark (Default)</span>
+            <span class="theme-card theme-light">☀️ Mint Light</span>
+            <span class="theme-card theme-minimal">◻️ Minimal</span>
+            <span class="theme-card theme-retro">🪟 Windows 95</span>
+        </div>
+
+        <h3>Appearance Options</h3>
+        <table>
+            <tr><th>Setting</th><th>Description</th></tr>
+            <tr><td>Theme</td><td>Switch between light, dark, minimal, or retro styles</td></tr>
+            <tr><td>Icon Theme</td><td>Choose between Bloom, Bloom Dark, Emoji, or Modern icon sets</td></tr>
+            <tr><td>Panel Opacity</td><td>Adjust the transparency of the taskbar panel</td></tr>
+            <tr><td>Blur Effect</td><td>Enable or adjust glassmorphic blur intensity</td></tr>
+            <tr><td>Border Radius</td><td>Control the roundness of UI corners</td></tr>
+            <tr><td>Panel Position</td><td>Move the panel to top or bottom of the screen</td></tr>
+            <tr><td>Night Light</td><td>Apply a warm color filter to reduce eye strain</td></tr>
+            <tr><td>UI Scaling</td><td>Scale the entire interface (75% to 150%)</td></tr>
+        </table>
+
+        <hr>
+
+        <!-- ─── SHORTCUTS ─── -->
+        <h2 id="shortcuts">7. Keyboard Shortcuts</h2>
+        <table>
+            <tr><th>Shortcut</th><th>Action</th></tr>
+            <tr><td><code>Alt + F2</code></td><td>Toggle Looking Glass debug console</td></tr>
+            <tr><td><code>Ctrl + A</code></td><td>Select all items (desktop or file manager)</td></tr>
+            <tr><td><code>Ctrl + C</code></td><td>Copy selected items to clipboard</td></tr>
+            <tr><td><code>Ctrl + X</code></td><td>Cut selected items</td></tr>
+            <tr><td><code>Ctrl + V</code></td><td>Paste from clipboard</td></tr>
+            <tr><td><code>Delete</code></td><td>Move selected items to Trash</td></tr>
+            <tr><td><code>Escape</code></td><td>Close dialogs, overlays, and editors</td></tr>
+        </table>
+
+        <hr>
+
+        <!-- ─── EXTENSIONS ─── -->
+        <h2 id="extensions">8. Extensions &amp; Plugins</h2>
+        <p>EverestOS supports two types of plugins that integrate into the desktop shell:</p>
+
+        <h3>Applets (Panel Widgets)</h3>
+        <p>Small tools embedded in the panel/taskbar. Examples include the main menu, date/time display, and system indicators.</p>
+        <ul>
+            <li><strong>Add</strong>: Right-click panel → "Add Applets"</li>
+            <li><strong>Configure</strong>: Right-click the applet → "Settings"</li>
+            <li><strong>Remove</strong>: Right-click the applet → "Remove"</li>
+        </ul>
+
+        <h3>Desklets (Desktop Widgets)</h3>
+        <p>Floating widgets on the desktop surface. They can be dragged to any position and persist across sessions.</p>
+        <ul>
+            <li><strong>Add</strong>: Right-click desktop → "Add Desklets"</li>
+            <li><strong>Move</strong>: Drag the desklet by its header</li>
+            <li><strong>Configure</strong>: Right-click → "Settings"</li>
+            <li><strong>Remove</strong>: Right-click → "Remove this desklet"</li>
+        </ul>
+
+        <div class="tip-box">
+            <h4>🧩 Plugin Directory</h4>
+            <p>All plugins are stored in <code>~/Plugins/</code>. Applets in <code>~/Plugins/applets/</code> and desklets in <code>~/Plugins/desklets/</code>. You can also manage them from the <strong>Plugin Settings</strong> app.</p>
+        </div>
+
+        <hr>
+
+        <!-- ─── CONFIG ─── -->
+        <h2 id="config">9. Configuration</h2>
+        <p>All user settings are stored as JSON files in <code>~/.config/</code>:</p>
+        <table>
+            <tr><th>File</th><th>What It Controls</th></tr>
+            <tr><td><code>theme.json</code></td><td>Active color theme and icon pack</td></tr>
+            <tr><td><code>appearance.json</code></td><td>Panel opacity, blur, border radius</td></tr>
+            <tr><td><code>panel.json</code></td><td>Panel position (top/bottom)</td></tr>
+            <tr><td><code>desktop.json</code></td><td>Desktop icon visibility (Files, Trash, etc.)</td></tr>
+            <tr><td><code>display.json</code></td><td>UI scaling percentage, night light toggle</td></tr>
+            <tr><td><code>startup.json</code></td><td>Apps to auto-launch at boot</td></tr>
+            <tr><td><code>extensions.json</code></td><td>Which extensions are loaded/removed</td></tr>
+            <tr><td><code>menu.json</code></td><td>App Menu favorites and settings</td></tr>
+        </table>
+
+        <div class="info-box">
+            <h4>📝 Editing Config Manually</h4>
+            <p>You can edit these files directly using the <strong>Text Editor</strong> or <strong>Terminal</strong>. Changes take effect after refreshing the session.</p>
+        </div>
+
+        <hr>
+
+        <!-- ─── DEBUG ─── -->
+        <h2 id="debug">10. Debugging (Looking Glass)</h2>
+        <p>Press <code>Alt + F2</code> to open the <strong>Looking Glass</strong> — an interactive debug console inspired by Cinnamon's diagnostic tool.</p>
+        <ul>
+            <li><strong>View logs</strong> — System startup messages, extension errors, and app activity</li>
+            <li><strong>Run JavaScript</strong> — Execute code directly in the shell context</li>
+            <li><strong>Inspect extensions</strong> — See which plugins are loaded and their state</li>
+        </ul>
+
+        <hr>
+
+        <div class="nav-bar">
+            <a href="/fs/home/user/Documents/app-center-details.html">📦 App Catalog</a>
+            <a href="/fs/home/user/Documents/developer-guides.html">🛠️ Developer Guide — APIs & Extension Development</a>
+        </div>
+
+        <footer>
+            &copy; 2026 EverestOS Project &bull; Built with &hearts; in Nepal for the Open Web<br>
+            Licensed under <strong>GPL-3.0-or-later</strong>
+        </footer>
+    </div>
+</body>
+</html>
