@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-BX5Da8PK.js","assets/index-BKJI6B33.css"])))=>i.map(i=>d[i]);
-import{_ as x}from"./index-BX5Da8PK.js";async function b(c,t={}){const{windowManager:p,vfs:n}=c,{IconHelper:d}=await x(async()=>{const{IconHelper:e}=await import("./index-BX5Da8PK.js").then(r=>r.i);return{IconHelper:e}},__vite__mapDeps([0,1])),l=t.path?t.path.split(".").pop().toLowerCase():"odt";let o="doc";["xls","xlsx"].includes(l)?o="sheet":["ppt","pptx"].includes(l)&&(o="slides");const i=document.createElement("div");i.style.cssText=`
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-CDx2cV7o.js","assets/index-BKJI6B33.css"])))=>i.map(i=>d[i]);
+import{_ as x}from"./index-CDx2cV7o.js";async function b(c,t={}){const{windowManager:p,vfs:n}=c,{IconHelper:d}=await x(async()=>{const{IconHelper:e}=await import("./index-CDx2cV7o.js").then(r=>r.i);return{IconHelper:e}},__vite__mapDeps([0,1])),l=t.path?t.path.split(".").pop().toLowerCase():"odt";let o="doc";["xls","xlsx"].includes(l)?o="sheet":["ppt","pptx"].includes(l)&&(o="slides");const i=document.createElement("div");i.style.cssText=`
     height: 100%;
     display: flex;
     flex-direction: column;

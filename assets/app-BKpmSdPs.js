@@ -1,4 +1,4 @@
-import{I as r}from"./index-BX5Da8PK.js";async function $(f,m={}){const{windowManager:l,vfs:c,filePicker:d}=f,p=m.path||"",i=document.createElement("div");i.style.cssText=`
+import{I as r}from"./index-CDx2cV7o.js";async function $(f,m={}){const{windowManager:l,vfs:c,filePicker:d}=f,p=m.path||"",i=document.createElement("div");i.style.cssText=`
     height: 100%;
     display: flex;
     flex-direction: column;

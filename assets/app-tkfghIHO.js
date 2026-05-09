@@ -1,4 +1,4 @@
-import{I as n}from"./index-BX5Da8PK.js";function T(x,v={}){const{windowManager:p,vfs:g,filePicker:h}=x,c=v.path||"",t=document.createElement("div");t.style.cssText=`
+import{I as n}from"./index-CDx2cV7o.js";function T(x,v={}){const{windowManager:p,vfs:g,filePicker:h}=x,c=v.path||"",t=document.createElement("div");t.style.cssText=`
     height: 100%;
     display: flex;
     flex-direction: column;

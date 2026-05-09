@@ -1,15 +1,15 @@
 {
   "files": [
     {
-      "path": "/home",
+      "path": "/../../../../..",
       "type": "dir"
     },
     {
-      "path": "/home/user",
+      "path": "/../../../../../user",
       "type": "dir"
     },
     {
-      "path": "/home/user/.config",
+      "path": "/../../../../../user/.config",
       "type": "dir"
     },
     {
@@ -111,48 +111,15 @@
       "size": 4
     },
     {
-      "path": "/home/user/.local",
+      "path": "/../../../../../user/.local",
       "type": "dir"
     },
     {
-      "path": "/home/user/.local/share",
+      "path": "/../../../../../user/.local/share",
       "type": "dir"
     },
     {
-      "path": "/home/user/.local/share/Trash",
-      "type": "dir"
-    },
-    {
-      "path": "/home/user/.local/share/Trash/files",
-      "type": "dir"
-    },
-    {
-      "path": "/home/user/.local/share/Trash/files/1778314468742_Video.mp4",
-      "type": "file",
-      "content": null,
-      "isBinary": true,
-      "size": 20
-    },
-    {
-      "path": "/home/user/.local/share/Trash/info",
-      "type": "dir"
-    },
-    {
-      "path": "/home/user/.local/share/Trash/info/1778313276938_New Folder.trashinfo",
-      "type": "file",
-      "content": "[Trash Info]\nPath=/home/user/Desktop/New Folder\nDeletionDate=2026-05-09T07:54:36.938Z",
-      "isBinary": false,
-      "size": 85
-    },
-    {
-      "path": "/home/user/.local/share/Trash/info/1778314468742_Video.mp4.trashinfo",
-      "type": "file",
-      "content": "[Trash Info]\nPath=/home/user/samples/Video.mp4\nDeletionDate=2026-05-09T08:14:28.742Z",
-      "isBinary": false,
-      "size": 84
-    },
-    {
-      "path": "/home/user/Archives",
+      "path": "/../../../../../user/Archives",
       "type": "dir"
     },
     {
@@ -177,7 +144,7 @@
       "size": 9
     },
     {
-      "path": "/home/user/Desktop",
+      "path": "/../../../../../user/Desktop",
       "type": "dir"
     },
     {
@@ -195,7 +162,7 @@
       "size": 196
     },
     {
-      "path": "/home/user/Documents",
+      "path": "/../../../../../user/Documents",
       "type": "dir"
     },
     {
@@ -220,7 +187,7 @@
       "size": 16887
     },
     {
-      "path": "/home/user/Music",
+      "path": "/../../../../../user/Music",
       "type": "dir"
     },
     {
@@ -245,15 +212,15 @@
       "size": 13
     },
     {
-      "path": "/home/user/Plugins",
+      "path": "/../../../../../user/Plugins",
       "type": "dir"
     },
     {
-      "path": "/home/user/Plugins/applets",
+      "path": "/../../../../../user/Plugins/applets",
       "type": "dir"
     },
     {
-      "path": "/home/user/Plugins/applets/menu@playground",
+      "path": "/../../../../../user/Plugins/applets/menu@playground",
       "type": "dir"
     },
     {
@@ -278,7 +245,7 @@
       "size": 151
     },
     {
-      "path": "/home/user/Plugins/applets/nepali-date@bishalacharya",
+      "path": "/../../../../../user/Plugins/applets/nepali-date@bishalacharya",
       "type": "dir"
     },
     {
@@ -310,11 +277,11 @@
       "size": 421
     },
     {
-      "path": "/home/user/Plugins/applets/statusbar",
+      "path": "/../../../../../user/Plugins/applets/statusbar",
       "type": "dir"
     },
     {
-      "path": "/home/user/Plugins/applets/statusbar/battery@playground",
+      "path": "/../../../../../user/Plugins/applets/statusbar/battery@playground",
       "type": "dir"
     },
     {
@@ -339,7 +306,7 @@
       "size": 165
     },
     {
-      "path": "/home/user/Plugins/applets/statusbar/calendar@playground",
+      "path": "/../../../../../user/Plugins/applets/statusbar/calendar@playground",
       "type": "dir"
     },
     {
@@ -371,7 +338,7 @@
       "size": 1076
     },
     {
-      "path": "/home/user/Plugins/applets/statusbar/network@playground",
+      "path": "/../../../../../user/Plugins/applets/statusbar/network@playground",
       "type": "dir"
     },
     {
@@ -396,7 +363,7 @@
       "size": 173
     },
     {
-      "path": "/home/user/Plugins/applets/statusbar/volume@playground",
+      "path": "/../../../../../user/Plugins/applets/statusbar/volume@playground",
       "type": "dir"
     },
     {
@@ -421,11 +388,11 @@
       "size": 167
     },
     {
-      "path": "/home/user/Plugins/desklets",
+      "path": "/../../../../../user/Plugins/desklets",
       "type": "dir"
     },
     {
-      "path": "/home/user/Plugins/desklets/SevenSegmentClock@lxs242",
+      "path": "/../../../../../user/Plugins/desklets/SevenSegmentClock@lxs242",
       "type": "dir"
     },
     {
@@ -450,7 +417,7 @@
       "size": 278
     },
     {
-      "path": "/home/user/Plugins/desklets/SevenSegmentClock@lxs242/po",
+      "path": "/../../../../../user/Plugins/desklets/SevenSegmentClock@lxs242/po",
       "type": "dir"
     },
     {
@@ -559,7 +526,7 @@
       "size": 10175
     },
     {
-      "path": "/home/user/Plugins/desklets/nepali-date@khumnath",
+      "path": "/../../../../../user/Plugins/desklets/nepali-date@khumnath",
       "type": "dir"
     },
     {
@@ -598,7 +565,7 @@
       "size": 9454
     },
     {
-      "path": "/home/user/Plugins/desklets/nepali-date@khumnath/po",
+      "path": "/../../../../../user/Plugins/desklets/nepali-date@khumnath/po",
       "type": "dir"
     },
     {
@@ -637,7 +604,7 @@
       "size": 3225
     },
     {
-      "path": "/home/user/Plugins/desklets/panchang@india",
+      "path": "/../../../../../user/Plugins/desklets/panchang@india",
       "type": "dir"
     },
     {
@@ -662,7 +629,7 @@
       "size": 176
     },
     {
-      "path": "/home/user/Plugins/desklets/panchang@india/po",
+      "path": "/../../../../../user/Plugins/desklets/panchang@india/po",
       "type": "dir"
     },
     {
@@ -743,11 +710,11 @@
       "size": 476
     },
     {
-      "path": "/home/user/Plugins/desklets/system",
+      "path": "/../../../../../user/Plugins/desklets/system",
       "type": "dir"
     },
     {
-      "path": "/home/user/Plugins/desklets/system/clock@playground",
+      "path": "/../../../../../user/Plugins/desklets/system/clock@playground",
       "type": "dir"
     },
     {
@@ -772,7 +739,7 @@
       "size": 183
     },
     {
-      "path": "/home/user/Videos",
+      "path": "/../../../../../user/Videos",
       "type": "dir"
     },
     {
@@ -797,7 +764,7 @@
       "size": 9
     },
     {
-      "path": "/home/user/images",
+      "path": "/../../../../../user/images",
       "type": "dir"
     },
     {
@@ -808,7 +775,7 @@
       "size": 831423
     },
     {
-      "path": "/home/user/images/backgrounds",
+      "path": "/../../../../../user/images/backgrounds",
       "type": "dir"
     },
     {
@@ -840,7 +807,7 @@
       "size": 353211
     },
     {
-      "path": "/home/user/images/icons",
+      "path": "/../../../../../user/images/icons",
       "type": "dir"
     },
     {
@@ -865,7 +832,7 @@
       "size": 13872
     },
     {
-      "path": "/home/user/samples",
+      "path": "/../../../../../user/samples",
       "type": "dir"
     },
     {

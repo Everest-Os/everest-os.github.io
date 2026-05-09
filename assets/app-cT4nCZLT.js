@@ -1,4 +1,4 @@
-import{I as s,s as k,a as B}from"./index-BX5Da8PK.js";window.desktopClipboard=window.desktopClipboard||{type:null,path:null,name:null,items:[]};const N=L=>{window.desktopClipboard=L};function Y(L,M={}){const{windowManager:P,vfs:a,appLoader:h}=L,j=M.path||"computer://",r=document.createElement("div");r.style.cssText=`
+import{I as s,s as k,a as B}from"./index-CDx2cV7o.js";window.desktopClipboard=window.desktopClipboard||{type:null,path:null,name:null,items:[]};const N=L=>{window.desktopClipboard=L};function Y(L,M={}){const{windowManager:P,vfs:a,appLoader:h}=L,j=M.path||"computer://",r=document.createElement("div");r.style.cssText=`
     height: 100%;
     display: flex;
     background: var(--bg-surface);
