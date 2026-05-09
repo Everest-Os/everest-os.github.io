@@ -54,26 +54,38 @@ function LocalFSMiddleware() {
         if (p.startsWith('/fs')) p = p.slice(3);
         const fullPath = resolvePath(p);
         if (fs.existsSync(fullPath) && !fs.statSync(fullPath).isDirectory()) {
+          const stat = fs.statSync(fullPath);
           const ext = path.extname(fullPath).toLowerCase();
           const mimes = {
-            '.html': 'text/html',
-            '.png': 'image/png',
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.gif': 'image/gif',
-            '.svg': 'image/svg+xml',
-            '.webp': 'image/webp',
-            '.txt': 'text/plain',
-            '.json': 'application/json',
-            '.js': 'application/javascript',
-            '.css': 'text/css',
-            '.pdf': 'application/pdf',
-            '.mp3': 'audio/mpeg',
-            '.mp4': 'video/mp4',
-            '.webm': 'video/webm'
+            '.html': 'text/html', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.txt': 'text/plain',
+            '.json': 'application/json', '.js': 'application/javascript', '.css': 'text/css',
+            '.pdf': 'application/pdf', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.webm': 'video/webm'
           };
-          res.setHeader('Content-Type', mimes[ext] || 'application/octet-stream');
-          return res.end(fs.readFileSync(fullPath));
+          const contentType = mimes[ext] || 'application/octet-stream';
+
+          // Handle Range requests for media streaming
+          const range = req.headers.range;
+          if (range) {
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
+            const chunksize = (end - start) + 1;
+            const file = fs.createReadStream(fullPath, { start, end });
+            res.writeHead(206, {
+              'Content-Range': `bytes ${start}-${end}/${stat.size}`,
+              'Accept-Ranges': 'bytes',
+              'Content-Length': chunksize,
+              'Content-Type': contentType,
+            });
+            return file.pipe(res);
+          } else {
+            res.writeHead(200, {
+              'Content-Length': stat.size,
+              'Content-Type': contentType,
+            });
+            return fs.createReadStream(fullPath).pipe(res);
+          }
         }
       } catch (e) { }
       next();

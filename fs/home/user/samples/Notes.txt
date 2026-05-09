@@ -1,1 +1,12 @@
-Hello World
+Welcome to EverestOS!
+
+This is a sample text file stored in your Virtual File System (VFS).
+You can edit this file, save it, and even download it back to your real computer using the "backup" command in the Terminal.
+
+EverestOS is built with:
+- Vanilla JavaScript
+- Custom VFS Engine (IndexedDB)
+- Beautiful CSS Glassmorphism
+- Modular App Architecture
+
+Enjoy exploring!
