@@ -1,4 +1,4 @@
-import"./index-GtZ1kKMR.js";async function y(s,l={}){const{windowManager:d,vfs:o,appLoader:p}=s,i=typeof l=="string"?l:l.path;if(!i){p.launchApp("files","~/Pictures");return}const t=document.createElement("div");t.style.cssText=`
+import"./index-Cxhu8mxZ.js";async function y(s,l={}){const{windowManager:d,vfs:o,appLoader:p}=s,i=typeof l=="string"?l:l.path;if(!i){p.launchApp("files","~/Pictures");return}const t=document.createElement("div");t.style.cssText=`
     height: 100%;
     background: #000;
     display: flex;
