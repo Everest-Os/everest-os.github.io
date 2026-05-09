@@ -84,8 +84,7 @@ export function launch(ctx, options = {}) {
 
   const loadFile = (filePath) => {
     if (!filePath) return;
-    let resolved = vfs.resolvePath(filePath).replace(/^~/, '/home/user');
-    video.src = `/fs${resolved}`;
+    video.src = vfs.getFsPath(filePath);
     const fname = filePath.split('/').pop();
     titleEl.textContent = fname;
     windowManager.setTitle(win.id, `Video - ${fname}`);

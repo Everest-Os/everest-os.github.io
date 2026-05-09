@@ -625,18 +625,24 @@ export async function registerCommands(shell) {
     const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/') 
       ? import.meta.env.BASE_URL 
       : (window.location.pathname.includes('/EverestOS') ? '/EverestOS/' : '/');
-    try {
-      const res = await fetch(BASE_URL + 'api/fs/info');
-      if (res.ok) {
-        storageMode = 'Server FS (Persistent)';
-      } else {
-        throw 0;
-      }
-    } catch {
-      if (vfsInstance?.db) {
-        storageMode = 'IndexedDB (Browser — survives reload)';
-      } else if (vfsInstance?.useLocalStorage) {
-        storageMode = 'LocalStorage (Volatile)';
+
+    let storageMode = 'Unknown';
+    if (vfsInstance?.staticMode) {
+      storageMode = 'Static (GitHub Pages — IndexedDB Persistent)';
+    } else {
+      try {
+        const res = await fetch(BASE_URL + 'api/fs/info');
+        if (res.ok) {
+          storageMode = 'Server FS (Persistent)';
+        } else {
+          throw 0;
+        }
+      } catch {
+        if (vfsInstance?.db) {
+          storageMode = 'IndexedDB (Browser — Persistent)';
+        } else if (vfsInstance?.useLocalStorage) {
+          storageMode = 'LocalStorage (Volatile)';
+        }
       }
     }
     const info = `

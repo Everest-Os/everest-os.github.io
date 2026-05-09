@@ -76,8 +76,7 @@ export function launch(ctx, options = {}) {
   const titleEl = content.querySelector('#iv-title');
 
   const loadImage = (imagePath) => {
-    let resolved = vfs.resolvePath(imagePath).replace(/^~/, '/home/user');
-    img.src = `/fs${resolved}`;
+    img.src = vfs.getFsPath(imagePath);
     titleEl.textContent = imagePath.split('/').pop();
     scale = 1;
     rotation = 0;

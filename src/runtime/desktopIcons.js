@@ -272,7 +272,7 @@ export class DesktopIcons {
           iconSymbol = IconHelper.getIcon('folder-open,📁', { size: settings.iconSize });
         } else {
           if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) {
-            const fsPath = '/fs' + item.path.replace(/^~/, '/home/user');
+            const fsPath = this.vfs.getFsPath(item.path);
             iconSymbol = `<img src="${fsPath}" style="width:${settings.iconSize}px; height:${settings.iconSize}px; object-fit:cover; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,0.3);" />`;
           } else if (ext === 'desktop') {
             try {
@@ -432,12 +432,8 @@ export class DesktopIcons {
               // Save position
               try {
                 pos[item.name] = { x, y };
-                // Don't emit onChange so it doesn't re-render immediately
-                await fetch(BASE_URL + 'api/fs/write', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ path: this.vfs.resolvePath('~/.config/desktop-positions.json'), content: JSON.stringify(pos, null, 2) })
-                });
+                // Use VFS to save (handles static mode automatically)
+                await this.vfs.writeFile('~/.config/desktop-positions.json', JSON.stringify(pos, null, 2));
               } catch (e) { console.warn("Failed to save desktop icon position"); }
             }
           };

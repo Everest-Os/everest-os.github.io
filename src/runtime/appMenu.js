@@ -673,7 +673,7 @@ export class AppMenu {
           const btn = document.createElement('div');
           btn.style.height = '48px';
           btn.style.borderRadius = '6px';
-          const imgPath = `/fs/home/user/images/icons/${item.name}`;
+          const imgPath = this.vfs.getFsPath(item.path);
           btn.style.backgroundImage = `url(${imgPath})`;
           btn.style.backgroundSize = 'contain';
           btn.style.backgroundPosition = 'center';

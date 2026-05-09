@@ -232,7 +232,7 @@ export async function launch(ctx, options = {}) {
         document.dispatchEvent(new CustomEvent('launch-app', { 
           detail: { 
             id: 'web-browser', 
-            args: ['/fs/home/user/Documents/app-center-details.html'] 
+            args: ['/home/user/Documents/app-center-details.html'] 
           } 
         }));
       };

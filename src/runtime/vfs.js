@@ -326,18 +326,20 @@ export class VirtualFileSystem {
 
   async rm(path) {
     const p = this.resolvePath(path);
-    try {
-      const res = await fetch(API_BASE + 'rm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: p })
-      });
-      if (res.ok) {
-        await res.json();
-        this._emit(p.substring(0, p.lastIndexOf('/')) || '/');
-        return;
-      }
-    } catch (e) { }
+    if (!this.staticMode) {
+      try {
+        const res = await fetch(API_BASE + 'rm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: p })
+        });
+        if (res.ok) {
+          await res.json();
+          this._emit(p.substring(0, p.lastIndexOf('/')) || '/');
+          return;
+        }
+      } catch (e) { }
+    }
 
     await this._idbDelete(p);
     this._emit(p.substring(0, p.lastIndexOf('/')) || '/');
@@ -346,19 +348,21 @@ export class VirtualFileSystem {
   async rename(oldPath, newPath) {
     const op = this.resolvePath(oldPath);
     const np = this.resolvePath(newPath);
-    try {
-      const res = await fetch(API_BASE + 'rename', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldPath: op, newPath: np })
-      });
-      if (res.ok) {
-        await res.json();
-        this._emit(op.substring(0, op.lastIndexOf('/')) || '/');
-        this._emit(np.substring(0, np.lastIndexOf('/')) || '/');
-        return;
-      }
-    } catch (e) { }
+    if (!this.staticMode) {
+      try {
+        const res = await fetch(API_BASE + 'rename', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldPath: op, newPath: np })
+        });
+        if (res.ok) {
+          await res.json();
+          this._emit(op.substring(0, op.lastIndexOf('/')) || '/');
+          this._emit(np.substring(0, np.lastIndexOf('/')) || '/');
+          return;
+        }
+      } catch (e) { }
+    }
 
     // IDB Rename (Move)
     const item = await this._idbGet(op);
@@ -388,18 +392,20 @@ export class VirtualFileSystem {
   async copy(src, dest) {
     const sp = this.resolvePath(src);
     const dp = this.resolvePath(dest);
-    try {
-      const res = await fetch(API_BASE + 'copy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ src: sp, dest: dp })
-      });
-      if (res.ok) {
-        await res.json();
-        this._emit(dp.substring(0, dp.lastIndexOf('/')) || '/');
-        return;
-      }
-    } catch (e) { }
+    if (!this.staticMode) {
+      try {
+        const res = await fetch(API_BASE + 'copy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ src: sp, dest: dp })
+        });
+        if (res.ok) {
+          await res.json();
+          this._emit(dp.substring(0, dp.lastIndexOf('/')) || '/');
+          return;
+        }
+      } catch (e) { }
+    }
 
     // IDB Copy
     const item = await this._idbGet(sp);

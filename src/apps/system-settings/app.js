@@ -895,7 +895,7 @@ export async function launch(ctx, options = {}) {
             background: var(--bg-surface-hover);
             border: 1px solid var(--border);
             cursor: pointer;
-            background-image: url("/fs${item.path}");
+            background-image: url("${vfs.getFsPath(item.path)}");
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
@@ -1297,12 +1297,8 @@ export async function launch(ctx, options = {}) {
               if (item.type !== 'dir' && item.name.match(/\.(png|jpg|jpeg|webp)$/i)) {
                 // Construct accessible URL
                 let url = item.path || `${path}/${item.name}`;
-                if (url.startsWith('~')) {
-                  url = `/fs/home/user${url.slice(1)}`;
-                } else if (url.startsWith('/home/user')) {
-                  url = `/fs${url}`;
-                }
-                allWallpapers.push({ name: item.name, path: url });
+                const finalUrl = vfs.getFsPath(url);
+                allWallpapers.push({ name: item.name, path: finalUrl });
               }
             });
           } catch (e) { console.warn(`Failed to scan wallpapers in ${path}`, e); }
@@ -1648,7 +1644,7 @@ export async function launch(ctx, options = {}) {
       document.dispatchEvent(new CustomEvent('launch-app', {
         detail: {
           id: 'web-browser',
-          args: ['/fs/home/user/Documents/developer-guides.html']
+          args: ['/home/user/Documents/developer-guides.html']
         }
       }));
     };

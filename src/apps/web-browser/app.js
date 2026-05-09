@@ -7,8 +7,7 @@ export function launch(ctx, options = {}) {
   let initialUrl = options.url || options.args?.[0] || 'https://example.com';
 
   if (initialUrl.startsWith('/') || initialUrl.startsWith('~')) {
-    const fullPath = initialUrl.replace(/^~/, '/home/user');
-    initialUrl = `/fs${fullPath}`;
+    initialUrl = vfs.getFsPath(initialUrl);
   }
 
   const content = document.createElement('div');

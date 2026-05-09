@@ -44,8 +44,7 @@ export function launch(ctx, options = {}) {
   const statusPath = content.querySelector('#pv-status-path');
 
   const loadPdf = (pdfPath) => {
-    let resolved = vfs.resolvePath(pdfPath).replace(/^~/, '/home/user');
-    const url = `/fs${encodeURI(resolved)}#toolbar=0&navpanes=0&scrollbar=1`;
+    const url = vfs.getFsPath(pdfPath) + '#toolbar=0&navpanes=0&scrollbar=1';
     
     // We use a fresh clone/replace to force the browser to re-render the embed object
     const oldFrame = content.querySelector('#pv-frame');

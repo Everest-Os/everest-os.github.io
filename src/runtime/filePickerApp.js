@@ -129,8 +129,7 @@ export class FilePickerApp {
 
             let imgHtml = icon;
             if (isImage && item.path) {
-              const safePath = item.path.replace('~', '/home/user');
-              imgHtml = `<img src="/fs${safePath}" style="max-width:36px; max-height:36px; object-fit:contain;">`;
+              imgHtml = `<img src="${this.vfs.getFsPath(item.path)}" style="max-width:36px; max-height:36px; object-fit:contain;">`;
             }
 
             el.innerHTML = `

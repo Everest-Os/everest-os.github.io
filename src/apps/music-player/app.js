@@ -85,8 +85,7 @@ export function launch(ctx, options = {}) {
 
   const loadFile = (filePath) => {
     if (!filePath) return;
-    let resolved = vfs.resolvePath(filePath).replace(/^~/, '/home/user');
-    audio.src = `/fs${resolved}`;
+    audio.src = vfs.getFsPath(filePath);
     audio.load();
     const fname = filePath.split('/').pop();
     titleEl.textContent = fname;
