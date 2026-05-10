@@ -41,7 +41,8 @@ export const ZipHelper = {
       if (file.dir) {
         await vfs.mkdir(fullPath);
       } else {
-        const content = await file.async('blob');
+        const isText = filename.match(/\.(js|json|txt|md|html|css|xml)$/i);
+        const content = await file.async(isText ? 'string' : 'blob');
         // Ensure parent directory exists
         const parent = fullPath.substring(0, fullPath.lastIndexOf('/'));
         if (parent) await vfs.mkdir(parent);

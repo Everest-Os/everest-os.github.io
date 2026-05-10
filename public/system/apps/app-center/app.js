@@ -258,6 +258,10 @@ export async function launch(ctx, options = {}) {
       grid.style.gap = '16px';
 
       filtered.forEach(item => {
+        const isInstalled = isExt 
+          ? extensionLoader.getLoaded().has(item.uuid) // Or check discover() for more thorough check
+          : appLoader.getApps().some(a => a.id === item.id);
+
         const card = document.createElement('div');
         card.className = 'app-card';
         card.innerHTML = `
@@ -273,17 +277,21 @@ export async function launch(ctx, options = {}) {
               ${item.author} • ${isExt ? item.type.slice(0, -1).toUpperCase() : item.category}
             </div>
             <div style="display: flex; gap: 8px; margin-top: 10px;">
-              <button class="btn-primary btn-sm" style="flex: 1; height: 26px; padding: 0;">Install</button>
+              <button class="${isInstalled ? 'btn-secondary' : 'btn-primary'} btn-sm" style="flex: 1; height: 26px; padding: 0;">
+                ${isInstalled ? 'Installed' : 'Install'}
+              </button>
               <button class="btn-secondary btn-sm" style="height: 26px; width: 26px; padding: 0; display: flex; align-items: center; justify-content: center;">...</button>
             </div>
           </div>
         `;
 
-        const installBtn = card.querySelector('.btn-primary');
-        installBtn.onclick = (e) => {
-          e.stopPropagation();
-          showDetails(item, isExt ? 'online-extension' : 'online-app');
-        };
+        const installBtn = card.querySelector('button');
+        if (installBtn) {
+          installBtn.onclick = (e) => {
+            e.stopPropagation();
+            showDetails(item, isExt ? 'online-extension' : 'online-app');
+          };
+        }
 
         card.onclick = () => showDetails(item, isExt ? 'online-extension' : 'online-app');
         grid.appendChild(card);
@@ -334,12 +342,15 @@ export async function launch(ctx, options = {}) {
           
           <div style="display: flex; gap: 12px;">
             ${isOnline ? `
-              <button class="btn-primary" id="btn-install-online">Install</button>
+              <button class="btn-primary" id="btn-install-online" ${ (isApp ? appLoader.getApps().some(a => a.id === item.id) : extensionLoader.getLoaded().has(item.uuid)) ? 'disabled' : ''}>
+                ${ (isApp ? appLoader.getApps().some(a => a.id === item.id) : extensionLoader.getLoaded().has(item.uuid)) ? 'Installed' : 'Install' }
+              </button>
             ` : (isApp ? `
               <button class="btn-primary" id="btn-launch">Launch Application</button>
               ${item.source !== 'builtin' ? `<button class="btn-danger" id="btn-uninstall" style="background:var(--danger); border-color:var(--danger); color:white; padding: 8px 16px; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; font-weight:600;">Uninstall</button>` : ''}
             ` : `
-              <button class="btn-primary" id="btn-toggle-ext">${item.isLoaded ? 'Unload' : 'Load'}</button>
+              <button class="btn-primary" id="btn-toggle-ext" style="margin-right:8px;">${item.isLoaded ? 'Unload' : 'Load'}</button>
+              ${item.source !== 'builtin' ? `<button class="btn-danger" id="btn-uninstall" style="background:var(--danger); border-color:var(--danger); color:white; padding: 8px 16px; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; font-weight:600;">Uninstall</button>` : ''}
             `)}
           </div>
         </div>
@@ -351,11 +362,11 @@ export async function launch(ctx, options = {}) {
           <div style="color: var(--text-tertiary);">Identifier</div>
           <div style="font-family: var(--font-mono);">${isApp ? item.id : item.uuid}</div>
           <div style="color: var(--text-tertiary);">Version</div>
-          <div>${isApp ? '1.0.0' : (item.metadata.version || '1.0.0')}</div>
+          <div>${isApp ? (item.version || '1.0.0') : (item.metadata?.version || item.version || '1.0.0')}</div>
           <div style="color: var(--text-tertiary);">Category</div>
-          <div>${isApp ? (item.category || 'Utility') : item.type}</div>
+          <div>${isApp ? (item.category || 'Utility') : (item.type || item.metadata?.type)}</div>
           <div style="color: var(--text-tertiary);">Source</div>
-          <div>${isApp ? (item.source === 'builtin' ? 'System' : 'User') : 'VFS (Plugins)'}</div>
+          <div>${isApp ? (item.source === 'builtin' ? 'System' : (item.source || 'Online')) : (item.source || 'VFS (Plugins)')}</div>
         </div>
       </div>
 
@@ -380,6 +391,7 @@ export async function launch(ctx, options = {}) {
           const downloadUrl = item.downloadUrl || 
             `https://raw.githubusercontent.com/Everest-Os/repo/main/${item.type === 'applets' || item.type === 'desklets' || item.type === 'extensions' ? `plugins/${item.type}` : 'apps'}/${item.id || item.uuid}/bundle.zip`;
             
+          console.log('[App Center] Downloading from:', downloadUrl);
           const res = await fetch(downloadUrl);
           if (!res.ok) throw new Error('Failed to download package');
           
@@ -435,20 +447,25 @@ export async function launch(ctx, options = {}) {
       if (uninstallBtn) {
         uninstallBtn.onclick = () => {
           showSystemDialog({
-            title: 'Uninstall Application',
-            message: `Are you sure you want to uninstall "${item.name}"? This will delete the application and all its source files.`,
+            title: isApp ? 'Uninstall Application' : 'Uninstall Extension',
+            message: `Are you sure you want to uninstall "${item.name || item.uuid}"? This will delete all its source files.`,
             type: 'confirm',
             confirmText: 'Uninstall',
             onConfirm: async () => {
               try {
-                const appPath = appLoader.getAppPath(item.id);
-                if (appPath) {
-                  await vfs.rm(appPath);
-                  try { await vfs.rm(`~/Desktop/${item.name}.desktop`); } catch(e) {}
-                  await appLoader.init();
-                  overlay.remove();
-                  render();
+                if (isApp) {
+                  const appPath = appLoader.getAppPath(item.id);
+                  if (appPath) {
+                    await vfs.rm(appPath);
+                    try { await vfs.rm(`~/Desktop/${item.name}.desktop`); } catch(e) {}
+                    await appLoader.init();
+                  }
+                } else {
+                  await extensionLoader.unload(item.uuid);
+                  await vfs.rm(item.path);
                 }
+                overlay.remove();
+                render();
               } catch (e) {
                 showSystemDialog({
                   title: 'Error',

@@ -14,8 +14,8 @@
   {
     "path": "/system/apps/app-center/app.js",
     "type": "file",
-    "size": 21369,
-    "mtime": 1778404851045.9888
+    "size": 22682,
+    "mtime": 1778410274353.3413
   },
   {
     "path": "/system/apps/app-center/app.json",
@@ -78,8 +78,8 @@
   {
     "path": "/system/apps/extension-manager/app.js",
     "type": "file",
-    "size": 13942,
-    "mtime": 1778402903238.1616
+    "size": 13868,
+    "mtime": 1778410173829.818
   },
   {
     "path": "/system/apps/extension-manager/app.json",

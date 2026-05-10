@@ -325,10 +325,21 @@ export class VirtualFileSystem {
     if (resolved.startsWith('~')) {
       resolved = this.HOME + resolved.substring(1);
     }
-    resolved = resolved.replace(/\/+/g, '/');
-    if (resolved.length > 1 && resolved.endsWith('/')) {
-      resolved = resolved.slice(0, -1);
+    
+    // Normalize path (handle . and .. and double slashes)
+    const parts = resolved.split('/');
+    const stack = [];
+    
+    for (const part of parts) {
+      if (part === '.' || part === '') continue;
+      if (part === '..') {
+        if (stack.length > 0) stack.pop();
+        continue;
+      }
+      stack.push(part);
     }
+    
+    resolved = '/' + stack.join('/');
     return resolved;
   }
 
@@ -366,23 +377,23 @@ export class VirtualFileSystem {
   async mkdir(path) {
     const p = this.resolvePath(path);
     if (this._isSystemPath(p)) throw new Error('Read-only file system');
-    if (!this.staticMode) {
-      try {
-        const res = await fetch(API_BASE + 'mkdir', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: p })
+    
+    const parts = p.split('/').filter(Boolean);
+    let current = '';
+    
+    for (const part of parts) {
+      current += '/' + part;
+      const exists = await this.exists(current);
+      if (!exists) {
+        await this._idbPut({ 
+          path: current, 
+          type: 'dir', 
+          name: part, 
+          mtime: Date.now() 
         });
-        if (res.ok) {
-          await res.json();
-          this._emit(p.substring(0, p.lastIndexOf('/')) || '/');
-          return;
-        }
-      } catch (e) { }
+        this._emit(current.substring(0, current.lastIndexOf('/')) || '/');
+      }
     }
-
-    await this._idbPut({ path: p, type: 'dir', name: p.split('/').pop(), mtime: Date.now() });
-    this._emit(p.substring(0, p.lastIndexOf('/')) || '/');
   }
 
   async writeFile(path, content) {
