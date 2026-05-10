@@ -181,8 +181,12 @@ export async function launch(ctx, options = {}) {
         ? '<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--success); margin-right:6px;" title="Loaded"></span>'
         : '<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--text-tertiary); margin-right:6px;" title="Not loaded"></span>';
 
-      // Path-based protection: only delete if in .local/share
-      const canDelete = ext.vfsPath && (ext.vfsPath.includes('/.local/share/') || ext.vfsPath.startsWith('~/.local/share/'));
+      // Path-based protection: only delete if in .local/share or HOME/Plugins (if we want to allow that)
+      const canDelete = ext.vfsPath && (
+        ext.vfsPath.includes('/.local/share/') || 
+        ext.vfsPath.startsWith('~/.local/share/') ||
+        ext.vfsPath.startsWith('/home/user/.local/share/')
+      );
 
       const sourceTag = canDelete
         ? '<span style="font-size:10px; color:var(--mint-green); background:var(--mint-green-dim); padding:1px 6px; border-radius:4px; margin-left:auto;">User</span>'

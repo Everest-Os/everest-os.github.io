@@ -14,8 +14,8 @@
   {
     "path": "/system/apps/app-center/app.js",
     "type": "file",
-    "size": 24389,
-    "mtime": 1778410919388.5356
+    "size": 22808,
+    "mtime": 1778412100331.1035
   },
   {
     "path": "/system/apps/app-center/app.json",
@@ -78,8 +78,8 @@
   {
     "path": "/system/apps/extension-manager/app.js",
     "type": "file",
-    "size": 13868,
-    "mtime": 1778410173829.818
+    "size": 13998,
+    "mtime": 1778411403933.2258
   },
   {
     "path": "/system/apps/extension-manager/app.json",
@@ -222,8 +222,8 @@
   {
     "path": "/system/apps/system-settings/app.js",
     "type": "file",
-    "size": 78955,
-    "mtime": 1778403724441.2444
+    "size": 80228,
+    "mtime": 1778411426091.7175
   },
   {
     "path": "/system/apps/system-settings/app.json",

@@ -16,8 +16,8 @@ EverestOS brings the power and familiarity of a traditional Linux desktop to the
 - **Virtual File System (VFS)** — A dual-mode storage layer: IndexedDB for standalone deployments, and a native Node.js backend for development with real file persistence.
 - **Cinnamon-Compatible Extensions** — Write **Applets** (panel widgets) and **Desklets** (desktop widgets) using a custom-ported CommonJS loader and mock `St` (Shell Toolkit) / `gi` libraries.
 - **18 Built-in Applications** — File Manager, Terminal, Web Browser, Text Editor, Calculator, System Settings, App Center, Extension Manager, and more.
-- **Adaptive Theming** — Full light/dark mode support with the high-fidelity **Bloom** icon theme (600+ SVG icons), CSS variable-driven color systems, and multiple bundled themes.
-- **Developer Tooling** — Built-in Developer Center for creating apps, Looking Glass debug console (Alt+F2), and live code editor.
+- **Adaptive Theming** — Full light/dark mode support with the high-fidelity **Bloom** icon theme **Copied from Deepin project** (600+ SVG icons), CSS variable-driven color systems, and multiple bundled themes.
+- **Developer Tooling** — Built-in Developer Center for creating apps, Looking Glass debug console, and live code editor.
 
 ---
 
@@ -45,8 +45,8 @@ EverestOS brings the power and familiarity of a traditional Linux desktop to the
 
 ```bash
 # Clone the repository
-git clone https://github.com/Everest-Os/EverestOS.git
-cd EverestOS
+git clone https://github.com/Everest-Os/everest-os.github.io.git
+cd everest-os.github.io
 
 # Install dependencies
 bun install      # or: npm install
@@ -64,7 +64,7 @@ The development server starts at **http://localhost:5173** with full VFS backend
 bun run build
 
 # Serve the static build (uses vfs-seed.json for offline VFS)
-bun run serve:static
+bun run serve:static or npx serve dist for 100% static mode.
 ```
 
 The production build generates a `vfs-seed.json` from `fs/` at build time and copies the filesystem into `dist/fs/` for complete offline operation.
@@ -76,99 +76,53 @@ The production build generates a `vfs-seed.json` from `fs/` at build time and co
 ```
 EverestOS/
 ├── index.html              # Shell HTML — desktop layout, panel, overlays
-├── vite.config.js          # Vite config + LocalFSMiddleware plugin
+├── vite.config.js          # Vite configuration
 ├── package.json            # Project metadata and scripts
 │
-├── src/                    # Application source code
-│   ├── main.js             # EverestSandbox — boot sequence orchestrator
-│   ├── apps/               # 18 built-in applications
-│   │   ├── app-center/     #   App marketplace (install/uninstall)
-│   │   ├── calculator/     #   Scientific calculator
-│   │   ├── desktop-settings/ # Desktop icon & wallpaper config
-│   │   ├── developer-center/ # App creation IDE
-│   │   ├── extension-manager/ # Applet/Desklet manager
-│   │   ├── files/          #   File manager (Nemo-inspired)
-│   │   ├── image-viewer/   #   Image viewer with zoom/rotate
-│   │   ├── media-viewer/   #   Generic media viewer
-│   │   ├── music-player/   #   Audio player
-│   │   ├── office/         #   Basic office suite
-│   │   ├── pdf-viewer/     #   PDF reader
-│   │   ├── system-inspector/ # System information
-│   │   ├── system-settings/ # Appearance, display, about
-│   │   ├── terminal/       #   Shell emulator with commands
-│   │   ├── text-editor/    #   Code/text editor
-│   │   ├── video-player/   #   Video playback
-│   │   ├── web-browser/    #   Embedded web browser (iframe)
-│   │   └── zip-manager/    #   Archive handler
-│   │
-│   ├── runtime/            # Core OS services
-│   │   ├── vfs.js          #   VirtualFileSystem (IndexedDB + API)
-│   │   ├── windowManager.js #  Window lifecycle (create/close/minimize)
-│   │   ├── panelManager.js #   Taskbar, system tray, window list
-│   │   ├── appMenu.js      #   Application launcher menu
-│   │   ├── themeManager.js #   Theme switching & CSS variable engine
-│   │   ├── iconHelper.js   #   Theme-aware icon resolution (Bloom)
-│   │   ├── desktopIcons.js #   Desktop shortcut management
-│   │   ├── desktopSettings.js # Wallpaper & desktop config
-│   │   ├── contextMenu.js  #   Right-click context menus
-│   │   ├── dialog.js       #   System alert/confirm dialogs
-│   │   ├── filePickerApp.js #  File/folder picker dialog
-│   │   ├── popupMenu.js    #   Popup menu component
-│   │   ├── applet.js       #   Applet base class & lifecycle
-│   │   ├── desklet.js      #   Desklet base class & lifecycle
-│   │   ├── st.js           #   Mock Shell Toolkit (St) library
-│   │   ├── imports.js      #   Mock gi/imports compatibility layer
-│   │   ├── signals.js      #   Event signal system
-│   │   ├── settings.js     #   Extension settings manager
-│   │   └── appearanceLoader.js # Appearance config loader
-│   │
-│   ├── loader/             # Module loaders
-│   │   ├── appLoader.js    #   App discovery & launch (glob-based)
-│   │   └── extensionLoader.js # CJS extension loader (applets/desklets)
-│   │
-│   ├── console/            # Debug tools
-│   │   └── lookingGlass.js #   Looking Glass console (Alt+F2)
-│   │
-│   ├── editor/             # Built-in editors
-│   │   └── codeEditor.js   #   Inline code editor overlay
-│   │
-│   └── styles/             # Global stylesheets
-│       ├── index.css       #   CSS reset & variables
-│       ├── desktop.css     #   Desktop, panel, window styles
-│       └── widgets.css     #   Buttons, inputs, cards
+├── src/                    # Core Shell Source Code
+│   ├── main.js             # Boot orchestrator & Sandbox kernel
+│   ├── loader/             # Module discovery & Sandboxing
+│   │   ├── appLoader.js    #   App discovery (System + User)
+│   │   └── extensionLoader.js # Cinnamon-compatible plugin loader
+│   ├── runtime/            # OS Services & Mock APIs
+│   │   ├── vfs.js          #   VirtualFileSystem engine
+│   │   ├── windowManager.js #  Windowing system
+│   │   ├── panelManager.js #   Taskbar & System Tray
+│   │   ├── appMenu.js      #   Application menu logic
+│   │   ├── themeManager.js #   CSS variable & theme engine
+│   │   ├── iconHelper.js   #   Multi-layer icon resolution
+│   │   ├── imports.js      #   CJS / Cinnamon API shims
+│   │   └── zipHelper.js    #   Package extraction (JSZip)
+│   ├── console/            # Looking Glass debug tool
+│   ├── editor/             # Built-in code editor
+│   └── styles/             # Global CSS & Design System
 │
-├── public/                 # Static assets (copied to dist/)
-│   ├── icons/              # Icon themes
-│   │   ├── bloom/          #   Bloom light icons (600+ SVGs)
-│   │   ├── bloom-dark/     #   Bloom dark variant
-│   │   ├── emoji/          #   Emoji fallback set
-│   │   ├── modern/         #   Modern icon set
-│   │   └── everest-logo.svg #  EverestOS brand logo
-│   ├── themes/             # Color theme definitions
-│   │   ├── mint.json       #   Linux Mint light
-│   │   ├── mint-dark.json  #   Linux Mint dark
-│   │   ├── minimal.json    #   Minimal theme
-│   │   └── win95.json      #   Retro Windows 95
-│   └── vfs-seed.json       # Generated VFS snapshot for offline use
+├── public/                 # Static Assets & System Binaries
+│   ├── system/             # Read-only System files
+│   │   ├── apps/           #   19 Built-in applications
+│   │   ├── plugins/        #   Built-in applets & desklets
+│   │   ├── lib/            #   Shared system libraries (JSZip, etc.)
+│   │   ├── themes/         #   Color theme definitions (.json)
+│   │   └── icons/          #   Themed icons (Bloom, Modern, Emoji)
+│   ├── vfs-seed.json       # Generated user profile snapshot
+│   └── system-manifest.json # Generated system directory index
 │
-├── fs/                     # Virtual filesystem root (maps to / in VFS)
+├── fs/                     # VFS Root Template (packed at build time)
 │   └── home/user/
-│       ├── .config/        # User configuration files
-│       ├── Apps/            # User-installed applications
-│       ├── Desktop/         # Desktop shortcuts
-│       ├── Documents/       # User documents
-│       ├── images/          # Image files
-│       ├── Music/           # Audio files
-│       ├── Videos/          # Video files
-│       ├── Plugins/         # Extension plugins
-│       │   ├── applets/     #   Panel applets
-│       │   ├── desklets/    #   Desktop desklets
-│       │   └── extensions/  #   System extensions
-│       └── samples/         # Sample files
+│       ├── .config/        # User settings & app state
+│       ├── .local/share/   # Standard storage for installed software
+│       │   ├── applications/ # One-click installed apps
+│       │   ├── plugins/    # One-click installed plugins
+│       │   └── icons/      # Extracted app/plugin icons
+│       ├── Apps/           # Legacy/Local development apps
+│       ├── Plugins/        # Legacy/Local development plugins
+│       └── Desktop/         # Desktop shortcuts
 │
-└── scripts/                # Server utilities
-    ├── serve.js            # Production static server
-    └── extract-vfs.js      # VFS extraction utility
+└── scripts/                # Build & Deployment Utilities
+    ├── pack-vfs.js         # Generates vfs-seed.json from fs/
+    ├── pack-system.js      # Generates system-manifest.json from public/system/
+    └── serve.js            # Production static server
+```
 ```
 
 ---
@@ -178,15 +132,15 @@ EverestOS/
 EverestOS supports three types of extensions, modeled after the Cinnamon Desktop:
 
 ### Applets (Panel Widgets)
-Panel applets live in `~/Plugins/applets/<uuid>/` and use the CommonJS `require()` pattern with mock `St` and `gi` libraries.
+Panel applets live in `~/.local/share/plugins/applets/<uuid>/` (installed) or `~/Plugins/applets/<uuid>/` (dev) or `public/system/plugins/applets/<uuid>/` (built-in). They use the CommonJS `require()` pattern with mock `St` and `gi` libraries.
 
 ### Desklets (Desktop Widgets)
-Desktop desklets live in `~/Plugins/desklets/<uuid>/` and can render floating, draggable widgets on the desktop surface.
+Desktop desklets live in `~/.local/share/plugins/desklets/<uuid>/` (installed) or `~/Plugins/desklets/<uuid>/` (dev) or `public/system/plugins/desklets/<uuid>/` (built-in) and can render floating, draggable widgets on the desktop surface.
 
 ### User Applications
-Custom apps live in `~/Apps/<app-name>/` with an `app.json` manifest and `app.js` entry point. They receive a context object with access to all system APIs.
+Custom apps live in `~/.local/share/applications/<app-name>/` with an `app.json` manifest and `app.js` entry point.
 
-See the **[Developer Guide](DEVELOPER_GUIDE.md)** for complete documentation on building extensions and applications.
+See the **[Developer Guide](DEVELOPER_GUIDE.md)** for complete documentation and contribution instructions.
 
 ---
 
@@ -194,7 +148,6 @@ See the **[Developer Guide](DEVELOPER_GUIDE.md)** for complete documentation on 
 
 | Shortcut | Action |
 |---|---|
-| `Alt + F2` | Toggle Looking Glass console |
 | `Ctrl + A` | Select all (desktop/file manager) |
 | `Ctrl + C` | Copy selected items |
 | `Ctrl + X` | Cut selected items |

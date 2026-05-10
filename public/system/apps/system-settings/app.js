@@ -1648,6 +1648,8 @@ export async function launch(ctx, options = {}) {
         const fallbackIconKey = ext.metadata?.icon ? ext.metadata.icon + ',🧩' : 'plugin,🧩';
         const iconHtml = ext.iconPath ? IconHelper.getIcon(ext.iconPath, { size: 24, symbolic: false }) : IconHelper.getIcon(fallbackIconKey, { size: 24 });
 
+        const canDelete = ext.path && (ext.path.includes('/.local/share/') || ext.path.startsWith('~/.local/share/') || ext.path.startsWith('/home/user/.local/share/'));
+
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; gap:12px; align-items:center;">
@@ -1660,9 +1662,12 @@ export async function launch(ctx, options = {}) {
                 <div style="font-size:11px; color:var(--text-secondary);">${ext.uuid}</div>
               </div>
             </div>
-            <button class="${ext.isLoaded ? 'btn-danger' : 'btn-primary'} btn-sm" id="btn-toggle-${ext.uuid.replace(/@/g, '_')}">
-              ${ext.isLoaded ? 'Unload' : 'Load'}
-            </button>
+            <div style="display:flex; gap:8px;">
+              <button class="${ext.isLoaded ? 'btn-danger' : 'btn-primary'} btn-sm" id="btn-toggle-${ext.uuid.replace(/@/g, '_')}">
+                ${ext.isLoaded ? 'Unload' : 'Load'}
+              </button>
+              ${canDelete ? `<button class="btn-secondary btn-sm btn-uninstall" style="background:rgba(255,0,0,0.1); color:var(--danger); border:none; width:28px; height:28px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:6px;">${IconHelper.getIcon('trash', { size: 14 })}</button>` : ''}
+            </div>
           </div>
         `;
 
@@ -1684,6 +1689,26 @@ export async function launch(ctx, options = {}) {
             btn.disabled = false;
           }
         };
+
+        const uninstallBtn = card.querySelector('.btn-uninstall');
+        if (uninstallBtn) {
+          uninstallBtn.onclick = () => {
+            window.osAPI.showSystemDialog({
+              title: 'Uninstall Extension',
+              message: `Are you sure you want to uninstall "${ext.metadata.name || ext.uuid}"?`,
+              type: 'confirm',
+              onConfirm: async () => {
+                try {
+                  await loader.unload(ext.uuid);
+                  await vfs.rm(ext.path);
+                  renderList();
+                } catch (e) {
+                  alert('Failed to uninstall: ' + e.message);
+                }
+              }
+            });
+          };
+        }
 
         list.appendChild(card);
       });

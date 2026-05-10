@@ -29,8 +29,8 @@ EverestOS follows a layered architecture:
 
 ```
 ┌──────────────────────────────────────────────┐
-│                  Applications                │  src/apps/*
-│   (Files, Terminal, Settings, Browser, ...)   │
+│                  Applications                │  public/system/apps/*
+│                       ▲                      │
 ├──────────────────────────────────────────────┤
 │               Extension Layer                │  src/loader/*
 │   (AppLoader, ExtensionLoader, CJS Runtime)  │
@@ -109,7 +109,7 @@ Applications are the primary way to extend EverestOS. Each app is a self-contain
 ### App Structure
 
 ```
-~/Apps/my-app/          # or src/apps/my-app/ for built-ins
+~/Apps/my-app/          # or public/system/apps/my-app/ for built-ins
 ├── app.json            # Manifest (required)
 └── app.js              # Entry point (required)
 ```
@@ -132,7 +132,7 @@ Applications are the primary way to extend EverestOS. Each app is a self-contain
 | `id` | ✅ | Unique identifier (kebab-case) |
 | `name` | ✅ | Display name |
 | `description` | ❌ | Short description for App Menu |
-| `icon` | ❌ | Bloom theme icon key or emoji fallback (e.g., `"folder"`, `"📦"`) |
+| `icon` | ❌ | theme icon key or emoji fallback (e.g., `"folder"`, `"📦"`) |
 | `category` | ❌ | Menu category: `Utilities`, `Development`, `System`, `Multimedia`, `Internet`, `Office` |
 | `version` | ❌ | Semantic version string |
 
@@ -186,9 +186,17 @@ Every app receives a context object with these properties:
 
 | Path | Source | Deletable |
 |---|---|---|
-| `src/apps/*` | Built-in (compiled) | ❌ |
-| `~/Apps/*` | System VFS apps | ❌ |
-| `~/.local/share/applications/*` | User-installed | ✅ |
+| `public/system/apps/*` | Built-in (Read-only) | ❌ |
+| `~/.local/share/applications/*` | User-installed (via App Center) | ✅ |
+| `~/Apps/*` | Local development / Legacy | ✅ |
+
+### Plugin Locations
+
+| Path | Source | Deletable |
+|---|---|---|
+| `public/system/plugins/*` | Built-in (Read-only) | ❌ |
+| `~/.local/share/plugins/*` | User-installed (via App Center) | ✅ |
+| `~/Plugins/*` | Local development / Legacy | ✅ |
 
 ---
 
@@ -199,7 +207,9 @@ Applets are panel widgets that use the Cinnamon-compatible CommonJS API.
 ### Applet Structure
 
 ```
-~/Plugins/applets/my-applet@author/
+~/.local/share/plugins/applets/my-applet@author/  # User-installed
+# or ~/Plugins/applets/my-applet@author/          # Local dev
+# or ~/public/system/plugins/applets/my-applet@author/ for built-ins
 ├── metadata.json       # Extension metadata (required)
 ├── applet.js           # Entry point (required)
 └── settings-schema.json # Optional settings definition
@@ -275,6 +285,8 @@ The CJS loader (`src/runtime/imports.js`) provides:
 - `ui/settings` — Extension settings API
 - `ui/tooltips` — Tooltip support
 - `ui/signalManager` — Signal connection management
+- `ui/dialog` — System alert/confirm dialogs
+- `ui/modalDialog` — Modal window construction
 - `misc/util` — Utility functions
 
 ---
@@ -286,7 +298,9 @@ Desklets are desktop widgets that float on the desktop surface.
 ### Desklet Structure
 
 ```
-~/Plugins/desklets/my-desklet@author/
+~/.local/share/plugins/desklets/my-desklet@author/ # User-installed
+# or ~/Plugins/desklets/my-desklet@author/         # Local dev
+# or ~/public/system/plugins/desklets/my-desklet@author/ for built-ins
 ├── metadata.json
 ├── desklet.js
 └── settings-schema.json  # Optional
@@ -453,7 +467,7 @@ All components use CSS variables for theming. Key variables include:
 
 ## Icon Helper API
 
-The `IconHelper` (`src/runtime/iconHelper.js`) resolves icons from the current theme:
+The `IconHelper` (`src/runtime/iconHelper.js`) resolves icons from the current theme and local storage:
 
 ```javascript
 import { IconHelper } from './runtime/iconHelper.js';
@@ -463,13 +477,17 @@ const iconHtml = IconHelper.getIcon('folder,📁', { size: 24 });
 
 // Get icon by direct path (fixed, theme-independent)
 const logoHtml = IconHelper.getIcon('/icons/everest-logo.svg', { size: 64 });
+
+// Get icon from user storage (~/.local/share/icons/)
+const userIconHtml = IconHelper.getIcon('my-custom-icon', { size: 32 });
 ```
 
 ### Icon Key Format
 
-Use comma-separated keys for fallback: `'theme-key,emoji-fallback'`
-
-Examples: `'folder,📁'`, `'terminal,🖥️'`, `'settings,⚙️'`, `'trash,🗑️'`
+- **Theme Key**: Use comma-separated keys for fallback: `'theme-key,emoji-fallback'` (e.g., `'folder,📁'`)
+- **Direct Path**: Paths starting with `/` or `http` are treated as direct image references.
+- **User Icons**: If a key doesn't match a theme icon, the system looks in `~/.local/share/icons/` for `key.svg` or `key.png`.
+- **Extension Icons**: Extensions can bundle an `icon.svg` in their root directory, which the App Center automatically registers during installation.
 
 ---
 
@@ -538,6 +556,7 @@ The `vite.config.js` includes the `LocalFSMiddleware` plugin which:
 
 1. **Dev Mode** — Provides full REST API for VFS operations against the `fs/` directory
 2. **Build Time** — Generates `vfs-seed.json` (a snapshot of `fs/` for offline use)
+and creates system dir public/system folder manifest for combine with vfs read only file system.
 3. **Post-Build** — Copies `fs/` to `dist/fs/` for static file references
 4. **Preview Mode** — Same FS API as dev mode for testing builds
 
@@ -556,11 +575,26 @@ The `vite.config.js` includes the `LocalFSMiddleware` plugin which:
 
 ## Contributing
 
-1. Fork the repository
+We welcome contributions of all types! Whether you're fixing bugs, adding features, or creating new apps and plugins.
+
+### Contributing Apps & Plugins
+
+The easiest way to share your creations is by submitting them to the **EverestOS Central Repository**.
+
+1.  **Develop**: Create your app or plugin locally using the Developer Center or your favorite editor.
+2.  **Package**: Bundle your files into a directory named after your app (for apps) or its UUID (for plugins).
+3.  **Repository PR**: Submit a Pull Request to the [Everest-Os/repo](https://github.com/Everest-Os/repo) repository.
+    - Place apps in `apps/`
+    - Place plugins in `plugins/<type>/` (e.g., `plugins/applets/`)
+4.  **Registry**: Add your metadata (name, description, author, etc.) to the `registry.json` file in the repo.
+
+### Code Contribution
+
+1. Fork the main repository: [Everest-Os/everest-os.github.io](https://github.com/Everest-Os/everest-os.github.io)
 2. Create a feature branch: `git checkout -b feature/my-feature`
 3. Make your changes following the existing code style
-4. Test with `bun run dev`
-5. Build to verify: `bun run build`
+4. Test with `npm run dev`
+5. Build to verify: `npm run build`
 6. Submit a pull request
 
 ### Code Style

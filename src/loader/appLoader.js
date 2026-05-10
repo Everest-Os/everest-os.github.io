@@ -14,7 +14,7 @@ export class AppLoader {
   }
 
   /**
-   * Discover built-in apps from src/apps/  (called once at startup)
+   * Discover built-in apps from /system/apps/  (called once at startup)
    */
   async init() {
     this._registry.clear();
