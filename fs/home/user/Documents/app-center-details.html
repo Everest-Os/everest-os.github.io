@@ -293,19 +293,19 @@
         <div class="ext-box">
             <h4>📌 Applets — Panel Widgets</h4>
             <p>Small tools that live in the taskbar panel. Examples: clocks, date displays, system monitors, and the main application menu.</p>
-            <p><strong>Location:</strong> <code>~/Plugins/applets/&lt;uuid&gt;/</code></p>
+            <p><strong>Location:</strong> <code>~/.local/share/plugins/applets/&lt;uuid&gt;/</code></p>
         </div>
 
         <div class="ext-box">
             <h4>🖥️ Desklets — Desktop Widgets</h4>
             <p>Floating, draggable widgets on the desktop surface. Examples: seven-segment clocks, calendar displays, system info panels.</p>
-            <p><strong>Location:</strong> <code>~/Plugins/desklets/&lt;uuid&gt;/</code></p>
+            <p><strong>Location:</strong> <code>~/.local/share/plugins/desklets/&lt;uuid&gt;/</code></p>
         </div>
 
         <div class="ext-box">
             <h4>📱 User Applications</h4>
             <p>Custom applications installed by the user or through the App Center. These appear in the App Menu and can be uninstalled.</p>
-            <p><strong>Location:</strong> <code>~/Apps/&lt;app-name&gt;/</code></p>
+            <p><strong>Location:</strong> <code>~/.local/share/applications/&lt;app-name&gt;/</code></p>
         </div>
 
         <h3>Included Extensions</h3>
@@ -352,9 +352,9 @@
             <p>Use the <strong>Developer Center</strong> to create, edit, and export custom applications. Each app needs just two files: <code>app.json</code> (manifest) and <code>app.js</code> (entry point). See the <a href="developer-guides.html" style="color:#1a56db;">Developer Guide</a> for full API documentation.</p>
         </div>
 
-        <div class="warn-box">
-            <h4>🚧 Coming Soon</h4>
-            <p>The <strong>App Center</strong> install functionality for remote/community apps currently operates as a UI preview. A centralized repository server for one-click community app installations is planned for a future release.</p>
+        <div class="info-box">
+            <h4>🚀 Full Installation Support</h4>
+            <p>The <strong>App Center</strong> now fully supports one-click installation for remote community apps and plugins! When you click install, the package is downloaded, extracted to <code>~/.local/share</code>, and its icon is automatically registered in <code>~/.local/share/icons</code>.</p>
         </div>
 
         <hr>
