@@ -1,0 +1,8 @@
+{
+  "id": "developer-center",
+  "name": "Developer Center",
+  "description": "Create and test your own Apps, Desklets, and Applets.",
+  "icon": "terminal,💻",
+  "category": "Development",
+  "version": "1.0.0"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "extension-manager",
+  "name": "Plugin Settings",
+  "icon": "plugin,\ud83e\udde9",
+  "category": "System",
+  "description": "Manage applets, desklets, and extensions"
+}

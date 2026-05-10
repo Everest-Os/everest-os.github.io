@@ -1,0 +1,8 @@
+{
+  "id": "text-editor",
+  "name": "Text Editor",
+  "icon": "text,\ud83d\udcdd",
+  "category": "Accessories",
+  "description": "Simple text editor with Markdown support.",
+  "executable": "app.js"
+}

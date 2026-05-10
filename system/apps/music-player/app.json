@@ -1,0 +1,9 @@
+{
+  "id": "music-player",
+  "name": "Music Player",
+  "icon": "music,\ud83c\udfb5",
+  "description": "Listen to your music files.",
+  "categories": [
+    "Multimedia"
+  ]
+}

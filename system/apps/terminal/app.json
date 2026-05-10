@@ -1,0 +1,7 @@
+{
+  "id": "terminal",
+  "name": "Terminal",
+  "icon": "terminal,\ud83d\udcbb",
+  "category": "System",
+  "description": "Command-line interface"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "pdf-viewer",
+  "name": "PDF Reader",
+  "icon": "pdf,\ud83d\udcd5",
+  "description": "Read your PDF files.",
+  "categories": [
+    "Office"
+  ]
+}

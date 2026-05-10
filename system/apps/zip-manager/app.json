@@ -1,0 +1,8 @@
+{
+  "id": "zip-manager",
+  "name": "Archive Manager",
+  "description": "View and extract ZIP archives",
+  "icon": "archive,\ud83d\udce6",
+  "category": "Accessories",
+  "version": "1.0.0"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "hex-editor",
+  "name": "Hex Editor",
+  "description": "Safe viewer for binary and raw file formats.",
+  "icon": "application-octet-stream",
+  "category": "Development",
+  "version": "1.0.0"
+}

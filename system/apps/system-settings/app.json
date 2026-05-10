@@ -1,0 +1,7 @@
+{
+  "id": "system-settings",
+  "name": "System Settings",
+  "icon": "settings,\u2699\ufe0f",
+  "category": "System",
+  "description": "Centralized system configuration"
+}

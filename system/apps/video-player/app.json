@@ -1,0 +1,9 @@
+{
+  "id": "video-player",
+  "name": "Video Player",
+  "icon": "video,\ud83c\udfac",
+  "description": "Watch your video files.",
+  "categories": [
+    "Multimedia"
+  ]
+}
