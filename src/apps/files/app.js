@@ -34,6 +34,7 @@ export function launch(ctx, options = {}) {
       <div class="sidebar-item" data-path="/home/user/Music">${IconHelper.getIcon('music,🎵', { size: 16, className: 'sidebar-icon' })} Music</div>
       <div class="sidebar-item" data-path="/home/user/Videos">${IconHelper.getIcon('video,🎬', { size: 16, className: 'sidebar-icon' })} Videos</div>
       <div class="sidebar-item" data-path="/home/user/Pictures">${IconHelper.getIcon('image,🖼️', { size: 16, className: 'sidebar-icon' })} Pictures</div>
+      <div class="sidebar-item" data-path="/system">${IconHelper.getIcon('system,⚙️', { size: 16, className: 'sidebar-icon' })} System</div>
       <div style="flex: 1;"></div>
       <div class="sidebar-item" data-path="/home/user/.local/share/Trash/files">${IconHelper.getIcon('trash,🗑️', { size: 16, className: 'sidebar-icon' })} Trash</div>
     </div>
@@ -171,6 +172,27 @@ export function launch(ctx, options = {}) {
           </div>
         </div>
 
+        ${!isServer ? `
+        <div class="settings-section-title" style="margin-top: 30px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 12px;">Storage Quota</div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:13px; font-weight:600;">Browser Quota</span>
+            <span id="fm-quota-val" style="font-family:var(--font-mono); font-size:12px; color:var(--text-secondary);">Checking...</span>
+          </div>
+          <div style="height:8px; background:var(--bg-elevated); border-radius:4px; overflow:hidden;">
+            <div id="fm-quota-bar" style="height:100%; width:0%; background:linear-gradient(90deg, #22c55e, #3b82f6); transition:width 0.8s;"></div>
+          </div>
+          <div id="fm-quota-detail" style="font-size:11px; color:var(--text-tertiary);"></div>
+          <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.1); padding:10px 14px; border-radius:8px;">
+            <div>
+              <div style="font-size:12px; font-weight:600;">Persistent Storage</div>
+              <div style="font-size:10px; color:var(--text-tertiary); margin-top:2px;">Prevents browser from auto-clearing your files</div>
+            </div>
+            <button id="fm-btn-persist" class="btn-secondary btn-sm" style="padding:6px 14px; font-size:11px;">Enable</button>
+          </div>
+        </div>
+        ` : ''}
+
         <div class="settings-section-title" style="margin-top: 30px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 12px;">Drives & Partitions</div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;" id="fm-drives-list">
           <div class="fm-drive-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 14px;" data-path="/">
@@ -193,11 +215,21 @@ export function launch(ctx, options = {}) {
           <input type="file" id="fm-import-file" style="display: none;" accept=".json">
         </div>
 
-        <div class="settings-section-title" style="margin-top: 30px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #ff4444; margin-bottom: 12px;">Danger Zone</div>
-        <div style="background: var(--bg-card); border: 1px solid rgba(255, 68, 68, 0.2); border-radius: 12px; padding: 20px;">
-          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">Resetting the system will clear all virtual files, settings, and apps. This action cannot be undone.</p>
-          <button id="fm-btn-reset" class="btn-danger" style="width: 100%; padding: 10px; font-weight: 600;">Reset System & Reload</button>
+        ${!isServer ? `
+        <div class="settings-section-title" style="margin-top: 30px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #ff4444; margin-bottom: 12px;">Reset & Recovery</div>
+        <div style="background: var(--bg-card); border: 1px solid rgba(255, 68, 68, 0.2); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+          <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">
+            Accidentally deleted an important system file? Reset will restore the original system image. All your custom files, settings, and modifications will be removed.
+          </p>
+          <div style="background: rgba(255, 170, 0, 0.1); border: 1px solid rgba(255, 170, 0, 0.3); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 18px;">⚠️</span>
+            <span style="font-size: 11px; color: var(--text-secondary);">We recommend exporting a backup before resetting. Use the <strong>Export Backup</strong> button above to save your files first.</span>
+          </div>
+          <button id="fm-btn-reset" class="btn-danger" style="width: 100%; padding: 10px; font-weight: 600;">
+            ${IconHelper.getIcon('restart,🔄', { size: 14 })} Reset System & Fetch Fresh
+          </button>
         </div>
+        ` : ''}
       </div>
 
       <style>
@@ -221,6 +253,13 @@ export function launch(ctx, options = {}) {
       backupStatusEl.textContent = msg;
     };
     
+    const formatBytes = (bytes) => {
+      if (bytes >= 1024 * 1024 * 1024) return (bytes / 1024 / 1024 / 1024).toFixed(1) + ' GB';
+      if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(0) + ' MB';
+      if (bytes >= 1024) return (bytes / 1024).toFixed(0) + ' KB';
+      return bytes + ' B';
+    };
+
     // Storage calculation
     let total = 0;
     let fileCount = 0;
@@ -235,11 +274,56 @@ export function launch(ctx, options = {}) {
     };
     await scan('/');
     
-    const max = isServer ? SYSTEM_CONFIG.storageLimitServer : SYSTEM_CONFIG.storageLimitLocal;
+    let max = isServer ? SYSTEM_CONFIG.storageLimitServer : SYSTEM_CONFIG.storageLimitLocal;
+    if (!isServer && navigator.storage?.estimate) {
+      try { const est = await navigator.storage.estimate(); if (est.quota) max = est.quota; } catch {}
+    }
     const percent = Math.min(100, (total / max) * 100);
-    storageVal.textContent = `${(total / 1024 / 1024).toFixed(2)} MB of ${(max / 1024 / 1024).toFixed(0)} MB used`;
+    storageVal.textContent = `${(total / 1024 / 1024).toFixed(2)} MB of ${formatBytes(max)} used`;
     storageBar.style.width = percent + '%';
     fileCountEl.textContent = `${fileCount} files indexed`;
+
+    // ── Storage Quota & Persistence (IndexedDB mode only) ──────────
+    const fmQuotaVal = fmList.querySelector('#fm-quota-val');
+    const fmQuotaBar = fmList.querySelector('#fm-quota-bar');
+    const fmQuotaDetail = fmList.querySelector('#fm-quota-detail');
+    const fmPersistBtn = fmList.querySelector('#fm-btn-persist');
+
+    if (fmQuotaVal && navigator.storage?.estimate) {
+      try {
+        const est = await navigator.storage.estimate();
+        const used = est.usage || 0;
+        const quota = est.quota || 0;
+        const pct = quota > 0 ? Math.min(100, (used / quota) * 100) : 0;
+        fmQuotaVal.textContent = `${formatBytes(used)} / ${formatBytes(quota)}`;
+        fmQuotaBar.style.width = pct.toFixed(1) + '%';
+        fmQuotaDetail.textContent = `${formatBytes(quota - used)} available · Browser allocates quota based on your free disk space`;
+      } catch { fmQuotaVal.textContent = 'Not available'; }
+    }
+
+    if (fmPersistBtn) {
+      try {
+        const persisted = await navigator.storage.persisted();
+        if (persisted) { fmPersistBtn.textContent = '✅ Enabled'; fmPersistBtn.disabled = true; fmPersistBtn.style.opacity = '0.7'; }
+      } catch {}
+
+      fmPersistBtn.onclick = async () => {
+        try {
+          const granted = await navigator.storage.persist();
+          if (granted) { 
+            fmPersistBtn.textContent = '✅ Enabled'; fmPersistBtn.disabled = true; fmPersistBtn.style.opacity = '0.7'; 
+          } else { 
+            fmPersistBtn.textContent = '❌ Denied'; 
+            setTimeout(() => { fmPersistBtn.textContent = 'Try Again'; }, 2000); 
+            showSystemDialog({
+              title: 'Storage Persistence Denied',
+              message: 'Your browser denied the request to make storage persistent.\\n\\nBrowsers usually require you to bookmark the page, install it as a Web App (PWA), or interact with it more before granting this permission.\\n\\nTry bookmarking the page and trying again!',
+              type: 'alert'
+            });
+          }
+        } catch { fmPersistBtn.textContent = '❌ Not supported'; }
+      };
+    }
 
     // Cross-mode Backup
     fmList.querySelector('#fm-btn-export').onclick = async () => {
@@ -315,17 +399,28 @@ export function launch(ctx, options = {}) {
       reader.readAsText(file);
     };
 
-    fmList.querySelector('#fm-btn-reset').onclick = () => {
-      showSystemDialog({
-        title: 'Reset System',
-        message: 'Are you absolutely sure you want to reset the system? ALL DATA WILL BE LOST.',
-        type: 'confirm',
-        onConfirm: async () => {
-          const req = indexedDB.deleteDatabase('PlaygroundVFS');
-          req.onsuccess = () => location.reload();
-        }
-      });
-    };
+    // Reset & Fetch Fresh (only present in static/IndexedDB mode)
+    const resetBtn = fmList.querySelector('#fm-btn-reset');
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        showSystemDialog({
+          title: 'Reset System & Fetch Fresh',
+          message: 'This will erase ALL local data (files, settings, plugins) and re-download the original system image.\n\n⚠️ Have you exported a backup? This cannot be undone.',
+          type: 'confirm',
+          onConfirm: async () => {
+            resetBtn.disabled = true;
+            resetBtn.textContent = '⏳ Clearing & re-fetching...';
+            try {
+              await vfs.wipe();
+              location.reload();
+            } catch (e) {
+              resetBtn.disabled = false;
+              resetBtn.textContent = '❌ Failed — try again';
+            }
+          }
+        });
+      };
+    }
 
     fmList.querySelector('.fm-drive-card').onclick = () => {
       currentPath = '/';
@@ -415,7 +510,7 @@ export function launch(ctx, options = {}) {
             else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(ext)) appLoader.launchApp('image-viewer', { path: item.path });
             else if (ext === 'pdf') appLoader.launchApp('pdf-viewer', { path: item.path });
             else if (ext === 'html') appLoader.launchApp('web-browser', { url: item.path });
-            else if (['zip', 'rar', 'tar', 'gz', '7z'].includes(ext)) appLoader.launchApp('zip-manager', { path: item.path });
+            else if (ext === 'zip') appLoader.launchApp('zip-manager', { path: item.path });
             else if (['doc', 'docx', 'odt', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) appLoader.launchApp('office', { path: item.path });
             else appLoader.launchApp('text-editor', { path: item.path });
           }

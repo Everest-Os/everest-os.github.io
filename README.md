@@ -249,6 +249,9 @@ The following community plugins are included and attributed to their original au
 ### AI Assistance
 - **Google Gemini** — Extensive assistance in code generation, architectural planning, debugging, and documentation throughout the development of this project.
 
+### Open Source Libraries
+- **[JSZip](https://stuk.github.io/jszip/)** — Used by the Zip Manager and Office App to process and extract `.zip` and `.odt` archives.
+
 ### Iconography
 - System icons are based on the **Bloom** icon theme from the **deepin** desktop project and various open-source SVG sets.
 

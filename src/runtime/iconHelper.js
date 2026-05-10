@@ -96,8 +96,10 @@ export class IconHelper {
         val = BASE_URL + `fs/home/user${val.slice(1)}`;
       } else if (val.startsWith('/home/user')) {
         val = BASE_URL + `fs${val}`;
+      } else if (val.startsWith('/system')) {
+        val = BASE_URL + val.slice(1);
       }
-      let src = val.startsWith('/') || val.startsWith('./') || val.startsWith('http') ? val : BASE_URL + `icons/${val}`;
+      let src = val.startsWith('/') || val.startsWith('./') || val.startsWith('http') ? val : BASE_URL + `system/icons/${val}`;
 
       // Smart Resolution: Determine if we want symbolic or color
       // If symbolic is not explicitly true, we prefer color.

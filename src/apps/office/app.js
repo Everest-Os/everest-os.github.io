@@ -6,6 +6,8 @@
 export async function launch(ctx, options = {}) {
   const { windowManager, vfs } = ctx;
   const { IconHelper } = await import('../../runtime/iconHelper.js');
+  const { ZipHelper } = await import('../../runtime/zipHelper.js');
+
 
   const ext = options.path ? options.path.split('.').pop().toLowerCase() : 'odt';
   let mode = 'doc';
@@ -156,7 +158,94 @@ export async function launch(ctx, options = {}) {
 
   if (options.path) {
     try {
-      const savedContent = await vfs.readFile(options.path);
+      let savedContent = await vfs.readFile(options.path);
+      
+      // Real ODT Support
+      if (options.path.endsWith('.odt') && (savedContent instanceof Blob || (typeof savedContent === 'string' && savedContent.startsWith('data:')))) {
+        console.log("Office: Detected binary ODT, unzipping...");
+        try {
+          const JSZip = await ZipHelper.getJSZip();
+          const blob = savedContent instanceof Blob ? savedContent : await (await fetch(savedContent)).blob();
+          const zip = await JSZip.loadAsync(blob);
+          const contentXml = await zip.file("content.xml").async("text");
+          
+          // Extract automatic styles for formatting (bold, italic, alignment, etc.)
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(contentXml, "text/xml");
+          
+          const styles = {};
+          const autoStyles = xmlDoc.getElementsByTagName("office:automatic-styles")[0];
+          if (autoStyles) {
+            for (let style of autoStyles.children) {
+              if (style.tagName === "style:style") {
+                const name = style.getAttribute("style:name");
+                let css = "";
+                const textProps = style.getElementsByTagName("style:text-properties")[0];
+                if (textProps) {
+                  if (textProps.getAttribute("fo:font-weight") === "bold") css += "font-weight: bold;";
+                  if (textProps.getAttribute("fo:font-style") === "italic") css += "font-style: italic;";
+                  if (textProps.getAttribute("style:text-underline-style") === "solid") css += "text-decoration: underline;";
+                  if (textProps.getAttribute("fo:color")) css += `color: ${textProps.getAttribute("fo:color")};`;
+                  if (textProps.getAttribute("fo:font-size")) css += `font-size: ${textProps.getAttribute("fo:font-size")};`;
+                  if (textProps.getAttribute("style:font-name")) css += `font-family: '${textProps.getAttribute("style:font-name")}';`;
+                }
+                const paraProps = style.getElementsByTagName("style:paragraph-properties")[0];
+                if (paraProps) {
+                  if (paraProps.getAttribute("fo:text-align")) css += `text-align: ${paraProps.getAttribute("fo:text-align")};`;
+                }
+                if (css) styles[name] = css;
+              }
+            }
+          }
+
+          // Recursive function to convert ODT nodes to HTML
+          function nodeToHtml(node) {
+            if (node.nodeType === 3) return node.textContent.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            if (node.nodeType !== 1) return "";
+            
+            let tag = "span";
+            const styleName = node.getAttribute("text:style-name");
+            const styleAttr = styleName && styles[styleName] ? ` style="${styles[styleName]}"` : "";
+
+            switch (node.tagName) {
+              case "text:p": tag = "p"; break;
+              case "text:h": 
+                const level = node.getAttribute("text:outline-level") || "1";
+                tag = `h${Math.min(Math.max(level, 1), 6)}`; 
+                break;
+              case "text:span": tag = "span"; break;
+              case "text:a": 
+                const href = node.getAttribute("xlink:href") || "#";
+                return `<a href="${href}"${styleAttr}>${Array.from(node.childNodes).map(nodeToHtml).join("")}</a>`;
+              case "text:list": tag = "ul"; break;
+              case "text:list-item": tag = "li"; break;
+              case "text:s": return "&nbsp;".repeat(parseInt(node.getAttribute("text:c") || 1));
+              case "text:tab": return "&emsp;";
+              case "text:line-break": return "<br/>";
+              // Skip these wrapper tags, just render children
+              case "office:text": 
+              case "office:body":
+              case "office:document-content":
+                return Array.from(node.childNodes).map(nodeToHtml).join("");
+              // If it's an unmapped tag, just render children
+              default: return Array.from(node.childNodes).map(nodeToHtml).join("");
+            }
+
+            const childrenHtml = Array.from(node.childNodes).map(nodeToHtml).join("");
+            // Don't render empty spans to keep HTML clean
+            if (tag === "span" && !styleAttr && !childrenHtml.trim()) return ""; 
+            
+            return `<${tag}${styleAttr}>${childrenHtml}</${tag}>`;
+          }
+
+          const officeBody = xmlDoc.getElementsByTagName("office:body")[0];
+          savedContent = officeBody ? nodeToHtml(officeBody) : "<p><i>Empty document</i></p>";
+        } catch (err) {
+          console.error("Office: Failed to parse ODT", err);
+          savedContent = `<div style="color:red; padding: 20px;">Error parsing ODT: ${err.message}</div>`;
+        }
+      }
+      
       editor.innerHTML = savedContent;
     } catch (e) {
       console.error("Office: Failed to load file", e);

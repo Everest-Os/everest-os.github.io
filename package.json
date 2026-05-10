@@ -4,7 +4,7 @@
   "description": "Full featured web operating system",
   "type": "module",
   "scripts": {
-    "vfs:pack": "node scripts/pack-vfs.js",
+    "vfs:pack": "node scripts/pack-vfs.js && node scripts/pack-system.js",
     "vfs:extract": "node scripts/extract-vfs.js",
     "dev": "vite",
     "build": "npm run vfs:pack && vite build",

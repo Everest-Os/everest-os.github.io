@@ -117,7 +117,10 @@ export function launch(ctx, options = {}) {
     let url = urlInput.value.trim();
     if (!url) return;
 
-    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/fs')) {
+    // Convert VFS paths to proper URLs
+    if (url.startsWith('~') || (url.startsWith('/') && !url.startsWith('//'))) {
+      url = vfs.getFsPath(url);
+    } else if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/')) {
       url = 'https://' + url;
     }
 

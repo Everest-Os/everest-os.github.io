@@ -18,7 +18,7 @@ export class ThemeManager {
     const themeIds = ['mint', 'mint-dark', 'minimal', 'win95'];
     for (const id of themeIds) {
       try {
-        const res = await fetch(BASE_URL + `themes/${id}.json`);
+        const res = await fetch(BASE_URL + `system/themes/${id}.json`);
         if (res.ok) {
           const theme = await res.json();
           theme.id = id;
@@ -31,7 +31,7 @@ export class ThemeManager {
     const iconThemeIds = ['emoji', 'modern', 'bloom', 'bloom-dark'];
     for (const id of iconThemeIds) {
       try {
-        const res = await fetch(BASE_URL + `icons/${id}/index.json`);
+        const res = await fetch(BASE_URL + `system/icons/${id}/index.json`);
         if (res.ok) {
           const theme = await res.json();
           theme.id = id;

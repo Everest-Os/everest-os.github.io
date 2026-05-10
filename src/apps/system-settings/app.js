@@ -618,6 +618,12 @@ export async function launch(ctx, options = {}) {
     const isServer = fsInfo.root !== 'browser-storage';
     const storageInfo = await detectStorageMode();
 
+    const formatBytes = (bytes) => {
+      if (bytes >= 1024 * 1024 * 1024) return (bytes / 1024 / 1024 / 1024).toFixed(1) + ' GB';
+      if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(0) + ' MB';
+      if (bytes >= 1024) return (bytes / 1024).toFixed(0) + ' KB';
+      return bytes + ' B';
+    };
     body.innerHTML = `
       <div class="settings-section-title">Virtual File System</div>
       <div class="settings-card">
@@ -645,6 +651,27 @@ export async function launch(ctx, options = {}) {
         </div>
       </div>
 
+      ${!isServer ? `
+      <div class="settings-section-title">Storage Quota</div>
+      <div class="settings-card" style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:13px; font-weight:600;">Browser Quota</span>
+          <span id="quota-val" style="font-family:var(--font-mono); font-size:12px; color:var(--text-secondary);">Checking...</span>
+        </div>
+        <div style="height:8px; background:var(--bg-active); border-radius:4px; overflow:hidden;">
+          <div id="quota-bar" style="height:100%; width:0%; background:linear-gradient(90deg, #22c55e, #3b82f6); transition:width 0.8s;"></div>
+        </div>
+        <div id="quota-detail" style="font-size:11px; color:var(--text-tertiary);"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.1); padding:10px 14px; border-radius:8px;">
+          <div>
+            <div style="font-size:12px; font-weight:600;">Persistent Storage</div>
+            <div style="font-size:10px; color:var(--text-tertiary); margin-top:2px;">Prevents browser from auto-clearing your files</div>
+          </div>
+          <button id="btn-persist" class="btn-secondary btn-sm" style="padding:6px 14px; font-size:11px;">Enable</button>
+        </div>
+      </div>
+      ` : ''}
+
       <div class="settings-section-title">Backup & Recovery</div>
       <div class="settings-card" style="display:flex; flex-direction:column; gap:12px;">
         <p style="font-size:12px; color:var(--text-secondary); margin:0;">
@@ -658,11 +685,19 @@ export async function launch(ctx, options = {}) {
         <input type="file" id="import-vfs-file" style="display:none;" accept=".json">
       </div>
 
-      <div class="settings-section-title" style="color:#ff4444;">Danger Zone</div>
-      <div class="settings-card" style="border:1px solid rgba(255,68,68,0.3);">
-        <p style="font-size:13px; margin-bottom:16px;">Resetting the system will clear all virtual files, settings, and installed plugins. This action cannot be undone.</p>
-        <button id="btn-reset-system" class="btn-danger" style="width:100%;">Reset System & Reload</button>
+      ${!isServer ? `
+      <div class="settings-section-title" style="color:#ff4444;">Reset & Recovery</div>
+      <div class="settings-card" style="border:1px solid rgba(255,68,68,0.3); display:flex; flex-direction:column; gap:12px;">
+        <p style="font-size:12px; color:var(--text-secondary); margin:0;">
+          Accidentally deleted an important system file? Reset will restore the original system image. All your custom files, settings, and modifications will be removed.
+        </p>
+        <div style="background:rgba(255,170,0,0.1); border:1px solid rgba(255,170,0,0.3); border-radius:8px; padding:12px; display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">⚠️</span>
+          <span style="font-size:11px; color:var(--text-secondary);">We recommend exporting a backup before resetting. Use the <strong>Export Backup</strong> button above to save your files first.</span>
+        </div>
+        <button id="btn-reset-system" class="btn-danger" style="width:100%; padding:10px;">🔄 Reset System & Fetch Fresh</button>
       </div>
+      ` : ''}
     `;
 
     const storageVal = body.querySelector('#storage-val');
@@ -689,13 +724,74 @@ export async function launch(ctx, options = {}) {
       };
       await scan('/');
 
-      const max = isServer ? SYSTEM_CONFIG.storageLimitServer : SYSTEM_CONFIG.storageLimitLocal;
+      // Use real browser quota for IndexedDB mode, hardcoded limit for server
+      let max = isServer ? SYSTEM_CONFIG.storageLimitServer : SYSTEM_CONFIG.storageLimitLocal;
+      if (!isServer && navigator.storage?.estimate) {
+        try {
+          const est = await navigator.storage.estimate();
+          if (est.quota) max = est.quota;
+        } catch { }
+      }
       const percent = Math.min(100, (total / max) * 100);
-      storageVal.textContent = `${(total / 1024 / 1024).toFixed(2)} MB of ${(max / 1024 / 1024).toFixed(0)} MB used`;
+      storageVal.textContent = `${(total / 1024 / 1024).toFixed(2)} MB of ${formatBytes(max)} used`;
       storageBar.style.width = percent + '%';
       fileCountEl.textContent = `${fileCount} files indexed`;
     };
     calculateSize();
+
+    // ── Storage Quota & Persistence (IndexedDB mode only) ──────────
+    const quotaVal = body.querySelector('#quota-val');
+    const quotaBar = body.querySelector('#quota-bar');
+    const quotaDetail = body.querySelector('#quota-detail');
+    const persistBtn = body.querySelector('#btn-persist');
+
+    if (quotaVal && navigator.storage?.estimate) {
+      (async () => {
+        try {
+          const est = await navigator.storage.estimate();
+          const used = est.usage || 0;
+          const quota = est.quota || 0;
+          const pct = quota > 0 ? Math.min(100, (used / quota) * 100) : 0;
+
+          quotaVal.textContent = `${formatBytes(used)} / ${formatBytes(quota)}`;
+          quotaBar.style.width = pct.toFixed(1) + '%';
+          quotaDetail.textContent = `${formatBytes(quota - used)} available · Browser allocates quota based on your free disk space`;
+        } catch {
+          quotaVal.textContent = 'Not available';
+        }
+      })();
+    }
+
+    if (persistBtn) {
+      // Check current persistence state
+      (async () => {
+        try {
+          const persisted = await navigator.storage.persisted();
+          if (persisted) {
+            persistBtn.textContent = '✅ Enabled';
+            persistBtn.disabled = true;
+            persistBtn.style.opacity = '0.7';
+          }
+        } catch { }
+      })();
+
+      persistBtn.onclick = async () => {
+        try {
+          const granted = await navigator.storage.persist();
+          if (granted) {
+            persistBtn.textContent = '✅ Enabled';
+            persistBtn.disabled = true;
+            persistBtn.style.opacity = '0.7';
+          } else {
+            persistBtn.textContent = '❌ Denied by browser';
+            setTimeout(() => { persistBtn.textContent = 'Try Again'; }, 2000);
+            alert('Your browser denied the request to make storage persistent.\\n\\nBrowsers usually require you to bookmark the page, install it as a Web App (PWA), or interact with it more before granting this permission.\\n\\nTry bookmarking the page and trying again!');
+          }
+        } catch {
+          persistBtn.textContent = '❌ Not supported';
+        }
+      };
+    }
 
     // ── Cross-mode Export ─────────────────────────────────────────────
     body.querySelector('#btn-export-vfs').onclick = async () => {
@@ -752,13 +848,23 @@ export async function launch(ctx, options = {}) {
       reader.readAsText(file);
     };
 
-    body.querySelector('#btn-reset-system').onclick = async () => {
-      if (confirm('Are you absolutely sure you want to reset the system? ALL DATA WILL BE LOST.')) {
-        const req = indexedDB.deleteDatabase('PlaygroundVFS');
-        req.onsuccess = () => location.reload();
-        req.onerror = () => alert('Failed to clear database.');
-      }
-    };
+    // Reset & Fetch Fresh (only present in static/IndexedDB mode)
+    const resetBtn = body.querySelector('#btn-reset-system');
+    if (resetBtn) {
+      resetBtn.onclick = async () => {
+        if (confirm('This will erase ALL local data (files, settings, plugins) and re-download the original system image.\n\n⚠️ Have you exported a backup? This cannot be undone.')) {
+          resetBtn.disabled = true;
+          resetBtn.textContent = '⏳ Clearing & re-fetching...';
+          try {
+            await vfs.wipe();
+            location.reload();
+          } catch (e) {
+            resetBtn.disabled = false;
+            resetBtn.textContent = '❌ Failed — try again';
+          }
+        }
+      };
+    }
   };
 
   const renderMenu = async () => {
@@ -884,9 +990,16 @@ export async function launch(ctx, options = {}) {
     const scanCustomIcons = async () => {
       customGrid.innerHTML = '<div style="grid-column: span 6; font-size:10px; color:var(--text-tertiary);">Scanning...</div>';
       try {
-        const items = await vfs.readdir('~/images/icons');
+        const paths = ['/system/icons', '~/images/icons'];
+        let allItems = [];
+        for (const p of paths) {
+          try {
+            const items = await vfs.readdir(p);
+            allItems.push(...items);
+          } catch(e) {}
+        }
         customGrid.innerHTML = '';
-        items.forEach(item => {
+        allItems.forEach(item => {
           if (item.type === 'dir' || !item.name.match(/\.(png|jpg|jpeg|gif|svg|webp)$/i)) return;
           const btn = document.createElement('div');
           btn.style.cssText = `
@@ -895,19 +1008,19 @@ export async function launch(ctx, options = {}) {
             background: var(--bg-surface-hover);
             border: 1px solid var(--border);
             cursor: pointer;
-            background-image: url("${vfs.getFsPath(item.path)}");
+            background-image: url("${vfs.getFsPath(item.path || '/system/icons/' + item.name)}");
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
           `;
           btn.onclick = () => {
-            settings.icon = item.path;
+            settings.icon = item.path || '/system/icons/' + item.name;
             updatePreview();
             save();
           };
           customGrid.appendChild(btn);
         });
-        if (items.length === 0) customGrid.innerHTML = '<div style="grid-column: span 6; font-size:10px; color:var(--text-tertiary);">No icons in ~/images/icons</div>';
+        if (allItems.length === 0) customGrid.innerHTML = '<div style="grid-column: span 6; font-size:10px; color:var(--text-tertiary);">No custom icons found</div>';
       } catch (e) {
         customGrid.innerHTML = '<div style="grid-column: span 6; font-size:10px; color:var(--text-tertiary);">Failed to scan icons</div>';
       }
@@ -1287,7 +1400,7 @@ export async function launch(ctx, options = {}) {
       const loadWallpapers = async () => {
         wpGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:20px; color:var(--text-tertiary);">Scanning for images...</div>';
 
-        const scanPaths = ['~/images/backgrounds'];
+        const scanPaths = ['/system/backgrounds', '~/images/backgrounds'];
         let allWallpapers = [];
 
         for (const path of scanPaths) {
@@ -1576,7 +1689,7 @@ export async function launch(ctx, options = {}) {
       });
 
       if (discovered.length === 0) {
-        list.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-tertiary);">No extensions found in ~/Plugins</div>';
+        list.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-tertiary);">No plugins or extensions found</div>';
       }
     };
 

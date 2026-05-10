@@ -13,7 +13,7 @@ if (!fs.existsSync(fsRoot)) {
 function walk(dir) {
   let results = [];
   const list = fs.readdirSync(dir);
-  
+
   // Add the current directory itself (relative to fsRoot)
   const relativeDirPath = '/' + path.relative(fsRoot, dir);
   if (relativeDirPath !== '/') {
@@ -23,7 +23,7 @@ function walk(dir) {
   list.forEach(file => {
     const fullPath = path.join(dir, file);
     const stat = fs.statSync(fullPath);
-    
+
     if (stat && stat.isDirectory()) {
       results = results.concat(walk(fullPath));
     } else {
@@ -44,9 +44,15 @@ for (const item of rawItems) {
   let relPath = '/' + path.relative(fsRoot, item.path);
   // Clean up any potential backslashes from Windows paths (if applicable) or double slashes
   relPath = relPath.replace(/\\/g, '/').replace(/\/+/g, '/');
-  
-  const skipList = ['Trash'];
-  if (skipList.some(s => relPath.includes(s))) continue;
+
+  const fileName = path.basename(relPath);
+  const skipFiles = ['.gitkeep', '.DS_Store', 'Thumbs.db'];
+
+  // 1. Ignore specific system junk files
+  if (skipFiles.includes(fileName)) continue;
+
+  // 2. Ignore files INSIDE Trash, but allow the Trash directory itself to be packed
+  if (relPath.includes('/Trash/') && item.type === 'file') continue;
 
   if (seen.has(relPath)) continue;
   seen.add(relPath);
@@ -58,7 +64,7 @@ for (const item of rawItems) {
     let content;
     let isBinary = false;
 
-    const BINARY_EXTS = ['.png', '.jpg', '.jpeg', '.svg', '.gif', '.ico', '.woff', '.woff2', '.ttf', '.mp4', '.webm', '.mov', '.mp3', '.ogg', '.wav', '.pdf', '.zip', '.rar', '.7z', '.iso'];
+    const BINARY_EXTS = ['.png', '.jpg', '.jpeg', '.svg', '.gif', '.ico', '.woff', '.woff2', '.ttf', '.mp4', '.webm', '.mov', '.mp3', '.ogg', '.wav', '.pdf', '.zip', '.rar', '.7z', '.iso', '.odt', '.ods', '.odp'];
     if (BINARY_EXTS.includes(ext)) {
       isBinary = true;
       content = null;
@@ -81,5 +87,11 @@ for (const item of rawItems) {
   }
 }
 
-fs.writeFileSync(seedPath, JSON.stringify({ files: finalFiles }, null, 2));
-console.log(`Successfully packed ${finalFiles.length} items into public/vfs-seed.json`);
+const seedData = {
+  seedVersion: Date.now(),
+  fileCount: finalFiles.length,
+  files: finalFiles
+};
+
+fs.writeFileSync(seedPath, JSON.stringify(seedData, null, 2));
+console.log(`Successfully packed ${finalFiles.length} items into public/vfs-seed.json (v${seedData.seedVersion})`);

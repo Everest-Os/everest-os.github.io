@@ -25,6 +25,27 @@ export class ExtensionLoader {
     this._loadedExtensions = new Map();
     this._explicitlyRemoved = new Set();
     this.CONFIG_PATH = '~/.config/extensions.json';
+
+    window.addEventListener('resize', () => this._onWindowResize());
+  }
+
+  _onWindowResize() {
+    const desktop = document.querySelector('.desklet-layer');
+    if (!desktop) return;
+
+    const desklets = desktop.querySelectorAll('.sandbox-desklet');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    desklets.forEach(frame => {
+      const rx = parseFloat(frame.dataset.rx);
+      const ry = parseFloat(frame.dataset.ry);
+
+      if (!isNaN(rx) && !isNaN(ry)) {
+        frame.style.left = (rx * vw) + 'px';
+        frame.style.top = (ry * vh) + 'px';
+      }
+    });
   }
 
   async init() {
@@ -32,33 +53,48 @@ export class ExtensionLoader {
     window.__extensionLoaderInitializing = true;
 
     try {
-      const savedStr = await this.vfs.readFile(this.CONFIG_PATH).catch(() => null);
-      let config = { enabled: [], removed: [] };
-      if (savedStr) {
-        try {
-          const parsed = JSON.parse(savedStr);
-          if (Array.isArray(parsed)) config.enabled = parsed;
-          else {
-            config = { ...config, ...parsed };
-            if (parsed.removed) parsed.removed.forEach(uuid => this._explicitlyRemoved.add(uuid));
+      const savedStr = await this.vfs.readFile(this.CONFIG_PATH).catch(() => '[]');
+      let userExtensions = [];
+      try {
+        const parsed = JSON.parse(savedStr);
+        userExtensions = Array.isArray(parsed) ? parsed : (parsed.enabled || []);
+        if (parsed.removed) parsed.removed.forEach(uuid => this._explicitlyRemoved.add(uuid));
+      } catch (e) { }
+
+      let configChanged = false;
+
+      // 1. Restore User Extensions
+      for (let i = 0; i < userExtensions.length; i++) {
+        const ext = userExtensions[i];
+        if (ext) {
+          try {
+            if (this._explicitlyRemoved.has(ext.uuid)) continue;
+
+            const instance = await this.loadFromVfs(ext.uuid, ext.vfsPath || `~/Plugins/${ext.type}/${ext.uuid}`, ext.type);
+            
+            // Self-heal: If the path used is different from the saved path, update config
+            if (instance && instance._vfsPath && instance._vfsPath !== ext.vfsPath) {
+              userExtensions[i].vfsPath = instance._vfsPath;
+              configChanged = true;
+            }
+          } catch (e) {
+            console.error(`Failed to restore extension ${ext.uuid}`, e);
           }
-        } catch (e) { }
+        }
       }
 
-      // 1. Load explicitly enabled extensions
-      for (const ext of config.enabled) {
-        try {
-          // If it was in removed list, ignore it
-          if (this._explicitlyRemoved.has(ext.uuid)) continue;
-          await this.loadFromVfs(ext.uuid, ext.vfsPath || `~/Plugins/${ext.type}/${ext.uuid}`, ext.type);
-        } catch (e) {
-          console.error(`Failed to restore extension ${ext.uuid}`, e);
-        }
+      if (configChanged) {
+        const newConfig = {
+          enabled: userExtensions,
+          removed: Array.from(this._explicitlyRemoved)
+        };
+        await this.vfs.writeFile(this.CONFIG_PATH, JSON.stringify(newConfig, null, 2));
+        console.log('✅ Extension paths updated in configuration (Self-Healed)');
       }
 
       // 2. Auto-load Statusbar Applets (unless removed)
       try {
-        const statusbarDir = '~/Plugins/applets/statusbar';
+        const statusbarDir = '/system/plugins/applets/statusbar';
         const items = await this.vfs.readdir(statusbarDir).catch(() => []);
         for (const item of items) {
           const uuid = typeof item === 'string' ? item : item.name;
@@ -75,7 +111,7 @@ export class ExtensionLoader {
 
       // 3. Auto-load System Desklets (unless removed)
       try {
-        const systemDeskletsDir = '~/Plugins/desklets/system';
+        const systemDeskletsDir = '/system/plugins/desklets/system';
         const deskItems = await this.vfs.readdir(systemDeskletsDir).catch(() => []);
         for (const item of deskItems) {
           const uuid = typeof item === 'string' ? item : item.name;
@@ -94,7 +130,7 @@ export class ExtensionLoader {
       const defaults = ['menu@playground'];
       for (const uuid of defaults) {
         if (!this._loadedExtensions.has(uuid) && !this._explicitlyRemoved.has(uuid)) {
-          await this.loadFromVfs(uuid, `~/Plugins/applets/${uuid}`, 'applets').catch(() => { });
+          await this.loadFromVfs(uuid, `/system/plugins/applets/${uuid}`, 'applets').catch(() => { });
         }
       }
 
@@ -181,18 +217,27 @@ export class ExtensionLoader {
     try {
       metaStr = await this.vfs.readFile(`${finalPath}/metadata.json`);
     } catch (e) {
-      // Fallback: If primary path fails, try the other standard path
-      const isUserPath = finalPath.includes('.local/share/plugins');
-      const fallbackPath = isUserPath
-        ? `~/Plugins/${type}/${uuid}`
-        : `~/.local/share/plugins/${type}/${uuid}`;
+      // Fallback: If primary path fails, try other standard paths
+      const fallbacks = [
+        `~/Plugins/${type}/${uuid}`,
+        `~/.local/share/plugins/${type}/${uuid}`,
+        `/system/plugins/${type}/${uuid}`
+      ];
 
-      try {
-        metaStr = await this.vfs.readFile(`${fallbackPath}/metadata.json`);
-        finalPath = fallbackPath;
-        console.log(`📡 Extension ${uuid} recovered from fallback path: ${finalPath}`);
-      } catch (e2) {
-        throw new Error(`File not found at ${initialPath} or ${fallbackPath}`);
+      let recovered = false;
+      for (const fallback of fallbacks) {
+        if (fallback === initialPath) continue;
+        try {
+          metaStr = await this.vfs.readFile(`${fallback}/metadata.json`);
+          finalPath = fallback;
+          console.log(`📡 Extension ${uuid} recovered from fallback path: ${finalPath}`);
+          recovered = true;
+          break;
+        } catch (e2) { }
+      }
+
+      if (!recovered) {
+        throw new Error(`File not found at ${initialPath} or standard fallback paths`);
       }
     }
 
@@ -201,6 +246,7 @@ export class ExtensionLoader {
 
     if (!this.vfs) throw new Error("VFS not available");
 
+    // Load the main script
     try {
       const metadata = JSON.parse(metaStr);
 
@@ -227,9 +273,12 @@ export class ExtensionLoader {
 
       const files = { [mainScript]: mainJs, ...modules };
 
-      return this._evaluate({
-        metadata, type, uuid, files, settingsSchema, path: vfsPath
+      const instance = await this._evaluate({
+        metadata, type, uuid, files, settingsSchema, path: finalPath
       });
+
+      if (instance) instance._vfsPath = finalPath;
+      return instance;
     } catch (err) {
       log?.logError(`Failed to load VFS plugin ${uuid}: ${err.message}`);
       throw err;
@@ -544,21 +593,35 @@ export class ExtensionLoader {
     frame.dataset.uuid = uuid;
 
     // Load saved position
-    let x, y;
+    let x, y, rx, ry;
     try {
       const posStr = await this.vfs.readFile('~/.config/desklet-positions.json');
       const positions = JSON.parse(posStr);
       if (positions[uuid]) {
-        x = positions[uuid].x;
-        y = positions[uuid].y;
+        if (positions[uuid].rx !== undefined) {
+          rx = positions[uuid].rx;
+          ry = positions[uuid].ry;
+          x = rx * window.innerWidth;
+          y = ry * window.innerHeight;
+        } else {
+          // Legacy pixel support
+          x = positions[uuid].x;
+          y = positions[uuid].y;
+          rx = x / window.innerWidth;
+          ry = y / window.innerHeight;
+        }
       }
-    } catch { /* no saved positions yet */ }
+    } catch { /* fresh */ }
 
     if (x === undefined || y === undefined) {
-      x = 60 + Math.random() * Math.max(200, window.innerWidth - 600);
-      y = 60 + Math.random() * Math.max(100, window.innerHeight - 500);
+      rx = 0.1 + Math.random() * 0.4;
+      ry = 0.1 + Math.random() * 0.4;
+      x = rx * window.innerWidth;
+      y = ry * window.innerHeight;
     }
 
+    frame.dataset.rx = rx;
+    frame.dataset.ry = ry;
     frame.style.left = x + 'px';
     frame.style.top = y + 'px';
     frame.classList.add('sandbox-desklet');
@@ -569,13 +632,19 @@ export class ExtensionLoader {
       const newX = parseInt(frame.style.left, 10);
       const newY = parseInt(frame.style.top, 10);
       if (isNaN(newX) || isNaN(newY)) return;
+
+      const newRx = newX / window.innerWidth;
+      const newRy = newY / window.innerHeight;
+      frame.dataset.rx = newRx;
+      frame.dataset.ry = newRy;
+
       try {
         let positions = {};
         try {
           const posStr = await this.vfs.readFile('~/.config/desklet-positions.json');
           positions = JSON.parse(posStr);
         } catch { /* fresh */ }
-        positions[uuid] = { x: newX, y: newY };
+        positions[uuid] = { rx: newRx, ry: newRy };
         await this.vfs.writeFile('~/.config/desklet-positions.json', JSON.stringify(positions, null, 2));
       } catch { /* ok */ }
     };
@@ -653,10 +722,13 @@ export class ExtensionLoader {
     const types = ['applets', 'desklets', 'extensions'];
 
     for (const type of types) {
-      // 1. System Plugins (Protected)
+      // 1. System Plugins (Protected, VFS intercepted)
+      try { await this._discoverPath(`/system/plugins/${type}`, type, 'system', discovered); } catch (e) { }
+
+      // 2. Legacy System Plugins (Just in case)
       try { await this._discoverPath(`~/Plugins/${type}`, type, 'system', discovered); } catch (e) { }
 
-      // 2. User Plugins (Deletable)
+      // 3. User Plugins (Deletable)
       try { await this._discoverPath(`~/.local/share/plugins/${type}`, type, 'user', discovered); } catch (e) { }
     }
     return discovered;

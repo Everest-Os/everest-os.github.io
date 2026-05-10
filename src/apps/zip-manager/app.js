@@ -1,4 +1,5 @@
 import { IconHelper } from '../../runtime/iconHelper.js';
+import { ZipHelper } from '../../runtime/zipHelper.js';
 
 export async function launch(ctx, options = {}) {
   const { windowManager, vfs, filePicker } = ctx;
@@ -25,7 +26,7 @@ export async function launch(ctx, options = {}) {
       <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.4;">
         <div style="font-size: 56px; margin-bottom: 16px;">${IconHelper.getIcon('archive', { size: 64 })}</div>
         <div style="font-size: 14px;">Open an archive to view contents</div>
-        <div style="font-size: 11px; margin-top: 8px;">Supports .zip, .tar, .gz</div>
+        <div style="font-size: 11px; margin-top: 8px;">Supports .zip, .odt, .ods, .odp</div>
       </div>
     </div>
 
@@ -50,28 +51,41 @@ export async function launch(ctx, options = {}) {
   const statusEl = content.querySelector('#zip-status');
 
   let currentArchivePath = '';
+  let currentZipBlob = null;
 
   const loadArchive = async (path) => {
     if (!path) return;
     currentArchivePath = path;
     pathEl.textContent = path;
-    extractBtn.disabled = false;
+    extractBtn.disabled = true;
     statusEl.textContent = `Reading ${path}...`;
     windowManager.setTitle(win.id, `Archive Manager - ${path.split('/').pop()}`);
 
-    listEl.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">Scanning archive...</div>';
+    listEl.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-secondary);">Loading JSZip Engine...</div>';
     
-    setTimeout(() => {
-      const fileName = path.split('/').pop();
-      const baseName = fileName.replace(/\.[^/.]+$/, "");
+    try {
+      const JSZip = await ZipHelper.getJSZip();
+      let res = await vfs.readFile(path);
       
-      const mockFiles = [
-        { name: `${baseName}/`, size: '—', type: 'dir' },
-        { name: `${baseName}/README.txt`, size: '1.2 KB', type: 'file' },
-        { name: `${baseName}/data.json`, size: '45 KB', type: 'file' },
-        { name: `${baseName}/assets/`, size: '—', type: 'dir' },
-        { name: `${baseName}/assets/logo.png`, size: '128 KB', type: 'file' }
-      ];
+      // Robust binary detection: convert DataURL to Blob if needed
+      const blob = res instanceof Blob ? res : 
+                  (typeof res === 'string' && res.startsWith('data:')) ? await (await fetch(res)).blob() :
+                  new Blob([res]);
+      
+      currentZipBlob = blob;
+
+      statusEl.textContent = `Parsing archive structure...`;
+      const zip = await JSZip.loadAsync(blob);
+      
+      const files = Object.values(zip.files).map(f => {
+        const size = f._data && f._data.uncompressedSize ? f._data.uncompressedSize : 0;
+        const sizeStr = f.dir ? '—' : (size < 1024 ? `${size} B` : `${(size / 1024).toFixed(1)} KB`);
+        return {
+          name: f.name,
+          size: sizeStr,
+          type: f.dir ? 'dir' : 'file'
+        };
+      });
 
       listEl.innerHTML = `
         <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
@@ -82,7 +96,7 @@ export async function launch(ctx, options = {}) {
             </tr>
           </thead>
           <tbody>
-            ${mockFiles.map(f => `
+            ${files.map(f => `
               <tr style="border-bottom: 1px solid var(--border);">
                 <td style="padding: 10px 8px; display: flex; align-items: center; gap: 10px;">
                   <span style="font-size: 16px;">${IconHelper.getIcon(f.type === 'dir' ? 'folder' : 'file', { size: 16 })}</span>
@@ -94,14 +108,22 @@ export async function launch(ctx, options = {}) {
           </tbody>
         </table>
       `;
-      statusEl.textContent = `Archive loaded: ${mockFiles.length} items`;
-    }, 600);
+      statusEl.textContent = `Archive loaded: ${files.length} items`;
+      extractBtn.disabled = false;
+    } catch (e) {
+      let errorMsg = e.message;
+      if (errorMsg.includes("end of central directory") || errorMsg.includes("Corrupted zip")) {
+        errorMsg = "This file is not a valid or supported ZIP archive.";
+      }
+      listEl.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--error);">${errorMsg}</div>`;
+      statusEl.textContent = `Error: ${errorMsg}`;
+    }
   };
 
   openBtn.onclick = async () => {
     const path = await filePicker.pickFile({
       title: 'Open Archive',
-      filter: ['.zip', '.tar', '.gz', '.7z', '.rar']
+      filter: ['.zip', '.odt', '.ods', '.odp']
     });
     if (path) loadArchive(path);
   };
@@ -111,22 +133,23 @@ export async function launch(ctx, options = {}) {
       title: 'Extract to Folder',
       initialPath: '~/Documents'
     });
-    if (target) {
-      statusEl.textContent = `Extracting to ${target}...`;
+    if (target && currentZipBlob) {
+      statusEl.textContent = `Extracting...`;
       extractBtn.disabled = true;
       
-      setTimeout(async () => {
-        const folderName = currentArchivePath.split('/').pop().replace(/\.[^/.]+$/, "");
-        const extractPath = `${target}/${folderName}`;
-        try {
-          await vfs.mkdir(extractPath);
-          await vfs.writeFile(`${extractPath}/README.txt`, "Extracted content placeholder");
-          statusEl.textContent = `Successfully extracted to ${extractPath}`;
-        } catch (e) {
-          statusEl.textContent = `Extraction error: ${e.message}`;
-        }
-        extractBtn.disabled = false;
-      }, 1500);
+      const folderName = currentArchivePath.split('/').pop().replace(/\.[^/.]+$/, "");
+      const extractPath = `${target}/${folderName}`;
+      
+      try {
+        await vfs.mkdir(extractPath);
+        await ZipHelper.extractToVfs(currentZipBlob, extractPath, vfs, (progress, currentFile) => {
+          statusEl.textContent = `Extracting (${Math.round(progress * 100)}%): ${currentFile}`;
+        });
+        statusEl.textContent = `Successfully extracted to ${extractPath}`;
+      } catch (e) {
+        statusEl.textContent = `Extraction error: ${e.message}`;
+      }
+      extractBtn.disabled = false;
     }
   };
 

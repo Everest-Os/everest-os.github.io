@@ -21,7 +21,7 @@ export class DesktopSettings {
     this.loader = loader;
     this.panelManager = panelManager;
     this.settings = {
-      background: '', // Default to CSS gradient
+      background: 'url("/system/backgrounds/bg_mountain_sunset_1777608248335.png")', // Default to system background
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       gridSize: 90,
@@ -66,10 +66,23 @@ export class DesktopSettings {
             desktop.style.backgroundSize = this.settings.backgroundSize;
             desktop.style.backgroundPosition = this.settings.backgroundPosition;
           }).catch(e => {
-            console.warn("Failed to load wallpaper from VFS:", e);
-            desktop.style.background = bg;
+            console.warn("Failed to load wallpaper from VFS path, trying system fallback:", path);
+            const filename = path.split('/').pop();
+            const systemPath = `/system/backgrounds/${filename}`;
+            const systemUrl = this.vfs.getFsPath(systemPath);
+            
+            // Just set it directly since /system is always direct HTTP
+            desktop.style.background = `url("${systemUrl}")`;
+            desktop.style.backgroundSize = this.settings.backgroundSize;
+            desktop.style.backgroundPosition = this.settings.backgroundPosition;
           });
           return; // The async call will handle setting the background
+        } else if (path.startsWith('/system/')) {
+          const systemUrl = this.vfs.getFsPath(path);
+          desktop.style.background = `url("${systemUrl}")`;
+          desktop.style.backgroundSize = this.settings.backgroundSize;
+          desktop.style.backgroundPosition = this.settings.backgroundPosition;
+          return;
         }
       }
     }

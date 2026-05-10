@@ -10,7 +10,7 @@ import { PanelManager } from './runtime/panelManager.js';
 import { WindowManager } from './runtime/windowManager.js';
 import { AppMenu } from './runtime/appMenu.js';
 import { DesktopSettings } from './runtime/desktopSettings.js';
-import { VirtualFileSystem } from './runtime/vfs.js';
+import { VirtualFileSystem, BASE_URL } from './runtime/vfs.js';
 import { DesktopIcons } from './runtime/desktopIcons.js';
 import { FilePickerApp } from './runtime/filePickerApp.js';
 import { ThemeManager } from './runtime/themeManager.js';
@@ -51,7 +51,8 @@ class EverestSandbox {
     // 2. Initialize VFS and Seed default extensions
     this.vfs = new VirtualFileSystem();
 
-    await this.vfs.seed('vfs-seed.json');
+    const seedUrl = (BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/') + 'vfs-seed.json?v=' + Date.now();
+    await this.vfs.seed(seedUrl);
     await this.ensureSystemPaths();
 
     await bootloader.updateStatus('verifying system integrity', 32);
@@ -197,7 +198,11 @@ class EverestSandbox {
       '~/.local/share/plugins/applets',
       '~/.local/share/plugins/desklets',
       '~/Desktop',
-      '~/Documents'
+      '~/Documents',
+      '~/Downloads',
+      '~/Pictures',
+      '~/Music',
+      '~/Videos'
     ];
     for (const d of dirs) {
       try { await this.vfs.mkdir(d); } catch (e) { }

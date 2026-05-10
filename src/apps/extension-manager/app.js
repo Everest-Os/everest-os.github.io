@@ -133,7 +133,10 @@ export async function launch(ctx, options = {}) {
       } catch (e) { /* path doesn't exist, skip */ }
     };
 
-    // 2. System Plugins (VFS Protected)
+    // 1. System Plugins (VFS Protected)
+    await scanPath(`/system/plugins/${type}`, 'system');
+
+    // 2. Legacy System Plugins (Migration support)
     await scanPath(`~/Plugins/${type}`, 'system');
 
     // 3. User Plugins (VFS Deletable)
@@ -278,7 +281,7 @@ export async function launch(ctx, options = {}) {
     }
     const folder = await filePicker.pickFolder({
       title: `Select ${activeTab === 'applets' ? 'Applet' : 'Desklet'} Folder`,
-      initialPath: '~/Plugins'
+      initialPath: '/system/plugins'
     });
     if (!folder) return;
 

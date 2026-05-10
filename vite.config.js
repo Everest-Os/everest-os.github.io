@@ -18,9 +18,13 @@ function LocalFSMiddleware() {
   }
 
   const resolvePath = (reqPath) => {
-    // reqPath is like "/home/user/Desktop"
     const safePath = path.normalize(reqPath).replace(/^(\.\.(\/|\\|$))+/, '');
     const cleanPath = safePath.startsWith('/') ? safePath.slice(1) : safePath;
+    
+    if (cleanPath.startsWith('system/')) {
+      return path.join(path.resolve('public'), cleanPath);
+    }
+    
     return path.join(FS_ROOT, cleanPath);
   };
 
@@ -129,7 +133,7 @@ function LocalFSMiddleware() {
       try {
         const fullPath = resolvePath(p);
         if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isDirectory()) {
-          return res.statusCode = 400, res.end('Not a directory');
+          return res.statusCode = 404, res.end('Not found');
         }
         const items = fs.readdirSync(fullPath).map(name => {
           const itemPath = path.join(fullPath, name);
@@ -158,7 +162,7 @@ function LocalFSMiddleware() {
       try {
         const fullPath = resolvePath(p);
         if (!fs.existsSync(fullPath) || fs.statSync(fullPath).isDirectory()) {
-          return res.statusCode = 400, res.end('File not found or is dir');
+          return res.statusCode = 404, res.end('Not found');
         }
         const content = fs.readFileSync(fullPath, 'utf8');
         res.setHeader('Content-Type', 'text/plain');

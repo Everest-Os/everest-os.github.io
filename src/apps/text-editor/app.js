@@ -192,7 +192,19 @@ export async function launch(ctx, options = {}) {
   const loadFile = async (path) => {
     try {
       const text = await vfs.readFile(path);
-      textarea.value = text;
+      
+      if (text instanceof Blob) {
+        textarea.value = "Unsupported Binary File\n\nThis file is a binary archive or media file and cannot be viewed or edited as plain text.\nIf this is an archive like .7z or .rar, the EverestOS Zip Manager currently only supports .zip formats.";
+        textarea.readOnly = true;
+        textarea.style.opacity = '0.7';
+        content.querySelector('#btn-save').disabled = true;
+      } else {
+        textarea.value = text;
+        textarea.readOnly = false;
+        textarea.style.opacity = '1';
+        content.querySelector('#btn-save').disabled = false;
+      }
+
       currentPath = path;
       statusPath.textContent = path;
       isModified = false;
@@ -213,8 +225,9 @@ export async function launch(ctx, options = {}) {
   };
 
   const saveFile = async () => {
+    if (textarea.readOnly) return; // Prevent saving binary placeholders
     if (!currentPath) {
-      const newPath = await ctx.filePicker.pickFile({ title: 'Save As', mode: 'save' }); // Assuming pickFile supports mode: 'save' or just use a prompt
+      const newPath = await ctx.filePicker.pickFile({ title: 'Save As', mode: 'save' });
       if (!newPath) return;
       currentPath = newPath;
     }
