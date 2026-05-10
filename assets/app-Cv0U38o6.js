@@ -1,4 +1,4 @@
-import{I as a}from"./index-CzAWk2Jy.js";function w(r,d={}){const{windowManager:p,vfs:g}=r,i=d.path||"",e=document.createElement("div");e.style.padding="0",e.style.height="100%",e.style.display="flex",e.style.flexDirection="column",e.style.background="var(--bg-surface)",e.style.color="var(--text-primary)",e.style.fontFamily="Inter, system-ui, sans-serif";const m=i?i.substring(i.lastIndexOf("/")+1):"No image loaded";e.innerHTML=`
+import{I as a}from"./index-DY9sEeDM.js";function w(r,d={}){const{windowManager:p,vfs:g}=r,i=d.path||"",e=document.createElement("div");e.style.padding="0",e.style.height="100%",e.style.display="flex",e.style.flexDirection="column",e.style.background="var(--bg-surface)",e.style.color="var(--text-primary)",e.style.fontFamily="Inter, system-ui, sans-serif";const m=i?i.substring(i.lastIndexOf("/")+1):"No image loaded";e.innerHTML=`
     <!-- Toolbar -->
     <div style="background:var(--bg-surface-hover); border-bottom:1px solid var(--border); padding:8px 12px; display:flex; justify-content:space-between; align-items:center; z-index:10;">
       <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">

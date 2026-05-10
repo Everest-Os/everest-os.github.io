@@ -1,12 +1,12 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-CzAWk2Jy.js","assets/index-BKJI6B33.css"])))=>i.map(i=>d[i]);
-import{_ as x}from"./index-CzAWk2Jy.js";async function b(c,t={}){const{windowManager:p,vfs:n}=c,{IconHelper:d}=await x(async()=>{const{IconHelper:e}=await import("./index-CzAWk2Jy.js").then(r=>r.i);return{IconHelper:e}},__vite__mapDeps([0,1])),l=t.path?t.path.split(".").pop().toLowerCase():"odt";let o="doc";["xls","xlsx"].includes(l)?o="sheet":["ppt","pptx"].includes(l)&&(o="slides");const i=document.createElement("div");i.style.cssText=`
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-DY9sEeDM.js","assets/index-BKJI6B33.css"])))=>i.map(i=>d[i]);
+import{_ as v}from"./index-DY9sEeDM.js";async function O(w,a={}){const{windowManager:k,vfs:x}=w,{IconHelper:p}=await v(async()=>{const{IconHelper:t}=await import("./index-DY9sEeDM.js").then(r=>r.i);return{IconHelper:t}},__vite__mapDeps([0,1])),{ZipHelper:A}=await v(async()=>{const{ZipHelper:t}=await import("./zipHelper-D3i7XoLf.js");return{ZipHelper:t}},[]),u=a.path?a.path.split(".").pop().toLowerCase():"odt";let l="doc";["xls","xlsx"].includes(u)?l="sheet":["ppt","pptx"].includes(u)&&(l="slides");const s=document.createElement("div");s.style.cssText=`
     height: 100%;
     display: flex;
     flex-direction: column;
     background: #0a0a0a;
     color: var(--text-primary);
     font-family: var(--font-main);
-  `,i.innerHTML=`
+  `,s.innerHTML=`
     <div class="office-toolbar" style="
       height: 48px;
       background: #111;
@@ -18,9 +18,9 @@ import{_ as x}from"./index-CzAWk2Jy.js";async function b(c,t={}){const{windowMan
       flex-shrink: 0;
     ">
       <div style="display: flex; gap: 4px;">
-        <button class="toolbar-btn" title="New Document">${d.getIcon("file",{size:14})}</button>
-        <button class="toolbar-btn" title="Open Document">${d.getIcon("folder",{size:14})}</button>
-        <button class="toolbar-btn" title="Save Document">${d.getIcon("disk",{size:14})}</button>
+        <button class="toolbar-btn" title="New Document">${p.getIcon("file",{size:14})}</button>
+        <button class="toolbar-btn" title="Open Document">${p.getIcon("folder",{size:14})}</button>
+        <button class="toolbar-btn" title="Save Document">${p.getIcon("disk",{size:14})}</button>
       </div>
       <div style="width: 1px; height: 24px; background: #333; margin: 0 8px;"></div>
       <div style="display: flex; gap: 4px;">
@@ -37,7 +37,7 @@ import{_ as x}from"./index-CzAWk2Jy.js";async function b(c,t={}){const{windowMan
     </div>
     
     <div class="office-editor-viewport" style="flex: 1; overflow-y: auto; padding: 40px 0; background: #050505; perspective: 1000px;">
-      ${o==="doc"?`
+      ${l==="doc"?`
         <div id="office-editor" contenteditable="true" style="
           width: 800px; min-height: 1000px; margin: 0 auto; background: #0a0a0a; padding: 80px; border: 1px solid #111;
           box-shadow: 0 30px 100px rgba(0,0,0,0.8); color: #eee; font-size: 16px; line-height: 1.6; outline: none; transform: rotateX(2deg); transition: transform 0.5s ease;
@@ -45,13 +45,13 @@ import{_ as x}from"./index-CzAWk2Jy.js";async function b(c,t={}){const{windowMan
           <h2>Untitled Document</h2>
           <p>Start typing your masterpiece here...</p>
         </div>
-      `:o==="sheet"?`
+      `:l==="sheet"?`
         <div id="office-sheet" style="width: 100%; height: 100%; background: #111; overflow: auto; display: flex; flex-direction: column;">
           <div style="display: flex; background: #222; border-bottom: 1px solid #333;">
             <div style="width: 40px; border-right: 1px solid #333;"></div>
-            ${Array.from({length:26}).map((e,r)=>`<div style="width: 100px; padding: 4px; text-align: center; border-right: 1px solid #333; font-size: 11px; color: #888;">${String.fromCharCode(65+r)}</div>`).join("")}
+            ${Array.from({length:26}).map((t,r)=>`<div style="width: 100px; padding: 4px; text-align: center; border-right: 1px solid #333; font-size: 11px; color: #888;">${String.fromCharCode(65+r)}</div>`).join("")}
           </div>
-          ${Array.from({length:50}).map((e,r)=>`
+          ${Array.from({length:50}).map((t,r)=>`
             <div style="display: flex; border-bottom: 1px solid #222;">
               <div style="width: 40px; padding: 4px; text-align: center; border-right: 1px solid #333; font-size: 11px; color: #555; background: #1a1a1a;">${r+1}</div>
               ${Array.from({length:26}).map(()=>'<div contenteditable="true" style="width: 100px; height: 24px; border-right: 1px solid #222; outline: none; padding: 2px 4px; font-size: 12px;"></div>').join("")}
@@ -116,4 +116,4 @@ import{_ as x}from"./index-CzAWk2Jy.js";async function b(c,t={}){const{windowMan
         border-radius: 4px;
       }
     </style>
-  `,p.createWindow({id:`office-${Date.now()}`,title:t.path?t.path.split("/").pop():`New ${o==="doc"?"Document":o==="sheet"?"Spreadsheet":"Presentation"} — Office`,icon:o==="doc"?"file":o==="sheet"?"storage":"video",width:1100,height:800,content:i});const a=i.querySelector("#office-editor")||i.querySelector("#office-sheet")||i.querySelector("#office-slides");if(i.querySelectorAll("[data-cmd]").forEach(e=>{e.onclick=()=>{const r=e.dataset.cmd;document.execCommand(r,!1,null)}}),t.path)try{const e=await n.readFile(t.path);a.innerHTML=e}catch(e){console.error("Office: Failed to load file",e)}let s;a.oninput=()=>{t.path&&(clearTimeout(s),s=setTimeout(async()=>{var e;await n.writeFile(t.path,a.innerHTML),(e=window.__everestConsole)==null||e.log(`💾 Office: Auto-saved ${t.path}`)},2e3))}}export{b as launch};
+  `,k.createWindow({id:`office-${Date.now()}`,title:a.path?a.path.split("/").pop():`New ${l==="doc"?"Document":l==="sheet"?"Spreadsheet":"Presentation"} — Office`,icon:l==="doc"?"file":l==="sheet"?"storage":"video",width:1100,height:800,content:s});const f=s.querySelector("#office-editor")||s.querySelector("#office-sheet")||s.querySelector("#office-slides");if(s.querySelectorAll("[data-cmd]").forEach(t=>{t.onclick=()=>{const r=t.dataset.cmd;document.execCommand(r,!1,null)}}),a.path)try{let t=await x.readFile(a.path);if(a.path.endsWith(".odt")&&(t instanceof Blob||typeof t=="string"&&t.startsWith("data:"))){console.log("Office: Detected binary ODT, unzipping...");try{let c=function(e){if(e.nodeType===3)return e.textContent.replace(/</g,"&lt;").replace(/>/g,"&gt;");if(e.nodeType!==1)return"";let n="span";const i=e.getAttribute("text:style-name"),o=i&&b[i]?` style="${b[i]}"`:"";switch(e.tagName){case"text:p":n="p";break;case"text:h":const _=e.getAttribute("text:outline-level")||"1";n=`h${Math.min(Math.max(_,1),6)}`;break;case"text:span":n="span";break;case"text:a":return`<a href="${e.getAttribute("xlink:href")||"#"}"${o}>${Array.from(e.childNodes).map(c).join("")}</a>`;case"text:list":n="ul";break;case"text:list-item":n="li";break;case"text:s":return"&nbsp;".repeat(parseInt(e.getAttribute("text:c")||1));case"text:tab":return"&emsp;";case"text:line-break":return"<br/>";case"office:text":case"office:body":case"office:document-content":return Array.from(e.childNodes).map(c).join("");default:return Array.from(e.childNodes).map(c).join("")}const d=Array.from(e.childNodes).map(c).join("");return n==="span"&&!o&&!d.trim()?"":`<${n}${o}>${d}</${n}>`};const r=await A.getJSZip(),$=t instanceof Blob?t:await(await fetch(t)).blob(),T=await(await r.loadAsync($)).file("content.xml").async("text"),h=new DOMParser().parseFromString(T,"text/xml"),b={},y=h.getElementsByTagName("office:automatic-styles")[0];if(y){for(let e of y.children)if(e.tagName==="style:style"){const n=e.getAttribute("style:name");let i="";const o=e.getElementsByTagName("style:text-properties")[0];o&&(o.getAttribute("fo:font-weight")==="bold"&&(i+="font-weight: bold;"),o.getAttribute("fo:font-style")==="italic"&&(i+="font-style: italic;"),o.getAttribute("style:text-underline-style")==="solid"&&(i+="text-decoration: underline;"),o.getAttribute("fo:color")&&(i+=`color: ${o.getAttribute("fo:color")};`),o.getAttribute("fo:font-size")&&(i+=`font-size: ${o.getAttribute("fo:font-size")};`),o.getAttribute("style:font-name")&&(i+=`font-family: '${o.getAttribute("style:font-name")}';`));const d=e.getElementsByTagName("style:paragraph-properties")[0];d&&d.getAttribute("fo:text-align")&&(i+=`text-align: ${d.getAttribute("fo:text-align")};`),i&&(b[n]=i)}}const m=h.getElementsByTagName("office:body")[0];t=m?c(m):"<p><i>Empty document</i></p>"}catch(r){console.error("Office: Failed to parse ODT",r),t=`<div style="color:red; padding: 20px;">Error parsing ODT: ${r.message}</div>`}}f.innerHTML=t}catch(t){console.error("Office: Failed to load file",t)}let g;f.oninput=()=>{a.path&&(clearTimeout(g),g=setTimeout(async()=>{var t;await x.writeFile(a.path,f.innerHTML),(t=window.__everestConsole)==null||t.log(`💾 Office: Auto-saved ${a.path}`)},2e3))}}export{O as launch};
