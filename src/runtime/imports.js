@@ -17,6 +17,7 @@ import { Desklet } from './desklet.js';
 import { Settings, BindingDirection } from './settings.js';
 import { PopupMenu_NS } from './popupMenu.js';
 import { SignalMixin } from './signals.js';
+import { showSystemDialog } from './dialog.js';
 
 // ── Global Shims ──────────────────────────────────────────────────────
 if (!Date.prototype.toLocaleFormat) {
@@ -565,6 +566,7 @@ export function createImportsTree() {
       dialog: {
         Dialog: class { constructor() { } },
         MessageDialogContent: class { constructor() { } },
+        showSystemDialog,
       },
       signalManager: {
         SignalManager: class {
@@ -629,6 +631,7 @@ export function createImportsTree() {
       modemManager: { ModemGsm: class { } },
     },
     gettext: MockGettext,
+    dialog: { showSystemDialog },
     mainloop: Mainloop,
     lang: {
       bind: (scope, fn) => fn.bind(scope),

@@ -135,6 +135,8 @@ export async function launch(ctx, options = {}) {
   const render = async () => {
     body.innerHTML = '';
     const query = searchInput.value.toLowerCase();
+    const discoveredExts = await extensionLoader.discover();
+    const loadedExts = extensionLoader.getLoaded();
 
     if (currentView === 'installed-apps') {
       const apps = appLoader.getApps().filter(a =>
@@ -161,9 +163,30 @@ export async function launch(ctx, options = {}) {
             <div style="font-size: 10px; margin-top: 4px; color: var(--accent); opacity: 0.8; font-family: var(--font-mono);">
               ${app.source === 'builtin' ? 'System Application' : 'User Application'}
             </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+              <button class="btn-primary btn-sm btn-launch" style="flex: 1; height: 26px; padding: 0;">Launch</button>
+              ${app.source !== 'builtin' ? '<button class="btn-secondary btn-sm btn-uninstall" style="flex: 1; height: 26px; padding: 0; background: rgba(255,0,0,0.1); color: var(--danger);">Uninstall</button>' : ''}
+            </div>
           </div>
         `;
         card.onclick = () => showDetails(app, 'app');
+        
+        const launchBtn = card.querySelector('.btn-launch');
+        if (launchBtn) {
+          launchBtn.onclick = (e) => {
+            e.stopPropagation();
+            document.dispatchEvent(new CustomEvent('launch-app', { detail: { id: app.id } }));
+          };
+        }
+
+        const uninstallBtn = card.querySelector('.btn-uninstall');
+        if (uninstallBtn) {
+          uninstallBtn.onclick = (e) => {
+            e.stopPropagation();
+            showDetails(app, 'app'); // Open details to uninstall
+          };
+        }
+
         grid.appendChild(card);
       });
       body.appendChild(grid);
@@ -194,9 +217,37 @@ export async function launch(ctx, options = {}) {
             <div style="font-size: 10px; margin-top: 4px; color: var(--text-tertiary); font-family: var(--font-mono);">
               ${ext.uuid}
             </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+              <button class="btn-primary btn-sm btn-toggle" style="flex: 1; height: 26px; padding: 0;">
+                ${loadedExts.has(ext.uuid) ? 'Unload' : 'Load'}
+              </button>
+              ${ext.source !== 'system' ? '<button class="btn-secondary btn-sm btn-uninstall" style="flex: 1; height: 26px; padding: 0; background: rgba(255,0,0,0.1); color: var(--danger);">Uninstall</button>' : ''}
+            </div>
           </div>
         `;
         card.onclick = () => showDetails(ext, 'extension');
+
+        const toggleBtn = card.querySelector('.btn-toggle');
+        if (toggleBtn) {
+          toggleBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (loadedExts.has(ext.uuid)) {
+              extensionLoader.unload(ext.uuid);
+            } else {
+              await extensionLoader.loadFromVfs(ext.uuid, ext.path, ext.type);
+            }
+            render();
+          };
+        }
+
+        const uninstallBtn = card.querySelector('.btn-uninstall');
+        if (uninstallBtn) {
+          uninstallBtn.onclick = (e) => {
+            e.stopPropagation();
+            showDetails(ext, 'extension'); // Open details to uninstall
+          };
+        }
+
         grid.appendChild(card);
       });
       body.appendChild(grid);
@@ -259,8 +310,10 @@ export async function launch(ctx, options = {}) {
 
       filtered.forEach(item => {
         const isInstalled = isExt 
-          ? extensionLoader.getLoaded().has(item.uuid) // Or check discover() for more thorough check
+          ? discoveredExts.some(e => e.uuid === item.uuid)
           : appLoader.getApps().some(a => a.id === item.id);
+        
+        const isLoaded = isExt && loadedExts.has(item.uuid);
 
         const card = document.createElement('div');
         card.className = 'app-card';
@@ -277,17 +330,48 @@ export async function launch(ctx, options = {}) {
               ${item.author} • ${isExt ? item.type.slice(0, -1).toUpperCase() : item.category}
             </div>
             <div style="display: flex; gap: 8px; margin-top: 10px;">
-              <button class="${isInstalled ? 'btn-secondary' : 'btn-primary'} btn-sm" style="flex: 1; height: 26px; padding: 0;">
-                ${isInstalled ? 'Installed' : 'Install'}
-              </button>
-              <button class="btn-secondary btn-sm" style="height: 26px; width: 26px; padding: 0; display: flex; align-items: center; justify-content: center;">...</button>
+              ${isInstalled ? `
+                <button class="btn-primary btn-sm btn-action" style="flex: 1; height: 26px; padding: 0;">
+                  ${isExt ? (isLoaded ? 'Unload' : 'Load') : 'Launch'}
+                </button>
+                <button class="btn-secondary btn-sm btn-uninstall" style="flex: 1; height: 26px; padding: 0; background: rgba(255,0,0,0.1); color: var(--danger);">Uninstall</button>
+              ` : `
+                <button class="btn-primary btn-sm btn-install" style="flex: 1; height: 26px; padding: 0;">Install</button>
+                <button class="btn-secondary btn-sm" style="height: 26px; width: 26px; padding: 0; display: flex; align-items: center; justify-content: center;">...</button>
+              `}
             </div>
           </div>
         `;
 
-        const installBtn = card.querySelector('button');
+        const actionBtn = card.querySelector('.btn-action');
+        if (actionBtn) {
+          actionBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (isExt) {
+              if (isLoaded) {
+                extensionLoader.unload(item.uuid);
+              } else {
+                const installed = discoveredExts.find(e => e.uuid === item.uuid);
+                if (installed) await extensionLoader.loadFromVfs(item.uuid, installed.path, item.type);
+              }
+              render();
+            } else {
+              document.dispatchEvent(new CustomEvent('launch-app', { detail: { id: item.id } }));
+            }
+          };
+        }
+
+        const installBtn = card.querySelector('.btn-install');
         if (installBtn) {
           installBtn.onclick = (e) => {
+            e.stopPropagation();
+            showDetails(item, isExt ? 'online-extension' : 'online-app');
+          };
+        }
+
+        const uninstallBtn = card.querySelector('.btn-uninstall');
+        if (uninstallBtn) {
+          uninstallBtn.onclick = (e) => {
             e.stopPropagation();
             showDetails(item, isExt ? 'online-extension' : 'online-app');
           };
@@ -310,12 +394,19 @@ export async function launch(ctx, options = {}) {
     }
   };
 
-  const showDetails = (item, type) => {
+  const showDetails = async (item, type) => {
     const isOnline = type.startsWith('online-');
     const isApp = type === 'app' || type === 'online-app';
     const name = isApp ? item.name : (item.metadata?.name || item.uuid);
     const desc = isApp ? item.description : (item.metadata?.description || 'No description available.');
     const icon = isApp ? item.icon : (item.metadata?.icon || 'plugin');
+
+    const discoveredExts = await extensionLoader.discover();
+    const loadedExts = extensionLoader.getLoaded();
+    const isInstalled = isApp 
+      ? appLoader.getApps().some(a => a.id === item.id)
+      : discoveredExts.some(e => e.uuid === item.uuid);
+    const isLoaded = !isApp && loadedExts.has(item.uuid);
 
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -341,17 +432,14 @@ export async function launch(ctx, options = {}) {
           <p style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;">${desc}</p>
           
           <div style="display: flex; gap: 12px;">
-            ${isOnline ? `
-              <button class="btn-primary" id="btn-install-online" ${ (isApp ? appLoader.getApps().some(a => a.id === item.id) : extensionLoader.getLoaded().has(item.uuid)) ? 'disabled' : ''}>
-                ${ (isApp ? appLoader.getApps().some(a => a.id === item.id) : extensionLoader.getLoaded().has(item.uuid)) ? 'Installed' : 'Install' }
+            ${isInstalled ? `
+              <button class="btn-primary" id="btn-action-main">
+                ${isApp ? 'Launch Application' : (isLoaded ? 'Unload Extension' : 'Load Extension')}
               </button>
-            ` : (isApp ? `
-              <button class="btn-primary" id="btn-launch">Launch Application</button>
-              ${item.source !== 'builtin' ? `<button class="btn-danger" id="btn-uninstall" style="background:var(--danger); border-color:var(--danger); color:white; padding: 8px 16px; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; font-weight:600;">Uninstall</button>` : ''}
+              ${item.source !== 'builtin' && item.source !== 'system' ? `<button class="btn-danger" id="btn-uninstall" style="background:var(--danger); border-color:var(--danger); color:white; padding: 8px 16px; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; font-weight:600;">Uninstall</button>` : ''}
             ` : `
-              <button class="btn-primary" id="btn-toggle-ext" style="margin-right:8px;">${item.isLoaded ? 'Unload' : 'Load'}</button>
-              ${item.source !== 'builtin' ? `<button class="btn-danger" id="btn-uninstall" style="background:var(--danger); border-color:var(--danger); color:white; padding: 8px 16px; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; font-weight:600;">Uninstall</button>` : ''}
-            `)}
+              <button class="btn-primary" id="btn-install-online">Install</button>
+            `}
           </div>
         </div>
       </div>
@@ -380,14 +468,32 @@ export async function launch(ctx, options = {}) {
 
     overlay.querySelector('#btn-back').onclick = () => overlay.remove();
 
-    if (isOnline) {
+    const actionBtn = overlay.querySelector('#btn-action-main');
+    if (actionBtn) {
+      actionBtn.onclick = async () => {
+        if (isApp) {
+          document.dispatchEvent(new CustomEvent('launch-app', { detail: { id: item.id } }));
+          overlay.remove();
+        } else {
+          if (isLoaded) {
+            extensionLoader.unload(item.uuid);
+          } else {
+            const installed = discoveredExts.find(e => e.uuid === item.uuid);
+            if (installed) await extensionLoader.loadFromVfs(item.uuid, installed.path, item.type);
+          }
+          overlay.remove();
+          render();
+        }
+      };
+    }
+
+    if (isOnline && !isInstalled) {
       overlay.querySelector('#btn-install-online').onclick = async () => {
         const btn = overlay.querySelector('#btn-install-online');
         btn.disabled = true;
         btn.textContent = 'Installing...';
         
         try {
-          // If the item doesn't have a downloadUrl, use the fallback structure
           const downloadUrl = item.downloadUrl || 
             `https://raw.githubusercontent.com/Everest-Os/repo/main/${item.type === 'applets' || item.type === 'desklets' || item.type === 'extensions' ? `plugins/${item.type}` : 'apps'}/${item.id || item.uuid}/bundle.zip`;
             
@@ -404,8 +510,6 @@ export async function launch(ctx, options = {}) {
           await vfs.mkdir(targetDir);
           await ZipHelper.extractToVfs(blob, targetDir, vfs);
           
-          // Icon Extraction (if bundled in the zip root as icon.svg or icon.png)
-          // Look for it manually using JSZip directly
           try {
             const JSZip = await ZipHelper.getJSZip();
             const zip = await JSZip.loadAsync(blob);
@@ -415,18 +519,20 @@ export async function launch(ctx, options = {}) {
                await vfs.mkdir('~/.local/share/icons');
                await vfs.writeFile(`~/.local/share/icons/${item.icon || targetId}.${iconExt}`, iconBlob);
             }
-          } catch(e) {
-            console.warn('Could not extract dedicated icon from bundle', e);
-          }
+          } catch(e) { }
           
           btn.textContent = 'Installed';
-          btn.classList.replace('btn-primary', 'btn-secondary');
+          btn.disabled = true;
           
           if (isApp) {
             await appLoader.init();
-          } else {
-            await extensionLoader.loadFromVfs(targetId, targetDir, item.type);
           }
+          // Do not load extensions automatically as per user request
+          
+          setTimeout(() => {
+            overlay.remove();
+            render();
+          }, 1000);
           
         } catch (err) {
           btn.disabled = false;
@@ -436,62 +542,6 @@ export async function launch(ctx, options = {}) {
             message: err.message,
             type: 'alert'
           });
-        }
-      };
-    } else if (isApp) {
-      overlay.querySelector('#btn-launch').onclick = () => {
-        document.dispatchEvent(new CustomEvent('launch-app', { detail: { id: item.id } }));
-        overlay.remove();
-      };
-      const uninstallBtn = overlay.querySelector('#btn-uninstall');
-      if (uninstallBtn) {
-        uninstallBtn.onclick = () => {
-          showSystemDialog({
-            title: isApp ? 'Uninstall Application' : 'Uninstall Extension',
-            message: `Are you sure you want to uninstall "${item.name || item.uuid}"? This will delete all its source files.`,
-            type: 'confirm',
-            confirmText: 'Uninstall',
-            onConfirm: async () => {
-              try {
-                if (isApp) {
-                  const appPath = appLoader.getAppPath(item.id);
-                  if (appPath) {
-                    await vfs.rm(appPath);
-                    try { await vfs.rm(`~/Desktop/${item.name}.desktop`); } catch(e) {}
-                    await appLoader.init();
-                  }
-                } else {
-                  await extensionLoader.unload(item.uuid);
-                  await vfs.rm(item.path);
-                }
-                overlay.remove();
-                render();
-              } catch (e) {
-                showSystemDialog({
-                  title: 'Error',
-                  message: 'Failed to uninstall: ' + e.message,
-                  type: 'alert'
-                });
-              }
-            }
-          });
-        };
-      }
-    } else {
-      const toggleBtn = overlay.querySelector('#btn-toggle-ext');
-      toggleBtn.onclick = async () => {
-        toggleBtn.disabled = true;
-        try {
-          if (item.isLoaded) {
-            await extensionLoader.unload(item.uuid);
-          } else {
-            await extensionLoader.loadFromVfs(item.uuid, item.path, item.type);
-          }
-          overlay.remove();
-          render();
-        } catch (e) {
-          alert(e.message);
-          toggleBtn.disabled = false;
         }
       };
     }
