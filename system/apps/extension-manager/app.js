@@ -221,57 +221,57 @@ export async function launch(ctx, options = {}) {
 
       listEl.appendChild(card);
     }
-
-    // Event delegation for this render cycle
-    const handler = async (e) => {
-      const btn = e.target.closest('button[data-action]');
-      if (!btn) return;
-      const action = btn.dataset.action;
-      const uuid = btn.dataset.uuid;
-      const type = btn.dataset.type;
-
-      if (action === 'load') {
-        try {
-          btn.disabled = true;
-          btn.textContent = 'Loading...';
-          if (loader.unmarkAsRemoved) loader.unmarkAsRemoved(uuid);
-          await loader.loadFromVfs(uuid, btn.dataset.vfs, type);
-          render();
-        } catch (err) {
-          alert('Failed to load: ' + err.message);
-          render();
-        }
-      } else if (action === 'unload') {
-        if (loader.markAsRemoved) loader.markAsRemoved(uuid);
-        loader.unload(uuid);
-        render();
-      } else if (action === 'reload') {
-        loader.reload(uuid);
-        setTimeout(render, 500);
-      } else if (action === 'settings') {
-        window.dispatchEvent(new CustomEvent('open-extension-settings', { detail: { uuid } }));
-      } else if (action === 'delete') {
-        const vfsPath = btn.dataset.vfs;
-        showSystemDialog({
-          title: 'Delete Plugin',
-          message: `Are you sure you want to permanently delete the plugin "${uuid}"?\n\nThis will remove all its files from ${vfsPath}.`,
-          type: 'confirm',
-          confirmText: 'Delete',
-          onConfirm: async () => {
-            try {
-              loader.unload(uuid);
-              await vfs.rm(vfsPath);
-              render();
-            } catch (err) {
-              alert('Failed to delete: ' + err.message);
-            }
-          }
-        });
-      }
-    };
-
-    listEl.addEventListener('click', handler);
   };
+
+  // Event delegation - single listener for the life of the app
+  const handler = async (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const uuid = btn.dataset.uuid;
+    const type = btn.dataset.type;
+
+    if (action === 'load') {
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Loading...';
+        if (loader.unmarkAsRemoved) loader.unmarkAsRemoved(uuid);
+        await loader.loadFromVfs(uuid, btn.dataset.vfs, type);
+        render();
+      } catch (err) {
+        alert('Failed to load: ' + err.message);
+        render();
+      }
+    } else if (action === 'unload') {
+      if (loader.markAsRemoved) loader.markAsRemoved(uuid);
+      loader.unload(uuid);
+      render();
+    } else if (action === 'reload') {
+      loader.reload(uuid);
+      setTimeout(render, 500);
+    } else if (action === 'settings') {
+      window.dispatchEvent(new CustomEvent('open-extension-settings', { detail: { uuid } }));
+    } else if (action === 'delete') {
+      const vfsPath = btn.dataset.vfs;
+      showSystemDialog({
+        title: 'Delete Plugin',
+        message: `Are you sure you want to permanently delete the plugin "${uuid}"?\n\nThis will remove all its files from ${vfsPath}.`,
+        type: 'confirm',
+        confirmText: 'Delete',
+        onConfirm: async () => {
+          try {
+            loader.unload(uuid);
+            await vfs.rm(vfsPath);
+            render();
+          } catch (err) {
+            alert('Failed to delete: ' + err.message);
+          }
+        }
+      });
+    }
+  };
+
+  listEl.addEventListener('click', handler);
 
   // Browse folder button
   browseBtn.addEventListener('click', async () => {
