@@ -1,0 +1,8 @@
+{
+  "id": "system-monitor",
+  "name": "System Monitor",
+  "description": "View system resources, loaded modules, and logs.",
+  "icon": "system-monitor",
+  "category": "System",
+  "version": "1.0.0"
+}

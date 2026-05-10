@@ -18,31 +18,19 @@ export class AppLoader {
    */
   async init() {
     this._registry.clear();
-    // Vite glob import: eagerly load all app.json manifests
-    const manifests = import.meta.glob('/src/apps/*/app.json', { eager: true });
-    // Lazy import app.js modules
-    const modules = import.meta.glob('/src/apps/*/app.js');
-
-    for (const [jsonPath, manifestModule] of Object.entries(manifests)) {
-      const manifest = manifestModule.default || manifestModule;
-      const dir = jsonPath.replace('/app.json', '');
-      const jsPath = dir + '/app.js';
-
-      if (modules[jsPath]) {
-        this._registry.set(manifest.id, {
-          manifest,
-          loader: modules[jsPath], // () => Promise<module>
-          source: 'builtin'
-        });
-      }
+    // 1. Built-in system apps
+    try {
+      await this._scanPath('/system/apps', 'builtin');
+    } catch (e) {
+      console.warn('Failed to load built-in apps', e);
     }
 
-    // 1. System apps (Protected)
+    // 2. System apps (Protected)
     try {
       await this._scanPath('~/Apps', 'system');
     } catch (e) {}
 
-    // 2. User apps (Deletable)
+    // 3. User apps (Deletable)
     try {
       await this._scanPath('~/.local/share/applications', 'user');
     } catch (e) {}
@@ -107,9 +95,9 @@ export class AppLoader {
     }
 
     if (entry.source === 'builtin') {
-      // Dynamic import the module
       try {
-        const mod = await entry.loader();
+        const url = `${entry.vfsPath}/app.js`; // e.g., /system/apps/app-center/app.js
+        const mod = await import(/* @vite-ignore */ url);
         if (mod.launch) {
           await mod.launch(this._ctx, options);
         } else {
@@ -130,12 +118,14 @@ export class AppLoader {
           const mod = await import(/* @vite-ignore */ url);
           if (mod.launch) {
             await mod.launch(this._ctx, options);
+          } else {
+            console.error(`App "${id}" has no launch() export`);
           }
         } finally {
           URL.revokeObjectURL(url);
         }
       } catch (e) {
-        console.error(`Failed to launch VFS app "${id}":`, e);
+        console.error(`Failed to launch app "${id}":`, e);
         alert(`Failed to launch ${entry.manifest.name}: ${e.message}`);
       }
     }

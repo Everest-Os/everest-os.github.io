@@ -21,6 +21,14 @@ import { IconHelper } from './runtime/iconHelper.js';
 import { loadAppearance } from './runtime/appearanceLoader.js';
 import { showContextMenu } from './runtime/contextMenu.js';
 import { showSystemDialog } from './runtime/dialog.js';
+import { ZipHelper } from './runtime/zipHelper.js';
+
+window.osAPI = {
+  IconHelper,
+  showContextMenu,
+  showSystemDialog,
+  ZipHelper
+};
 
 class EverestSandbox {
   constructor() {
@@ -45,6 +53,14 @@ class EverestSandbox {
     // 1. Initialize Looking Glass first (so logs are captured)
     this.console = new LookingGlass(document.getElementById('looking-glass'));
     this.console.log('🫛 EverestOs starting...');
+
+    // 1.5 Global Error Catcher (pipes errors to System Monitor/Console)
+    window.addEventListener('error', (e) => {
+      this.console.logError(`[Global Error] ${e.message} at ${e.filename}:${e.lineno}`);
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      this.console.logError(`[Unhandled Rejection] ${e.reason?.message || e.reason}`);
+    });
 
     await bootloader.updateStatus('scanning hardware', 18);
     await bootloader.updateStatus('configuring filesystem', 25);

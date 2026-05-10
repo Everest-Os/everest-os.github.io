@@ -4,6 +4,326 @@
     "type": "dir"
   },
   {
+    "path": "/system/apps",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/app-center",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/app-center/app.js",
+    "type": "file",
+    "size": 21369,
+    "mtime": 1778404851045.9888
+  },
+  {
+    "path": "/system/apps/app-center/app.json",
+    "type": "file",
+    "size": 192,
+    "mtime": 1777952224096.0596
+  },
+  {
+    "path": "/system/apps/calculator",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/calculator/app.js",
+    "type": "file",
+    "size": 6392,
+    "mtime": 1778236063359.5322
+  },
+  {
+    "path": "/system/apps/calculator/app.json",
+    "type": "file",
+    "size": 163,
+    "mtime": 1777952224096.1702
+  },
+  {
+    "path": "/system/apps/desktop-settings",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/desktop-settings/app.js",
+    "type": "file",
+    "size": 186,
+    "mtime": 1777789684434.036
+  },
+  {
+    "path": "/system/apps/desktop-settings/app.json",
+    "type": "file",
+    "size": 185,
+    "mtime": 1777952224096.2393
+  },
+  {
+    "path": "/system/apps/developer-center",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/developer-center/app.js",
+    "type": "file",
+    "size": 21652,
+    "mtime": 1778402903238.1616
+  },
+  {
+    "path": "/system/apps/developer-center/app.json",
+    "type": "file",
+    "size": 212,
+    "mtime": 1778237052806.8271
+  },
+  {
+    "path": "/system/apps/extension-manager",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/extension-manager/app.js",
+    "type": "file",
+    "size": 13942,
+    "mtime": 1778402903238.1616
+  },
+  {
+    "path": "/system/apps/extension-manager/app.json",
+    "type": "file",
+    "size": 178,
+    "mtime": 1777952224096.366
+  },
+  {
+    "path": "/system/apps/files",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/files/app.js",
+    "type": "file",
+    "size": 33468,
+    "mtime": 1778402903239.162
+  },
+  {
+    "path": "/system/apps/files/app.json",
+    "type": "file",
+    "size": 139,
+    "mtime": 1777952224096.4282
+  },
+  {
+    "path": "/system/apps/hex-editor",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/hex-editor/app.js",
+    "type": "file",
+    "size": 4445,
+    "mtime": 1778402903239.162
+  },
+  {
+    "path": "/system/apps/hex-editor/app.json",
+    "type": "file",
+    "size": 203,
+    "mtime": 1778402522958.2747
+  },
+  {
+    "path": "/system/apps/image-viewer",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/image-viewer/app.js",
+    "type": "file",
+    "size": 3866,
+    "mtime": 1778402903239.162
+  },
+  {
+    "path": "/system/apps/image-viewer/app.json",
+    "type": "file",
+    "size": 177,
+    "mtime": 1777952224096.4927
+  },
+  {
+    "path": "/system/apps/media-viewer",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/media-viewer/app.js",
+    "type": "file",
+    "size": 3023,
+    "mtime": 1778402903240.1624
+  },
+  {
+    "path": "/system/apps/media-viewer/app.json",
+    "type": "file",
+    "size": 168,
+    "mtime": 1777952224096.551
+  },
+  {
+    "path": "/system/apps/music-player",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/music-player/app.js",
+    "type": "file",
+    "size": 6104,
+    "mtime": 1778402903240.1624
+  },
+  {
+    "path": "/system/apps/music-player/app.json",
+    "type": "file",
+    "size": 172,
+    "mtime": 1777952224096.6162
+  },
+  {
+    "path": "/system/apps/office",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/office/app.js",
+    "type": "file",
+    "size": 11999,
+    "mtime": 1778403749468.8357
+  },
+  {
+    "path": "/system/apps/office/app.json",
+    "type": "file",
+    "size": 191,
+    "mtime": 1777952224096.6814
+  },
+  {
+    "path": "/system/apps/pdf-viewer",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/pdf-viewer/app.js",
+    "type": "file",
+    "size": 2804,
+    "mtime": 1778402903240.1624
+  },
+  {
+    "path": "/system/apps/pdf-viewer/app.json",
+    "type": "file",
+    "size": 155,
+    "mtime": 1777952224096.7878
+  },
+  {
+    "path": "/system/apps/system-monitor",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/system-monitor/app.js",
+    "type": "file",
+    "size": 11760,
+    "mtime": 1778403106385.4148
+  },
+  {
+    "path": "/system/apps/system-monitor/app.json",
+    "type": "file",
+    "size": 199,
+    "mtime": 1778402410368.8237
+  },
+  {
+    "path": "/system/apps/system-settings",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/system-settings/app.js",
+    "type": "file",
+    "size": 78955,
+    "mtime": 1778403724441.2444
+  },
+  {
+    "path": "/system/apps/system-settings/app.json",
+    "type": "file",
+    "size": 170,
+    "mtime": 1777952224096.9226
+  },
+  {
+    "path": "/system/apps/terminal",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/terminal/app.js",
+    "type": "file",
+    "size": 13004,
+    "mtime": 1778403768152.9958
+  },
+  {
+    "path": "/system/apps/terminal/app.json",
+    "type": "file",
+    "size": 146,
+    "mtime": 1777952224096.9849
+  },
+  {
+    "path": "/system/apps/terminal/commands.js",
+    "type": "file",
+    "size": 36004,
+    "mtime": 1778337987616.2554
+  },
+  {
+    "path": "/system/apps/terminal/shell.js",
+    "type": "file",
+    "size": 1434,
+    "mtime": 1777736748601.874
+  },
+  {
+    "path": "/system/apps/text-editor",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/text-editor/app.js",
+    "type": "file",
+    "size": 12109,
+    "mtime": 1778402903256.1685
+  },
+  {
+    "path": "/system/apps/text-editor/app.json",
+    "type": "file",
+    "size": 198,
+    "mtime": 1777952224097.0396
+  },
+  {
+    "path": "/system/apps/video-player",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/video-player/app.js",
+    "type": "file",
+    "size": 6881,
+    "mtime": 1778402903256.1685
+  },
+  {
+    "path": "/system/apps/video-player/app.json",
+    "type": "file",
+    "size": 168,
+    "mtime": 1777952224097.1355
+  },
+  {
+    "path": "/system/apps/web-browser",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/web-browser/app.js",
+    "type": "file",
+    "size": 9899,
+    "mtime": 1778402903257.1687
+  },
+  {
+    "path": "/system/apps/web-browser/app.json",
+    "type": "file",
+    "size": 141,
+    "mtime": 1777952224097.198
+  },
+  {
+    "path": "/system/apps/zip-manager",
+    "type": "dir"
+  },
+  {
+    "path": "/system/apps/zip-manager/app.js",
+    "type": "file",
+    "size": 6604,
+    "mtime": 1778402903257.1687
+  },
+  {
+    "path": "/system/apps/zip-manager/app.json",
+    "type": "file",
+    "size": 189,
+    "mtime": 1777952224097.25
+  },
+  {
     "path": "/system/backgrounds",
     "type": "dir"
   },
