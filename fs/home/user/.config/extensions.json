@@ -33,7 +33,7 @@
   ],
   "removed": [
     "clock@playground",
-    "panchang@india",
-    "nepali-date@khumnath"
+    "nepali-date@khumnath",
+    "panchang@india"
   ]
 }

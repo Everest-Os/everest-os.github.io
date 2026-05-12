@@ -803,4 +803,91 @@ export async function registerCommands(shell) {
       stdout.write(`\x1b[2m  Backup from: ${backupData.os} (${backupData.timestamp})\x1b[0m\n`);
     }
   });
+
+  // ── epm ─────────────────────────────────────────────────────────────
+  shell.register('epm', async (args, { stdout }) => {
+    const pm = window.osAPI.PackageManager;
+    if (!pm) throw new Error('epm: Package Manager subsystem is initializing. Try again in a second.');
+
+    const printHelp = () => {
+      stdout.write('\x1b[1m\x1b[33mEverest Package Manager (epm)\x1b[0m\n');
+      stdout.write('Usage: epm <command> [arguments]\n\n');
+      stdout.write('Commands:\n');
+      stdout.write('  \x1b[36mupdate\x1b[0m                Update package registry cache.\n');
+      stdout.write('  \x1b[36mapp list\x1b[0m              List available online apps.\n');
+      stdout.write('  \x1b[36mapp install <id>\x1b[0m      Install a specific app.\n');
+      stdout.write('  \x1b[36mplugin list\x1b[0m           List available online extensions.\n');
+      stdout.write('  \x1b[36mplugin install <id>\x1b[0m   Install a specific extension.\n');
+    };
+
+    if (args.length === 0) { printHelp(); return; }
+
+    const cmd = args[0].toLowerCase();
+
+    if (cmd === 'update') {
+      stdout.write('\x1b[36mFetching package registry from remote...\x1b[0m\n');
+      try {
+        const reg = await pm.update();
+        const total = (reg.apps?.length || 0) + (reg.extensions?.length || 0);
+        stdout.write(`\x1b[32m✓ Successfully fetched registry containing ${total} items.\x1b[0m\n`);
+      } catch(e) {
+        throw new Error(`epm update failed: ${e.message}`);
+      }
+    } 
+    else if (cmd === 'app') {
+      const sub = args[1]?.toLowerCase();
+      if (sub === 'list') {
+        const reg = await pm.getRegistry();
+        const apps = reg.apps || [];
+        stdout.write('\x1b[1mAVAILABLE APPLICATIONS\x1b[0m\n');
+        stdout.write('\x1b[2m' + 'ID'.padEnd(20) + 'NAME'.padEnd(25) + 'VERSION\x1b[0m\n');
+        for (const a of apps) {
+          stdout.write(`\x1b[36m${a.id.padEnd(20)}\x1b[0m \x1b[1m${a.name.padEnd(25).substring(0, 24)}\x1b[0m \x1b[32m${a.version || '1.0'}\x1b[0m\n`);
+        }
+      } 
+      else if (sub === 'install') {
+        const id = args[2];
+        if (!id) throw new Error('epm app install: missing application ID argument.');
+        stdout.write(`\x1b[36mAttempting to install app: ${id}...\x1b[0m\n`);
+        try {
+          await pm.installApp(id);
+          stdout.write(`\x1b[32m✓ Successfully installed ${id}. You can now launch it from the App Menu.\x1b[0m\n`);
+        } catch (err) {
+          stdout.write(`\x1b[31m✖ Installation failed: ${err.message}\x1b[0m\n`);
+        }
+      } 
+      else {
+        throw new Error('epm app: unknown sub-command. Valid: list, install.');
+      }
+    } 
+    else if (cmd === 'plugin' || cmd === 'ext') {
+      const sub = args[1]?.toLowerCase();
+      if (sub === 'list') {
+        const reg = await pm.getRegistry();
+        const exts = reg.extensions || [];
+        stdout.write('\x1b[1mAVAILABLE EXTENSIONS / PLUGINS\x1b[0m\n');
+        stdout.write('\x1b[2m' + 'UUID'.padEnd(30) + 'TYPE'.padEnd(12) + 'AUTHOR\x1b[0m\n');
+        for (const e of exts) {
+          stdout.write(`\x1b[36m${e.uuid.padEnd(30)}\x1b[0m \x1b[1m${(e.type || 'applet').padEnd(12)}\x1b[0m \x1b[32m${(e.author || 'unknown').substring(0,15)}\x1b[0m\n`);
+        }
+      } 
+      else if (sub === 'install') {
+        const id = args[2];
+        if (!id) throw new Error('epm plugin install: missing extension UUID argument.');
+        stdout.write(`\x1b[36mAttempting to install extension: ${id}...\x1b[0m\n`);
+        try {
+          await pm.installPlugin(id);
+          stdout.write(`\x1b[32m✓ Successfully installed ${id}.\x1b[0m\n`);
+        } catch (err) {
+          stdout.write(`\x1b[31m✖ Installation failed: ${err.message}\x1b[0m\n`);
+        }
+      } 
+      else {
+        throw new Error('epm plugin: unknown sub-command. Valid: list, install.');
+      }
+    } 
+    else {
+      throw new Error(`epm: unknown command '${cmd}'. Type 'epm' to show usage.`);
+    }
+  });
 }
