@@ -454,12 +454,12 @@ export class ExtensionLoader {
 
         // Return entry points
         var __result = {};
-        try { global.log("🧪 Collecting entry points..."); } catch(e){}
+        try { global.log("🧪 Collecting entry points for ${metadata?.name || uuid}..."); } catch(e){}
         try { if (typeof main !== 'undefined') __result.main = main; else if (typeof this.main !== 'undefined') __result.main = this.main; } catch(e){}
         try { if (typeof init !== 'undefined') __result.init = init; else if (typeof this.init !== 'undefined') __result.init = this.init; } catch(e){}
         try { if (typeof enable !== 'undefined') __result.enable = enable; else if (typeof this.enable !== 'undefined') __result.enable = this.enable; } catch(e){}
         try { if (typeof disable !== 'undefined') __result.disable = disable; else if (typeof this.disable !== 'undefined') __result.disable = this.disable; } catch(e){}
-        try { global.log("🧪 Discovery complete."); } catch(e){}
+        try { global.log("🧪 Discovery complete for ${metadata?.name || uuid}."); } catch(e){}
         return __result;
       `;
 

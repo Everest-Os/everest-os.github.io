@@ -51,8 +51,10 @@ for (const item of rawItems) {
   // 1. Ignore specific system junk files
   if (skipFiles.includes(fileName)) continue;
 
-  // 2. Ignore files INSIDE Trash, but allow the Trash directory itself to be packed
-  if (relPath.includes('/Trash/') && item.type === 'file') continue;
+  // 2. Ignore specific runtime system paths (cache, trash)
+  if (relPath.includes('/.cache/') || relPath.includes('/Trash/')) {
+    if (item.type === 'file') continue;
+  }
 
   if (seen.has(relPath)) continue;
   seen.add(relPath);

@@ -273,6 +273,12 @@ function LocalFSMiddleware() {
         const fullPath = path.join(dir, name);
         const vfsPath = vfsPrefix + '/' + name;
         const stat = fs.statSync(fullPath);
+
+        // Ignore runtime artifacts (cache, trash)
+        if (vfsPath.includes('/.cache/') || vfsPath.includes('/Trash/')) {
+          if (!stat.isDirectory()) continue;
+        }
+
         if (stat.isDirectory()) {
           files.push({ path: vfsPath, type: 'dir' });
           walk(fullPath, vfsPath);
@@ -320,7 +326,15 @@ function LocalFSMiddleware() {
     const srcDir = FS_ROOT;
     const destDir = path.join(distDir, 'fs');
     if (fs.existsSync(srcDir)) {
-      fs.cpSync(srcDir, destDir, { recursive: true, force: true });
+      fs.cpSync(srcDir, destDir, { 
+        recursive: true, 
+        force: true,
+        filter: (src) => {
+          const rel = path.relative(srcDir, src);
+          if (rel.includes('.cache') || rel.includes('Trash')) return false;
+          return true;
+        }
+      });
       console.log(`[VFS] Copied fs/ → dist/fs/`);
     }
   };

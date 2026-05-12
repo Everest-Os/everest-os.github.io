@@ -23,3 +23,8 @@ Thumbs.db
 .idea/
 *.sublime-project
 *.sublime-workspace
+setup.sh
+
+# OS Virtual FS runtime data
+fs/**/.cache/
+fs/**/Trash/

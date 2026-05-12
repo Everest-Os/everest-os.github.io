@@ -385,6 +385,18 @@ export class VirtualFileSystem {
       current += '/' + part;
       const exists = await this.exists(current);
       if (!exists) {
+        // Trigger Server mkdir
+        if (!this.staticMode) {
+          try {
+            const res = await fetch(API_BASE + 'mkdir', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ path: current })
+            });
+            if (res.ok) { await res.json(); }
+          } catch (e) { }
+        }
+
         await this._idbPut({ 
           path: current, 
           type: 'dir', 

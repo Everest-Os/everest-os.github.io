@@ -94,40 +94,41 @@ export class AppLoader {
       return;
     }
 
-    if (entry.source === 'builtin') {
+    try {
+      // Load app code via VFS (handles both /system and other paths)
+      let code = await this._ctx.vfs.readFile(`${entry.vfsPath}/app.js`);
+      
+      // Robust relative path resolution for ESM imports inside Blobs
+      // Converts: from './shell.js' -> from 'http://host/system/apps/app/shell.js'
       try {
-        const url = `${entry.vfsPath}/app.js`; // e.g., /system/apps/app-center/app.js
+        const baseUrl = this._ctx.vfs.getFsPath(entry.vfsPath);
+        const baseDir = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+        const absoluteBase = baseDir.startsWith('http') ? baseDir : (window.location.origin + baseDir);
+        
+        // Rewrite simple local relative imports to fixed absolute URL references
+        // Works for: import ... from './x'; and import './x';
+        code = code.replace(/((?:from|import)\s+['"])(\.\/)([^'"]+['"])/g, `$1${absoluteBase}$3`);
+      } catch (err) {
+        console.warn(`Failed to pre-process app imports for ${id}`, err);
+      }
+
+      // Create a blob URL to bypass Vite's strict import rules for public files
+      const blob = new Blob([code], { type: 'application/javascript' });
+      const url = URL.createObjectURL(blob);
+      
+      try {
         const mod = await import(/* @vite-ignore */ url);
         if (mod.launch) {
           await mod.launch(this._ctx, options);
         } else {
           console.error(`App "${id}" has no launch() export`);
         }
-      } catch (e) {
-        console.error(`Failed to launch app "${id}":`, e);
-        alert(`Failed to launch ${entry.manifest.name}: ${e.message}`);
+      } finally {
+        URL.revokeObjectURL(url);
       }
-    } else if (entry.source === 'system' || entry.source === 'user') {
-      // Load from VFS — read the app.js and eval it
-      try {
-        const code = await this._ctx.vfs.readFile(`${entry.vfsPath}/app.js`);
-        // Create a blob URL and dynamically import it
-        const blob = new Blob([code], { type: 'application/javascript' });
-        const url = URL.createObjectURL(blob);
-        try {
-          const mod = await import(/* @vite-ignore */ url);
-          if (mod.launch) {
-            await mod.launch(this._ctx, options);
-          } else {
-            console.error(`App "${id}" has no launch() export`);
-          }
-        } finally {
-          URL.revokeObjectURL(url);
-        }
-      } catch (e) {
-        console.error(`Failed to launch app "${id}":`, e);
-        alert(`Failed to launch ${entry.manifest.name}: ${e.message}`);
-      }
+    } catch (e) {
+      console.error(`Failed to launch app "${id}":`, e);
+      alert(`Failed to launch ${entry.manifest.name}: ${e.message}`);
     }
   }
 

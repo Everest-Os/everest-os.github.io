@@ -190,34 +190,16 @@ export async function launch(ctx, options = {}) {
     btn.textContent = 'Installing...';
     
     try {
-      const downloadUrl = item.downloadUrl || 
-        `https://raw.githubusercontent.com/Everest-Os/repo/main/${item.type === 'applets' || item.type === 'desklets' || item.type === 'extensions' ? `plugins/${item.type}` : 'apps'}/${item.id || item.uuid}/bundle.zip`;
-        
-      const res = await fetch(downloadUrl);
-      if (!res.ok) throw new Error('Failed to download package');
-      
-      const blob = await res.blob();
-      const targetId = isApp ? (item.id || item.name) : item.uuid;
-      const targetDir = isApp 
-        ? `~/.local/share/applications/${targetId}` 
-        : `~/.local/share/plugins/${item.type}/${targetId}`;
-        
-      await vfs.mkdir(targetDir);
-      await ZipHelper.extractToVfs(blob, targetDir, vfs);
-      
-      try {
-        const JSZip = await ZipHelper.getJSZip();
-        const zip = await JSZip.loadAsync(blob);
-        let iconExt = zip.files['icon.svg'] ? 'svg' : zip.files['icon.png'] ? 'png' : null;
-        if (iconExt) {
-           const iconBlob = await zip.file(`icon.${iconExt}`).async('blob');
-           await vfs.mkdir('~/.local/share/icons');
-           await vfs.writeFile(`~/.local/share/icons/${item.icon || targetId}.${iconExt}`, iconBlob);
-        }
-      } catch(e) { }
+      const pm = window.osAPI.PackageManager;
+      if (!pm) throw new Error('Package Manager is initializing...');
+
+      if (isApp) {
+        await pm.installApp(item.id || item.name);
+      } else {
+        await pm.installPlugin(item.uuid, item.type);
+      }
       
       btn.textContent = 'Installed';
-      if (isApp) await appLoader.init();
       
       setTimeout(() => {
         render();
@@ -319,9 +301,9 @@ export async function launch(ctx, options = {}) {
       const isExt = currentView === 'get-exts';
       let onlineItems = [];
       try {
-        const res = await fetch('https://raw.githubusercontent.com/Everest-Os/repo/main/registry.json');
-        if (res.ok) {
-          const registry = await res.json();
+        const pm = window.osAPI.PackageManager;
+        const registry = pm ? await pm.getRegistry() : null;
+        if (registry) {
           onlineItems = isExt ? registry.extensions || [] : registry.apps || [];
         }
       } catch (err) {}

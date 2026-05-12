@@ -22,12 +22,16 @@ import { loadAppearance } from './runtime/appearanceLoader.js';
 import { showContextMenu } from './runtime/contextMenu.js';
 import { showSystemDialog } from './runtime/dialog.js';
 import { ZipHelper } from './runtime/zipHelper.js';
+import { showNotification } from './runtime/notification.js';
+import { PackageManager } from './runtime/packageManager.js';
 
 window.osAPI = {
   IconHelper,
   showContextMenu,
   showSystemDialog,
-  ZipHelper
+  ZipHelper,
+  showNotification,
+  PackageManager: null // initialized in main
 };
 
 class EverestSandbox {
@@ -43,6 +47,7 @@ class EverestSandbox {
     this.appLoader = null;
     this.vfs = null;
     this.themeManager = null;
+    this.packageManager = null;
   }
 
   async init() {
@@ -129,6 +134,19 @@ class EverestSandbox {
     this.appLoader._ctx.appLoader = this.appLoader;
     await this.appLoader.init();
 
+    // 9.5. Initialize Package Manager
+    this.packageManager = new PackageManager({
+      vfs: this.vfs,
+      appLoader: this.appLoader,
+      loader: this.loader
+    });
+    window.osAPI.PackageManager = this.packageManager;
+    
+    // Background pre-fetch & update check
+    this.packageManager.init().then(() => {
+      this._checkSystemUpdates();
+    });
+
     this.console.log(`📦 Discovered ${this.appLoader.getApps().length} apps`);
 
     document.addEventListener('launch-app', (e) => {
@@ -206,13 +224,35 @@ class EverestSandbox {
     this.console.log(`💡 Right-click panel for settings. Alt+F2 for Looking Glass.`);
   }
 
+  async _checkSystemUpdates() {
+    setTimeout(async () => {
+      try {
+        const updates = await this.packageManager.checkForUpdates();
+        if (updates.length > 0) {
+          showNotification({
+            title: 'System Updates Available',
+            message: `${updates.length} package${updates.length > 1 ? 's have' : ' has'} updates available.`,
+            icon: 'software-update-available,📥',
+            duration: 8000,
+            actionText: 'View in App Center',
+            action: () => {
+              this.appLoader.launchApp('app-center');
+            }
+          });
+        }
+      } catch(e) {}
+    }, 3000); // Run shortly after boot completion
+  }
+
   async ensureSystemPaths() {
     // 1. Ensure Directories
     const dirs = [
       '~/.config',
+      '~/.cache',
       '~/.local/share/applications',
       '~/.local/share/plugins/applets',
       '~/.local/share/plugins/desklets',
+      '~/.local/share/plugins/extensions',
       '~/Desktop',
       '~/Documents',
       '~/Downloads',
@@ -244,7 +284,8 @@ class EverestSandbox {
     const systemDirs = [
       '~/Apps',
       '~/Plugins/applets',
-      '~/Plugins/desklets'
+      '~/Plugins/desklets',
+      '~/Plugins/extensions'
     ];
     for (const d of systemDirs) {
       try { await this.vfs.mkdir(d); } catch (e) { }
@@ -254,7 +295,8 @@ class EverestSandbox {
     const restores = [
       { from: '~/.local/share/applications', to: '~/Apps' },
       { from: '~/.local/share/plugins/applets', to: '~/Plugins/applets' },
-      { from: '~/.local/share/plugins/desklets', to: '~/Plugins/desklets' }
+      { from: '~/.local/share/plugins/desklets', to: '~/Plugins/desklets' },
+      { from: '~/.local/share/plugins/extensions', to: '~/Plugins/extensions' }
     ];
     for (const r of restores) {
       try {
