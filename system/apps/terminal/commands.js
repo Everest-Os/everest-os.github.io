@@ -622,9 +622,7 @@ export async function registerCommands(shell) {
     const user = shell.ctx.vfs?.USER || 'user';
     const theme = shell.ctx.themeManager?.currentTheme || 'Everest-Dark';
     const vfsInstance = shell.ctx.vfs;
-    const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/') 
-      ? import.meta.env.BASE_URL 
-      : (window.location.pathname.includes('/EverestOS') ? '/EverestOS/' : '/');
+    const BASE_URL = vfsInstance?.BASE_URL || (window.location.pathname.includes('/EverestOS') ? '/EverestOS/' : '/');
 
     let storageMode = 'Unknown';
     if (vfsInstance?.staticMode) {

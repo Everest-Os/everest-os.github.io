@@ -21,19 +21,17 @@
       "vfsPath": "/system/plugins/applets/statusbar/network@playground"
     },
     {
-      "type": "desklets",
-      "uuid": "SevenSegmentClock@lxs242",
-      "vfsPath": "/system/plugins/desklets/SevenSegmentClock@lxs242"
-    },
-    {
       "type": "applets",
       "uuid": "volume@playground",
       "vfsPath": "/system/plugins/applets/statusbar/volume@playground"
+    },
+    {
+      "type": "desklets",
+      "uuid": "sysinfo@playground",
+      "vfsPath": "/system/plugins/desklets/system/sysinfo@playground"
     }
   ],
   "removed": [
-    "panchang@india",
-    "clock@playground",
-    "nepali-date@khumnath"
+    "SevenSegmentClock@lxs242"
   ]
 }

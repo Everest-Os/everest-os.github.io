@@ -380,7 +380,7 @@
     "x-office-spreadsheet-template": "bloom/color/mimetypes/x-office-spreadsheet-template.svg",
     "x-office-spreadsheet": "bloom/color/mimetypes/x-office-spreadsheet.svg",
     "zip": "bloom/color/mimetypes/zip.svg",
-    "launcher": "bloom/color/places/launcher.svg",
+    "launcher": "bloom/color/actions/launcher.svg",
     "folder-applications-stack": "bloom/color/places/folder-applications-stack.svg",
     "folder-bookmark": "bloom/color/places/folder-bookmark.svg",
     "folder-desktop": "bloom/color/places/folder-desktop.svg",
