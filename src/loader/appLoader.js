@@ -9,8 +9,16 @@ export class AppLoader {
   constructor(ctx) {
     // Shared context passed to every app's launch() function
     this._ctx = ctx;
+    this.Sandbox = ctx.Sandbox; // Provided via main.js
     this._registry = new Map(); // id -> { manifest, loader }
     this._vfsApps = new Map();  // id -> { manifest, code }
+
+    window.addEventListener('sandbox-critical-failure', (e) => {
+      const { uuid } = e.detail;
+      if (this._registry.has(uuid)) {
+        this._handleAppCrash(uuid);
+      }
+    });
   }
 
   /**
@@ -18,19 +26,19 @@ export class AppLoader {
    */
   async init() {
     this._registry.clear();
-    // 1. Built-in system apps
+    // Built-in system apps
     try {
       await this._scanPath('/system/apps', 'builtin');
     } catch (e) {
       console.warn('Failed to load built-in apps', e);
     }
 
-    // 2. System apps (Protected)
+    // System apps (Protected)
     try {
       await this._scanPath('~/Apps', 'system');
     } catch (e) {}
 
-    // 3. User apps (Deletable)
+    // User apps (Deletable)
     try {
       await this._scanPath('~/.local/share/applications', 'user');
     } catch (e) {}
@@ -119,7 +127,7 @@ export class AppLoader {
       try {
         const mod = await import(/* @vite-ignore */ url);
         if (mod.launch) {
-          await mod.launch(this._ctx, options);
+          await this.Sandbox.runAsync(id, 'launch', mod.launch, this._ctx, options);
         } else {
           console.error(`App "${id}" has no launch() export`);
         }
@@ -163,5 +171,27 @@ export class AppLoader {
   getAppPath(id) {
     const entry = this._registry.get(id);
     return entry ? entry.vfsPath : null;
+  }
+
+  _handleAppCrash(id) {
+    const entry = this._registry.get(id);
+    const name = entry?.manifest?.name || id;
+
+    // Close the window if it's open
+    if (this._ctx.windowManager) {
+      this._ctx.windowManager.closeWindow(id);
+    }
+
+    // Show a system notification
+    if (window.osAPI.showNotification) {
+      window.osAPI.showNotification({
+        title: 'Application Failure',
+        message: `${name} was closed because it crashed multiple times.`,
+        icon: 'dialog-error,❌',
+        duration: 5000
+      });
+    }
+
+    console.warn(`🛑 App ${id} halted and window closed due to critical stability issues.`);
   }
 }

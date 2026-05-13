@@ -36,11 +36,18 @@ class DeskletBase {
     this._titleBar.appendChild(title);
 
     const preventDeco = metadata?.['prevent-decorations'] || false;
-    this._decorationsEnabled = !preventDeco;
+    
+    // Default to hiding the title bar (decorations disabled) for all desklets.
+    this._decorationsEnabled = false;
 
     const savedShowTitle = localStorage.getItem(`desklet-show-title-${this._uuid}`);
     if (savedShowTitle !== null) {
       this._decorationsEnabled = savedShowTitle === 'true';
+    }
+
+    // If the desklet metadata explicitly specifies to prevent decorations, force it off.
+    if (preventDeco) {
+      this._decorationsEnabled = false;
     }
 
     if (this._titleBar) {
@@ -74,9 +81,10 @@ class DeskletBase {
               get_state: () => 0,
               get_time: () => Date.now(),
             };
-            try { cb(self.actor, fakeEvent); } catch (e) {
-              window.__everestConsole?.logError(`Signal handler error [${sig}]: ${e.message}`);
-            }
+            const Sandbox = window.osAPI.Sandbox;
+            Sandbox.run(this._uuid || this.metadata?.uuid, `signal_${sig}`, () => {
+              cb(self.actor, fakeEvent);
+            });
           });
           return 0;
         }
@@ -147,9 +155,11 @@ class DeskletBase {
           const scale = parseFloat(s);
           this._contentArea.style.transform = `scale(${scale})`;
           this._contentArea.style.transformOrigin = 'top left';
-          // Calculate the original width that would result in this width at this scale
+          // Calculate the original unscaled dimensions to ensure correct internal proportions
           const logicalW = parseFloat(w) / scale;
+          const logicalH = parseFloat(h) / scale;
           this._contentArea.style.width = logicalW + 'px';
+          this._contentArea.style.height = logicalH + 'px';
       }
   }
 
@@ -205,21 +215,17 @@ class DeskletBase {
           localStorage.setItem(`desklet-show-title-${this._uuid}`, this._decorationsEnabled);
           // Re-sync content styles to handle border-radius changes
           const contentEl = this._contentArea.firstChild;
-          if (contentEl && contentEl.getAttribute) {
-            const styleStr = contentEl.getAttribute('style') || '';
-            const styles = {};
-            styleStr.split(';').forEach(rule => {
-                const idx = rule.indexOf(':');
-                if (idx !== -1) styles[rule.slice(0, idx).trim().toLowerCase()] = rule.slice(idx + 1).trim();
-            });
-            if (styles['border-radius']) {
-                if (this._decorationsEnabled) {
-                    contentEl.style.borderTopLeftRadius = '0px';
-                    contentEl.style.borderTopRightRadius = '0px';
-                } else {
-                    contentEl.style.borderTopLeftRadius = styles['border-radius'];
-                    contentEl.style.borderTopRightRadius = styles['border-radius'];
-                }
+          if (contentEl && contentEl.style) {
+            // Extract the base corner radius using ComputedStyle to robustly capture CSS shorthands
+            const radius = window.getComputedStyle(contentEl).borderBottomLeftRadius;
+            if (radius && radius !== '0px') {
+              if (this._decorationsEnabled) {
+                contentEl.style.borderTopLeftRadius = '0px';
+                contentEl.style.borderTopRightRadius = '0px';
+              } else {
+                contentEl.style.borderTopLeftRadius = radius;
+                contentEl.style.borderTopRightRadius = radius;
+              }
             }
           }
         }
@@ -326,15 +332,17 @@ class DeskletBase {
             if (styles['background']) {
               this._titleBar.style.background = styles['background'];
             }
-            if (styles['border-radius']) {
+            // Dynamically compute true radius to prevent browser serialization shadowing bugs
+            const radius = window.getComputedStyle(el).borderBottomLeftRadius;
+            if (radius && radius !== '0px') {
               if (this._decorationsEnabled) {
-                this._titleBar.style.borderTopLeftRadius = styles['border-radius'];
-                this._titleBar.style.borderTopRightRadius = styles['border-radius'];
+                this._titleBar.style.borderTopLeftRadius = radius;
+                this._titleBar.style.borderTopRightRadius = radius;
                 el.style.borderTopLeftRadius = '0px';
                 el.style.borderTopRightRadius = '0px';
               } else {
-                el.style.borderTopLeftRadius = styles['border-radius'];
-                el.style.borderTopRightRadius = styles['border-radius'];
+                el.style.borderTopLeftRadius = radius;
+                el.style.borderTopRightRadius = radius;
               }
             }
             if (styles['color']) {
@@ -529,7 +537,7 @@ class DeskletBase {
   _relayout() {
     if (this._frame.classList.contains('desklet-moving-mode') || this._frame.classList.contains('desklet-resizing-mode')) return;
     const isMobile = window.innerWidth <= 768;
-    const desktop = document.getElementById('everest-desktop');
+    const desktop = this._frame.parentElement || document.getElementById('everest-desktop');
     const dw = desktop?.clientWidth || document.body.clientWidth;
     const dh = desktop?.clientHeight || document.body.clientHeight;
     
@@ -549,8 +557,16 @@ class DeskletBase {
         if (y + wh > dh) y = Math.max(10, dh - wh - 10);
     } else {
         this._frame.style.maxWidth = '';
-        // Restore from desktop pos if it exists
-        if (this._desktopPos) {
+        
+        const rx = this._frame.dataset.rx ? parseFloat(this._frame.dataset.rx) : null;
+        const ry = this._frame.dataset.ry ? parseFloat(this._frame.dataset.ry) : null;
+        
+        if (rx !== null && ry !== null) {
+            // Prioritize adaptive coordinates to ensure desklets lock perfectly to dynamic parent dimensions
+            x = rx * (dw - ww);
+            y = ry * (dh - wh);
+        } else if (this._desktopPos) {
+            // Fallback to absolute cached coordinates
             x = this._desktopPos.x;
             y = this._desktopPos.y;
         }
@@ -566,14 +582,16 @@ class DeskletBase {
   _toggleResizeMode() {
     if (this._frame.classList.contains('desklet-resizing-mode')) {
       this._frame.classList.remove('desklet-resizing-mode');
-      const handle = this._frame.querySelector('.desklet-resize-handle');
-      if (handle) handle.remove();
       
-      const overlay = document.querySelector('.desklet-resize-overlay');
-      if (overlay) overlay.remove();
+      // Look for handles in both light DOM (slot) and shadow DOM
+      const handles = this._frame.querySelectorAll('.desklet-resize-handle');
+      handles.forEach(h => h.remove());
       
-      const doneBtn = document.querySelector('.resize-done-btn');
-      if (doneBtn) doneBtn.remove();
+      const overlays = document.querySelectorAll('.desklet-resize-overlay');
+      overlays.forEach(o => o.remove());
+      
+      const doneBtns = document.querySelectorAll('.resize-done-btn');
+      doneBtns.forEach(b => b.remove());
 
       this._savePosition();
     } else {
@@ -600,29 +618,31 @@ class DeskletBase {
       handle.innerHTML = '⤡';
       this._frame.appendChild(handle);
 
-      let startW, startH, startX, startY;
-      let initialContentW = this._contentArea.scrollWidth;
-      let initialContentH = this._contentArea.scrollHeight;
+      let logicalStartW, logicalStartH, physicalStartW, physicalStartH, startX, startY;
 
       const onMove = (e) => {
         const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--system-scale')) || 1;
         const dw = (e.clientX - startX) / scale;
         const dh = (e.clientY - startY) / scale;
-        const scaleX = (startW + dw) / startW;
-        const scaleY = (startH + dh) / startH;
         
-        // Ensure we don't scale below minimum dimensions (100x40)
-        const minScale = Math.max(100 / startW, 40 / startH);
+        const newPhysicalW = physicalStartW + dw;
+        const newPhysicalH = physicalStartH + dh;
+        
+        const scaleX = newPhysicalW / logicalStartW;
+        const scaleY = newPhysicalH / logicalStartH;
+        
+        // Ensure we don't scale below minimum dimensions relative to the logical base
+        const minScale = Math.max(100 / logicalStartW, 40 / logicalStartH);
         const uniformScale = Math.max(minScale, Math.min(scaleX, scaleY));
         
         this._contentArea.style.transform = `scale(${uniformScale})`;
         this._contentArea.style.transformOrigin = 'top left';
-        this._contentArea.style.width = startW + 'px'; 
-        this._contentArea.style.height = startH + 'px';
+        this._contentArea.style.width = logicalStartW + 'px'; 
+        this._contentArea.style.height = logicalStartH + 'px';
         
-        // Sync frame size exactly with scaled content to eliminate gaps
-        this._frame.style.width = (startW * uniformScale) + 'px';
-        this._frame.style.height = (startH * uniformScale) + 'px';
+        // Sync frame size exactly with the newly scaled content to prevent gaps
+        this._frame.style.width = (logicalStartW * uniformScale) + 'px';
+        this._frame.style.height = (logicalStartH * uniformScale) + 'px';
         
         this._frame.dataset.scale = uniformScale;
         
@@ -638,8 +658,16 @@ class DeskletBase {
       handle.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
         e.preventDefault();
-        startW = this._frame.offsetWidth;
-        startH = this._frame.offsetHeight;
+        
+        const currentScale = this._frame.dataset.scale ? parseFloat(this._frame.dataset.scale) : 1.0;
+        
+        physicalStartW = this._frame.offsetWidth;
+        physicalStartH = this._frame.offsetHeight;
+        
+        // Core fix: The logical width/height must remain the stable, unscaled foundation
+        logicalStartW = physicalStartW / currentScale;
+        logicalStartH = physicalStartH / currentScale;
+        
         startX = e.clientX;
         startY = e.clientY;
         document.addEventListener('pointermove', onMove);

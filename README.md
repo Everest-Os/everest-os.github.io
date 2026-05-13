@@ -12,7 +12,7 @@ EverestOS brings the power and familiarity of a traditional Linux desktop to the
 
 ## ✨ Highlights
 
-- **Full Desktop Experience** — Window management, taskbar, app menu, desktop icons, right-click context menus, and keyboard shortcuts (Ctrl+C/V/X, Delete, Alt+F2).
+- **Full Desktop Experience** — Window management, taskbar, app menu, desktop icons, right-click context menus, and keyboard shortcuts (Ctrl+C/V/X, Delete, Ctrl+/).
 - **Virtual File System (VFS)** — A dual-mode storage layer: IndexedDB for standalone deployments, and a native Node.js backend for development with real file persistence.
 - **Cinnamon-Compatible Extensions** — Write **Applets** (panel widgets) and **Desklets** (desktop widgets) using a custom-ported CommonJS loader and mock `St` (Shell Toolkit) / `gi` libraries.
 - **18 Built-in Applications** — File Manager, Terminal, Web Browser, Text Editor, Calculator, System Settings, App Center, Extension Manager, and more.
@@ -148,6 +148,7 @@ See the **[Developer Guide](DEVELOPER_GUIDE.md)** for complete documentation and
 
 | Shortcut | Action |
 |---|---|
+| `Ctrl + /` | Toggle Looking Glass developer console |
 | `Ctrl + A` | Select all (desktop/file manager) |
 | `Ctrl + C` | Copy selected items |
 | `Ctrl + X` | Cut selected items |

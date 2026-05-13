@@ -57,7 +57,7 @@ export class DesktopIcons {
       const x = e.clientX || window._lastPointerPos?.x || 0;
       const y = e.clientY || window._lastPointerPos?.y || 0;
       
-      // 1. Find the target item using both path and elementFromPoint
+      // Find the target item using both path and elementFromPoint
       let itemEl = path.find(el => el.classList && (el.classList.contains('desktop-icon') || el.classList.contains('desklet-frame')));
       
       if (!itemEl) {
@@ -65,7 +65,7 @@ export class DesktopIcons {
         itemEl = elAtPoint?.closest('.desktop-icon, .desklet-frame');
       }
 
-      // 2. If we found an icon/desklet, inject the event back into it
+      // If we found an icon/desklet, inject the event back into it
       if (itemEl) {
         e.preventDefault();
         e.stopPropagation();
@@ -82,14 +82,14 @@ export class DesktopIcons {
         return;
       }
 
-      // 3. Yield to system windows and panel
+      // Yield to system windows and panel
       if (path.some(el => el.classList && (
         el.classList.contains('app-window') || 
         el.classList.contains('everest-panel') ||
         el.classList.contains('applet-container')
       ))) return;
 
-      // 4. If we're on the desktop area, show background menu
+      // If we're on the desktop area, show background menu
       const isDesktop = path.some(el => el === this.desktopArea || el === this.container);
       if (isDesktop) {
         e.preventDefault();
@@ -267,7 +267,7 @@ export class DesktopIcons {
         });
       }
 
-      // 1. Calculate all missing positions first (without creating elements)
+      // Calculate all missing positions first (without creating elements)
       let positionsDirty = positionsChanged; // From auto-arrange or cleanup
       items.forEach(item => {
         if (!savedPositions[item.name]) {
@@ -293,12 +293,12 @@ export class DesktopIcons {
         }
       });
 
-      // 2. Batch save if anything changed
+      // Batch save if anything changed
       if (positionsDirty) {
         await this.vfs.writeFile('~/.config/desktop-positions.json', JSON.stringify(savedPositions, null, 2));
       }
 
-      // 3. Now render elements using the guaranteed positions
+      // Now render elements using the guaranteed positions
       items.forEach(item => {
         const pos = savedPositions[item.name];
         const iconEl = document.createElement('div');

@@ -4,8 +4,8 @@
  */
 
 // Robust base URL detection for subfolder deployment
-export const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/') 
-  ? import.meta.env.BASE_URL 
+export const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/')
+  ? import.meta.env.BASE_URL
   : (window.location.pathname.includes('/EverestOS') ? '/EverestOS/' : '/');
 
 const API_BASE = (BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/') + 'api/fs/';
@@ -13,6 +13,7 @@ const API_BASE = (BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/') + 'api/fs/
 export class VirtualFileSystem {
   constructor() {
     this.HOME = '/home/user';
+    this.BASE_URL = BASE_URL;
     this.listeners = [];
     this.db = null;
     this.useLocalStorage = false;
@@ -21,10 +22,10 @@ export class VirtualFileSystem {
     // Dev mode starts as non-static; seed() will probe and confirm.
     this.staticMode = import.meta.env.PROD;
     console.log(`[VFS] Init: ${this.staticMode ? 'Static Mode (production build)' : 'Probing for server API...'}`);
-    
+
     this.systemManifest = [];
-    this._loadSystemManifest();
-    
+    this.systemManifestReady = this._loadSystemManifest();
+
     this.dbReady = this._initDB();
   }
 
@@ -71,8 +72,8 @@ export class VirtualFileSystem {
   async seed(url) {
     if (!url) { this._emit('/'); return; }
 
-    // Wait for DB to be ready
-    await this.dbReady;
+    // Wait for both DB and system manifest to be fully primed
+    await Promise.all([this.dbReady, this.systemManifestReady]);
 
     // Probe the server API only in dev mode (production is always static)
     if (!this.staticMode) {
@@ -115,10 +116,10 @@ export class VirtualFileSystem {
     let seedData;
     try {
       console.log(`[VFS] Fetching seed: ${url}`);
-      const res = await fetch(url, { 
+      const res = await fetch(url, {
         cache: 'no-store',
-        headers: { 
-          'Cache-Control': 'no-cache, no-store, must-revalidate', 
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
           'Expires': '0'
         }
@@ -325,11 +326,11 @@ export class VirtualFileSystem {
     if (resolved.startsWith('~')) {
       resolved = this.HOME + resolved.substring(1);
     }
-    
+
     // Normalize path (handle . and .. and double slashes)
     const parts = resolved.split('/');
     const stack = [];
-    
+
     for (const part of parts) {
       if (part === '.' || part === '') continue;
       if (part === '..') {
@@ -338,7 +339,7 @@ export class VirtualFileSystem {
       }
       stack.push(part);
     }
-    
+
     resolved = '/' + stack.join('/');
     return resolved;
   }
@@ -349,7 +350,7 @@ export class VirtualFileSystem {
 
   async stat(path) {
     const p = this.resolvePath(path);
-    
+
     if (this._isSystemPath(p)) {
       const entry = this.systemManifest.find(e => e.path === p);
       return entry || null;
@@ -377,10 +378,10 @@ export class VirtualFileSystem {
   async mkdir(path) {
     const p = this.resolvePath(path);
     if (this._isSystemPath(p)) throw new Error('Read-only file system');
-    
+
     const parts = p.split('/').filter(Boolean);
     let current = '';
-    
+
     for (const part of parts) {
       current += '/' + part;
       const exists = await this.exists(current);
@@ -397,11 +398,11 @@ export class VirtualFileSystem {
           } catch (e) { }
         }
 
-        await this._idbPut({ 
-          path: current, 
-          type: 'dir', 
-          name: part, 
-          mtime: Date.now() 
+        await this._idbPut({
+          path: current,
+          type: 'dir',
+          name: part,
+          mtime: Date.now()
         });
         this._emit(current.substring(0, current.lastIndexOf('/')) || '/');
       }
@@ -451,14 +452,14 @@ export class VirtualFileSystem {
 
   async readFile(path) {
     const p = this.resolvePath(path);
-    
+
     if (this._isSystemPath(p)) {
       const entry = this.systemManifest.find(e => e.path === p);
       if (!entry || entry.type !== 'file') throw new Error('File not found in /system');
       const base = BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/';
       const res = await fetch(base + p.slice(1));
       if (!res.ok) throw new Error('Failed to read system file');
-      
+
       const contentType = res.headers.get('content-type') || '';
       // Only auto-convert to DataURL for strictly visual/audio media
       if (contentType.includes('image/') || contentType.includes('video/') || contentType.includes('audio/')) {
@@ -477,7 +478,7 @@ export class VirtualFileSystem {
         if (res.ok) {
           const ext = p.split('.').pop().toLowerCase();
           const isBinary = ['zip', 'odt', 'ods', 'odp', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'mp3', 'ogg', 'mp4', 'webm'].includes(ext);
-          
+
           if (isBinary) {
             const blob = await res.blob();
             return new Promise((resolve) => {
@@ -518,7 +519,7 @@ export class VirtualFileSystem {
 
   async readdir(path) {
     const p = this.resolvePath(path);
-    
+
     if (this._isSystemPath(p)) {
       const targetPath = p.endsWith('/') && p !== '/' ? p.slice(0, -1) : p;
       return this.systemManifest
@@ -547,7 +548,7 @@ export class VirtualFileSystem {
 
     const all = await this._idbGetAll();
     const targetPath = p.endsWith('/') ? p.slice(0, -1) : p;
-    
+
     let results = all
       .filter(f => {
         if (f.path.startsWith('__')) return false; // skip internal metadata
@@ -818,7 +819,7 @@ export class VirtualFileSystem {
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction('files', 'readwrite');
       const store = tx.objectStore('files');
-      
+
       const dirs = backupData.files.filter(f => f.type === 'dir');
       const files = backupData.files.filter(f => f.type === 'file');
 

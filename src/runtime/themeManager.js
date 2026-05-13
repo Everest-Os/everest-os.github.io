@@ -14,7 +14,7 @@ export class ThemeManager {
   }
 
   async init() {
-    // 1. Load Desktop Themes
+    // Load Desktop Themes
     const themeIds = ['mint', 'mint-dark', 'minimal', 'win95'];
     for (const id of themeIds) {
       try {
@@ -27,7 +27,7 @@ export class ThemeManager {
       } catch (e) { }
     }
 
-    // 2. Load Icon Themes
+    // Load Icon Themes
     const iconThemeIds = ['emoji', 'modern', 'bloom', 'bloom-dark'];
     for (const id of iconThemeIds) {
       try {
@@ -40,7 +40,7 @@ export class ThemeManager {
       } catch (e) { }
     }
 
-    // 3. Check for saved config
+    // Check for saved config
     try {
       const savedStr = await this.vfs.readFile('~/.config/theme.json');
       if (savedStr) {

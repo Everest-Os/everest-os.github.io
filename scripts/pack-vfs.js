@@ -48,10 +48,10 @@ for (const item of rawItems) {
   const fileName = path.basename(relPath);
   const skipFiles = ['.gitkeep', '.DS_Store', 'Thumbs.db'];
 
-  // 1. Ignore specific system junk files
+  // Ignore specific system junk files
   if (skipFiles.includes(fileName)) continue;
 
-  // 2. Ignore specific runtime system paths (cache, trash)
+  // Ignore specific runtime system paths (cache, trash)
   if (relPath.includes('/.cache/') || relPath.includes('/Trash/')) {
     if (item.type === 'file') continue;
   }

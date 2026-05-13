@@ -14,8 +14,8 @@
   {
     "path": "/system/apps/app-center/app.js",
     "type": "file",
-    "size": 22808,
-    "mtime": 1778412100331.1035
+    "size": 21754,
+    "mtime": 1778561390516.3606
   },
   {
     "path": "/system/apps/app-center/app.json",
@@ -30,8 +30,8 @@
   {
     "path": "/system/apps/calculator/app.js",
     "type": "file",
-    "size": 6392,
-    "mtime": 1778236063359.5322
+    "size": 6367,
+    "mtime": 1778668526713.2458
   },
   {
     "path": "/system/apps/calculator/app.json",
@@ -142,8 +142,8 @@
   {
     "path": "/system/apps/media-viewer/app.js",
     "type": "file",
-    "size": 3023,
-    "mtime": 1778402903240.1624
+    "size": 2949,
+    "mtime": 1778668513139.9385
   },
   {
     "path": "/system/apps/media-viewer/app.json",
@@ -158,8 +158,8 @@
   {
     "path": "/system/apps/music-player/app.js",
     "type": "file",
-    "size": 6104,
-    "mtime": 1778402903240.1624
+    "size": 6599,
+    "mtime": 1778669476976.5417
   },
   {
     "path": "/system/apps/music-player/app.json",
@@ -206,14 +206,14 @@
   {
     "path": "/system/apps/system-monitor/app.js",
     "type": "file",
-    "size": 11760,
-    "mtime": 1778403106385.4148
+    "size": 17099,
+    "mtime": 1778682923033.793
   },
   {
     "path": "/system/apps/system-monitor/app.json",
     "type": "file",
     "size": 199,
-    "mtime": 1778402410368.8237
+    "mtime": 1778471063553.1062
   },
   {
     "path": "/system/apps/system-settings",
@@ -250,8 +250,8 @@
   {
     "path": "/system/apps/terminal/commands.js",
     "type": "file",
-    "size": 36004,
-    "mtime": 1778337987616.2554
+    "size": 40012,
+    "mtime": 1778682425153.6794
   },
   {
     "path": "/system/apps/terminal/shell.js",
@@ -282,8 +282,8 @@
   {
     "path": "/system/apps/video-player/app.js",
     "type": "file",
-    "size": 6881,
-    "mtime": 1778402903256.1685
+    "size": 7311,
+    "mtime": 1778669486416.5605
   },
   {
     "path": "/system/apps/video-player/app.json",
@@ -2242,8 +2242,78 @@
   {
     "path": "/system/icons/bloom/index.json",
     "type": "file",
-    "size": 24732,
-    "mtime": 1778263097352.9062
+    "size": 25545,
+    "mtime": 1778676707566.5413
+  },
+  {
+    "path": "/system/icons/bloom/status",
+    "type": "dir"
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-caution-charging.svg",
+    "type": "file",
+    "size": 442,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-caution.svg",
+    "type": "file",
+    "size": 397,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-charged.svg",
+    "type": "file",
+    "size": 426,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-empty-charging.svg",
+    "type": "file",
+    "size": 337,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-empty.svg",
+    "type": "file",
+    "size": 292,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-full-charging.svg",
+    "type": "file",
+    "size": 426,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-full.svg",
+    "type": "file",
+    "size": 381,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-good-charging.svg",
+    "type": "file",
+    "size": 441,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-good.svg",
+    "type": "file",
+    "size": 396,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-low-charging.svg",
+    "type": "file",
+    "size": 442,
+    "mtime": 1778668410360.7805
+  },
+  {
+    "path": "/system/icons/bloom/status/battery-low.svg",
+    "type": "file",
+    "size": 397,
+    "mtime": 1778668410360.7805
   },
   {
     "path": "/system/icons/bloom/symbolic",
@@ -2282,6 +2352,12 @@
     "type": "file",
     "size": 1526,
     "mtime": 1778221109189.145
+  },
+  {
+    "path": "/system/icons/bloom/symbolic/actions/audio-volume-muted.svg",
+    "type": "file",
+    "size": 311,
+    "mtime": 1778669665353.7256
   },
   {
     "path": "/system/icons/bloom/symbolic/actions/back.svg",
@@ -2616,14 +2692,14 @@
   {
     "path": "/system/icons/bloom/symbolic/actions/refresh-color.svg",
     "type": "file",
-    "size": 1722,
-    "mtime": 1778156958081.204
+    "size": 258,
+    "mtime": 1778668647330.592
   },
   {
     "path": "/system/icons/bloom/symbolic/actions/refresh.svg",
     "type": "file",
-    "size": 635,
-    "mtime": 1777946738643.2688
+    "size": 264,
+    "mtime": 1778668639082.3806
   },
   {
     "path": "/system/icons/bloom/symbolic/actions/reload.svg",
@@ -6110,8 +6186,8 @@
   {
     "path": "/system/icons/bloom-dark/index.json",
     "type": "file",
-    "size": 46854,
-    "mtime": 1778263158305.1182
+    "size": 47671,
+    "mtime": 1778669691842.7695
   },
   {
     "path": "/system/icons/bloom-dark/symbolic",
@@ -6137,19 +6213,25 @@
     "path": "/system/icons/bloom-dark/symbolic/actions/audio-volume-high.svg",
     "type": "file",
     "size": 1447,
-    "mtime": 1778221870097.4355
+    "mtime": 1778669671319.6611
   },
   {
     "path": "/system/icons/bloom-dark/symbolic/actions/audio-volume-low.svg",
     "type": "file",
     "size": 1520,
-    "mtime": 1778221870097.4617
+    "mtime": 1778669671319.788
   },
   {
     "path": "/system/icons/bloom-dark/symbolic/actions/audio-volume-medium.svg",
     "type": "file",
     "size": 1526,
-    "mtime": 1778221870097.4878
+    "mtime": 1778669671319.848
+  },
+  {
+    "path": "/system/icons/bloom-dark/symbolic/actions/audio-volume-muted.svg",
+    "type": "file",
+    "size": 311,
+    "mtime": 1778669671319.9763
   },
   {
     "path": "/system/icons/bloom-dark/symbolic/actions/back.svg",
@@ -6484,14 +6566,14 @@
   {
     "path": "/system/icons/bloom-dark/symbolic/actions/refresh-color.svg",
     "type": "file",
-    "size": 1722,
-    "mtime": 1778221870099.108
+    "size": 258,
+    "mtime": 1778668658146.2844
   },
   {
     "path": "/system/icons/bloom-dark/symbolic/actions/refresh.svg",
     "type": "file",
-    "size": 635,
-    "mtime": 1778221870099.1372
+    "size": 264,
+    "mtime": 1778668658146.387
   },
   {
     "path": "/system/icons/bloom-dark/symbolic/actions/reload.svg",
@@ -6704,6 +6786,16 @@
     "mtime": 1777943375848.387
   },
   {
+    "path": "/system/icons/simple-svg",
+    "type": "dir"
+  },
+  {
+    "path": "/system/icons/simple-svg/index.json",
+    "type": "file",
+    "size": 16940,
+    "mtime": 1778669701471.0798
+  },
+  {
     "path": "/system/lib",
     "type": "dir"
   },
@@ -6782,8 +6874,8 @@
   {
     "path": "/system/plugins/applets/statusbar/battery@playground/applet.js",
     "type": "file",
-    "size": 3013,
-    "mtime": 1777902900179.108
+    "size": 8102,
+    "mtime": 1778668230204.2559
   },
   {
     "path": "/system/plugins/applets/statusbar/battery@playground/icon.svg",
@@ -6804,8 +6896,8 @@
   {
     "path": "/system/plugins/applets/statusbar/calendar@playground/applet.js",
     "type": "file",
-    "size": 6218,
-    "mtime": 1778167529876.581
+    "size": 6656,
+    "mtime": 1778667354401.5708
   },
   {
     "path": "/system/plugins/applets/statusbar/calendar@playground/icon.svg",
@@ -6822,8 +6914,8 @@
   {
     "path": "/system/plugins/applets/statusbar/calendar@playground/settings-schema.json",
     "type": "file",
-    "size": 1076,
-    "mtime": 1778167663463.9897
+    "size": 1353,
+    "mtime": 1778667251644.8914
   },
   {
     "path": "/system/plugins/applets/statusbar/network@playground",
@@ -6832,8 +6924,8 @@
   {
     "path": "/system/plugins/applets/statusbar/network@playground/applet.js",
     "type": "file",
-    "size": 3490,
-    "mtime": 1777902893163.01
+    "size": 3481,
+    "mtime": 1778668485463.122
   },
   {
     "path": "/system/plugins/applets/statusbar/network@playground/icon.svg",
@@ -6854,8 +6946,8 @@
   {
     "path": "/system/plugins/applets/statusbar/volume@playground/applet.js",
     "type": "file",
-    "size": 2483,
-    "mtime": 1777902907346.208
+    "size": 5478,
+    "mtime": 1778669715085.1238
   },
   {
     "path": "/system/plugins/applets/statusbar/volume@playground/icon.svg",
@@ -6880,8 +6972,8 @@
   {
     "path": "/system/plugins/desklets/SevenSegmentClock@lxs242/desklet.js",
     "type": "file",
-    "size": 56474,
-    "mtime": 1777779081415.049
+    "size": 56543,
+    "mtime": 1778658075143.3171
   },
   {
     "path": "/system/plugins/desklets/SevenSegmentClock@lxs242/icon.png",
@@ -6990,6 +7082,28 @@
     "mtime": 1778309659575.105
   },
   {
+    "path": "/system/plugins/desklets/clock@playground",
+    "type": "dir"
+  },
+  {
+    "path": "/system/plugins/desklets/clock@playground/desklet.js",
+    "type": "file",
+    "size": 1991,
+    "mtime": 1777785606275.2217
+  },
+  {
+    "path": "/system/plugins/desklets/clock@playground/icon.svg",
+    "type": "file",
+    "size": 196,
+    "mtime": 1778233994696.4355
+  },
+  {
+    "path": "/system/plugins/desklets/clock@playground/metadata.json",
+    "type": "file",
+    "size": 183,
+    "mtime": 1777785592507.0117
+  },
+  {
     "path": "/system/plugins/desklets/nepali-date@khumnath",
     "type": "dir"
   },
@@ -7002,8 +7116,8 @@
   {
     "path": "/system/plugins/desklets/nepali-date@khumnath/desklet.js",
     "type": "file",
-    "size": 22481,
-    "mtime": 1777779081442.0642
+    "size": 22586,
+    "mtime": 1778665959621.6946
   },
   {
     "path": "/system/plugins/desklets/nepali-date@khumnath/icon.png",
@@ -7154,26 +7268,26 @@
     "type": "dir"
   },
   {
-    "path": "/system/plugins/desklets/system/clock@playground",
+    "path": "/system/plugins/desklets/system/sysinfo@playground",
     "type": "dir"
   },
   {
-    "path": "/system/plugins/desklets/system/clock@playground/desklet.js",
+    "path": "/system/plugins/desklets/system/sysinfo@playground/desklet.js",
     "type": "file",
-    "size": 1991,
-    "mtime": 1777785606275.2217
+    "size": 13867,
+    "mtime": 1778681763210.6565
   },
   {
-    "path": "/system/plugins/desklets/system/clock@playground/icon.svg",
+    "path": "/system/plugins/desklets/system/sysinfo@playground/metadata.json",
     "type": "file",
-    "size": 196,
-    "mtime": 1778233994696.4355
+    "size": 235,
+    "mtime": 1778679301576.4294
   },
   {
-    "path": "/system/plugins/desklets/system/clock@playground/metadata.json",
+    "path": "/system/plugins/desklets/system/sysinfo@playground/settings-schema.json",
     "type": "file",
-    "size": 183,
-    "mtime": 1777785592507.0117
+    "size": 1831,
+    "mtime": 1778681334055.5132
   },
   {
     "path": "/system/plugins/extensions",

@@ -52,9 +52,11 @@ export async function launch(ctx) {
       .sm-bar-fill.warning { background: var(--warning); }
       .sm-bar-fill.danger { background: var(--danger); }
 
-      .log-entry { font-family: var(--font-mono); font-size: 12px; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+      .log-entry { display: flex; align-items: flex-start; gap: 12px; font-family: var(--font-mono); font-size: 12px; padding: 4px 8px; border-bottom: 1px solid var(--border); }
       .log-entry.error { color: var(--danger); background: rgba(var(--danger-rgb), 0.1); }
       .log-entry.warn { color: var(--warning); background: rgba(var(--warning-rgb), 0.1); }
+      .log-meta { display: flex; gap: 8px; flex-shrink: 0; min-width: 150px; opacity: 0.6; }
+      .log-content { white-space: pre-wrap; flex: 1; }
 
       .process-row { display: grid; grid-template-columns: 2.2fr 1fr 1.5fr 1fr; padding: 8px; border-bottom: 1px solid var(--border); align-items: center; font-size: 13px; }
       .process-header { font-weight: bold; color: var(--text-secondary); border-bottom: 2px solid var(--border); }
@@ -309,21 +311,35 @@ export async function launch(ctx) {
       const row = document.createElement('div');
       row.className = 'process-row';
       const estMem = getPluginMem();
+      const crashCount = window.osAPI.Sandbox._crashMap.get(uuid) || 0;
+      const isCritical = crashCount >= window.osAPI.Sandbox.CRASH_THRESHOLD;
+
       row.innerHTML = `
         <div style="display:flex; align-items:center; gap:8px;">
           ${IconHelper.getIcon('plugin', { size: 14 })}
           <span>${uuid}</span>
         </div>
-        <div style="color:var(--text-secondary)">Extension (${ext.type})</div>
-        <div style="color:var(--success)">Loaded</div>
+        <div style="color:var(--text-secondary)">Extension (${ext.type}) ${isCritical ? '<span style="color:var(--danger); font-size:10px;">[HALTED]</span>' : ''}</div>
+        <div style="color:${isCritical ? 'var(--danger)' : crashCount > 0 ? 'var(--warning)' : 'var(--success)'}">
+          ${isCritical ? 'Critical Failure' : crashCount > 0 ? `Degraded (${crashCount} errors)` : 'Healthy'}
+        </div>
         <div style="text-align:right; display:flex; align-items:center; justify-content:flex-end; gap:8px;">
           <span style="font-family:var(--font-mono); font-size:11px; opacity:0.8;">${estMem}MB</span>
+          <button class="btn-secondary btn-sm" style="padding: 2px 8px; font-size:11px;" id="btn-reset-${uuid.replace('@', '-')}">Reset</button>
           <button class="btn-danger btn-sm" style="padding: 2px 8px; font-size:11px;">Unload</button>
         </div>
       `;
       row.querySelector('.btn-danger').onclick = async (e) => {
         e.stopPropagation(); await loader.unload(uuid); render();
       };
+      const resetBtn = row.querySelector(`#btn-reset-${uuid.replace('@', '-')}`);
+      if (resetBtn) {
+        resetBtn.onclick = (e) => {
+          e.stopPropagation();
+          window.osAPI.Sandbox.resetHealth(uuid);
+          render();
+        };
+      }
       processList.appendChild(row);
     });
 
@@ -335,8 +351,11 @@ export async function launch(ctx) {
       const recentLogs = logs.slice(-100); // Only show last 100 for performance
       logContainer.innerHTML = recentLogs.map(l => `
         <div class="log-entry ${l.type}">
-          <span style="opacity:0.5">[${new Date(l.timestamp).toLocaleTimeString()}]</span>
-          ${l.type.toUpperCase()}: ${l.message}
+          <div class="log-meta">
+            <span>[${l.time || 'Unknown'}]</span>
+            <span>${l.type.toUpperCase()}:</span>
+          </div>
+          <div class="log-content">${l.message}</div>
         </div>
       `).join('');
       // Auto-scroll if at bottom

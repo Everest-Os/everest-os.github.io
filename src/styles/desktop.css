@@ -913,11 +913,11 @@
 }
 
 .resize-done-btn:hover {
-  transform: translateY(-2px) scale(1.05);
+  transform: translateX(-50%) translateY(-2px) scale(1.05);
 }
 
 .resize-done-btn:active {
-  transform: translateY(0) scale(0.95);
+  transform: translateX(-50%) translateY(0) scale(0.95);
 }
 
 @keyframes desklet-fade-in {
@@ -1200,6 +1200,9 @@
 }
 
 .lg-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   padding: 2px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.02);
   user-select: text;
@@ -1220,13 +1223,14 @@
 .lg-time {
   color: var(--text-tertiary);
   font-size: 10px;
-  display: inline-block;
+  flex-shrink: 0;
   width: 75px;
   user-select: text;
 }
 
 .lg-msg {
-  display: inline;
+  white-space: pre-wrap;
+  flex: 1;
 }
 
 .lg-repl-input-row {

@@ -436,11 +436,14 @@ export class AppMenu {
     // Modular menu applets (possibly multiple)
     const modularMenus = document.querySelectorAll('[data-uuid="menu@playground"]');
     modularMenus.forEach(menu => {
-      const iconEl = menu.querySelector('.applet-icon');
+      // Applets reside within a Shadow DOM isolation boundary
+      const root = menu.shadowRoot || menu;
+      
+      const iconEl = root.querySelector('.applet-icon');
       if (iconEl) {
         iconEl.innerHTML = IconHelper.getIcon(iconKey, { size });
       }
-      const labelEl = menu.querySelector('.applet-label');
+      const labelEl = root.querySelector('.applet-label');
       if (labelEl) {
         labelEl.textContent = this.settings.label !== undefined ? this.settings.label : 'Menu';
       }

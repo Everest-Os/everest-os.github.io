@@ -1,0 +1,8 @@
+{
+  "uuid": "sysinfo@playground",
+  "name": "System Information",
+  "description": "Displays clock, filesystem state, current themes, and hardware statistics.",
+  "version": "1.0",
+  "type": "desklet",
+  "prevent-decorations": false
+}

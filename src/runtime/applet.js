@@ -44,10 +44,8 @@ class AppletBase {
     // Left-click: applet action
     this._element.addEventListener('click', (e) => {
       if (e.button !== 0) return;
-      try { this.on_applet_clicked(e); } catch (err) {
-        console.error('Applet click error:', err);
-        window.__everestConsole?.logError('Applet click error: ' + err.message);
-      }
+      const Sandbox = window.osAPI.Sandbox;
+      Sandbox.run(this._uuid || this.metadata?.uuid, 'on_applet_clicked', this.on_applet_clicked.bind(this), e);
     });
 
     // Right-click: context menu

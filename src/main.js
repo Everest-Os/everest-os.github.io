@@ -18,12 +18,12 @@ import { BootLoader } from './loader/bootLoader.js';
 
 import { IconHelper } from './runtime/iconHelper.js';
 
-import { loadAppearance } from './runtime/appearanceLoader.js';
 import { showContextMenu } from './runtime/contextMenu.js';
 import { showSystemDialog } from './runtime/dialog.js';
 import { ZipHelper } from './runtime/zipHelper.js';
 import { showNotification } from './runtime/notification.js';
 import { VolumeManager } from './runtime/volumeManager.js';
+import { Sandbox } from './runtime/sandbox.js';
 import { PackageManager } from './runtime/packageManager.js';
 
 window.osAPI = {
@@ -33,6 +33,7 @@ window.osAPI = {
   ZipHelper,
   showNotification,
   VolumeManager: new VolumeManager(),
+  Sandbox,
   PackageManager: null // initialized in main
 };
 
@@ -57,11 +58,25 @@ class EverestSandbox {
     await bootloader.updateStatus('starting kernel', 5);
     await bootloader.updateStatus('getting ready assets', 12);
 
-    // 1. Initialize Looking Glass first (so logs are captured)
+    // Initialize Looking Glass first (so logs are captured)
     this.console = new LookingGlass(document.getElementById('looking-glass'));
-    this.console.log('🫛 EverestOs starting...');
+    const logo = `        /\\
+       /  \\
+      /    \\
+     /      \\
+    /   /\\   \\
+   /   /  \\   \\
+  /   /    \\   \\
+ /   /  /\\  \\   \\
+/___/  /  \\  \\___\\
+       \\  /
+        \\/`;
+    console.log("%c" + logo, "color: #06b6d4; font-weight: bold; line-height: 1.2; font-family: monospace;");
+    this.console.log(logo);
+    this.console.log('🏔️  Welcome to Everest OS v1.0.0');
+    this.console.log('🫛  Starting system services...');
 
-    // 1.5 Global Error Catcher (pipes errors to System Monitor/Console)
+    // Global Error Catcher (pipes errors to System Monitor/Console)
     window.addEventListener('error', (e) => {
       this.console.logError(`[Global Error] ${e.message} at ${e.filename}:${e.lineno}`);
     });
@@ -71,7 +86,7 @@ class EverestSandbox {
 
     await bootloader.updateStatus('scanning hardware', 18);
     await bootloader.updateStatus('configuring filesystem', 25);
-    // 2. Initialize VFS and Seed default extensions
+    // Initialize VFS and Seed default extensions
     this.vfs = new VirtualFileSystem();
 
     const seedUrl = (BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/') + 'vfs-seed.json?v=' + Date.now();
@@ -92,35 +107,39 @@ class EverestSandbox {
     }
 
     await bootloader.updateStatus('initialising plugins', 60);
-    // 2.5 Initialize Theme Manager
+    //  Initialize Theme Manager
     this.themeManager = new ThemeManager(this.vfs);
     await this.themeManager.init();
 
-    // 3. Initialize Panel Manager
+    // Expose core system APIs globally for extension and plugin sandboxes
+    window.osAPI.vfs = this.vfs;
+    window.osAPI.themeManager = this.themeManager;
+
+    // Initialize Panel Manager
     this.panelManager = new PanelManager(this.vfs);
     await this.panelManager.init();
 
-    // 4. Initialize Extension Loader
+    // Initialize Extension Loader
     this.loader = new ExtensionLoader(this, this.vfs);
     await this.loader.init();
 
-    // 5. Initialize Code Editor
+    // Initialize Code Editor
     this.editor = new CodeEditor(document.getElementById('code-editor'), this.loader);
 
-    // 6. Initialize Window Manager
+    // Initialize Window Manager
     const desktopArea = document.getElementById('everest-desktop');
     this.windowManager = new WindowManager(desktopArea, this.panelManager);
 
-    // 7. Initialize File Picker
+    // Initialize File Picker
     this.filePicker = new FilePickerApp(this.windowManager, this.vfs);
 
-    // 8. Initialize Desktop Settings (system component — stays in runtime)
+    // Initialize Desktop Settings (system component — stays in runtime)
     this.desktopSettings = new DesktopSettings(desktopArea, this.vfs, this.filePicker, this.loader, this.panelManager);
     this.desktopSettings.init();
 
     await bootloader.updateStatus('configuring desktop environment', 75);
 
-    // 9. Initialize App Loader — discovers built-in + VFS apps
+    // Initialize App Loader — discovers built-in + VFS apps
     this.appLoader = new AppLoader({
       windowManager: this.windowManager,
       vfs: this.vfs,
@@ -130,20 +149,21 @@ class EverestSandbox {
       console: this.console,
       desktopSettings: this.desktopSettings,
       themeManager: this.themeManager,
+      Sandbox: Sandbox,
       appLoader: null, // will be set below
     });
     // Self-reference so apps can launch other apps via ctx.appLoader
     this.appLoader._ctx.appLoader = this.appLoader;
     await this.appLoader.init();
 
-    // 9.5. Initialize Package Manager
+    // Initialize Package Manager
     this.packageManager = new PackageManager({
       vfs: this.vfs,
       appLoader: this.appLoader,
       loader: this.loader
     });
     window.osAPI.PackageManager = this.packageManager;
-    
+
     // Background pre-fetch & update check
     this.packageManager.init().then(() => {
       this._checkSystemUpdates();
@@ -167,15 +187,15 @@ class EverestSandbox {
       e.preventDefault();
     });
 
-    // 10. Initialize App Menu (uses AppLoader for dynamic discovery)
+    // Initialize App Menu (uses AppLoader for dynamic discovery)
     this.appMenu = new AppMenu(this.panelManager, this.windowManager, this.loader, this.vfs, this.appLoader, this.filePicker);
     this.appMenu.init();
 
-    // 11. Initialize Desktop Icons (uses AppLoader to open files/folders)
+    // Initialize Desktop Icons (uses AppLoader to open files/folders)
     this.desktopIcons = new DesktopIcons(desktopArea, this.vfs, this.appLoader, this.loader);
     this.desktopIcons.init();
 
-    // 12. Launch Startup Apps
+    // Launch Startup Apps
     this.vfs.readFile('~/.config/startup.json').then(startupStr => {
       if (startupStr) {
         const startupIds = JSON.parse(startupStr);
@@ -185,7 +205,7 @@ class EverestSandbox {
       }
     }).catch(() => { });
 
-    // 13. Restore Display Settings
+    // Restore Display Settings
     await bootloader.updateStatus('loading config', 85);
     this.vfs.readFile('~/.config/display.json').then(savedStr => {
       if (savedStr) {
@@ -202,16 +222,16 @@ class EverestSandbox {
 
     await bootloader.finish();
 
-    // 14. Setup panel clock
+    // Setup panel clock
     this._startClock();
 
-    // 14.5 Setup Fullscreen
+    // Setup Fullscreen
     this._setupFullscreen();
 
-    // 15. Bind settings dialog & extension events
+    // Bind settings dialog & extension events
     this._bindSettingsDialog();
 
-    // 16. Bind keyboard shortcuts
+    // Bind keyboard shortcuts
     this._bindKeyboard();
 
     // Done
@@ -223,7 +243,7 @@ class EverestSandbox {
     this.console.log(`${IconHelper.getIcon('computer,🖥️', { size: 14 })} Viewport: ${window.innerWidth}×${window.innerHeight}`);
     this.console.log(`📐 Panel Location: ${this.panelManager.position}`);
     this.console.log(`💡 Night Light: ${document.body.classList.contains('night-light') ? 'ON' : 'OFF'}`);
-    this.console.log(`💡 Right-click panel for settings. Alt+F2 for Looking Glass.`);
+    this.console.log(`💡 Right-click panel for settings. Ctrl+/ or Ctrl+? for Looking Glass.`);
   }
 
   async _checkSystemUpdates() {
@@ -242,12 +262,12 @@ class EverestSandbox {
             }
           });
         }
-      } catch(e) {}
+      } catch (e) { }
     }, 3000); // Run shortly after boot completion
   }
 
   async ensureSystemPaths() {
-    // 1. Ensure Directories
+    // Ensure Directories
     const dirs = [
       '~/.config',
       '~/.cache',
@@ -266,7 +286,7 @@ class EverestSandbox {
       try { await this.vfs.mkdir(d); } catch (e) { }
     }
 
-    // 2. Ensure Files
+    // Ensure Files
     const configs = [
       { path: '~/.config/startup.json', default: '[]' },
       { path: '~/.config/display.json', default: '{}' },
@@ -282,7 +302,7 @@ class EverestSandbox {
       }
     }
 
-    // 3. Ensure System Paths and Restore Legacy Folders
+    // Ensure System Paths and Restore Legacy Folders
     const systemDirs = [
       '~/Apps',
       '~/Plugins/applets',
@@ -293,7 +313,7 @@ class EverestSandbox {
       try { await this.vfs.mkdir(d); } catch (e) { }
     }
 
-    // 4. Reverse Migration (Fix for previous accidental move)
+    // Reverse Migration Recovery Procedure
     const restores = [
       { from: '~/.local/share/applications', to: '~/Apps' },
       { from: '~/.local/share/plugins/applets', to: '~/Plugins/applets' },
@@ -383,7 +403,7 @@ class EverestSandbox {
         initialTop = rect.top;
         dialog.style.left = initialLeft + 'px';
         dialog.style.top = initialTop + 'px';
-        
+
         dragHeader.setPointerCapture(e.pointerId);
         e.preventDefault();
       };
@@ -395,18 +415,18 @@ class EverestSandbox {
         if (!isDragging) return;
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
-        
+
         let newLeft = initialLeft + dx;
         let newTop = initialTop + dy;
-        
+
         // Bounds checking
         const rect = dialog.getBoundingClientRect();
         const maxX = window.innerWidth - rect.width;
         const maxY = window.innerHeight - rect.height;
-        
+
         newLeft = Math.max(0, Math.min(newLeft, maxX));
         newTop = Math.max(0, Math.min(newTop, maxY));
-        
+
         dialog.style.left = newLeft + 'px';
         dialog.style.top = newTop + 'px';
       });
@@ -484,7 +504,8 @@ class EverestSandbox {
     // Listen for desklet-removed
     window.addEventListener('desklet-removed', (e) => {
       const { uuid } = e.detail;
-      this.loader.markAsRemoved(uuid); // Persistently mark as removed
+      this.loader.clearDeskletConfig(uuid); // Purge desklet layout memory
+      this.loader.markAsRemoved(uuid);      // Conditionally mark system desklets as removed
       this.loader.unload(uuid);
       this.panelManager.unregisterExtensionWindow(uuid);
       this.console.log(`${IconHelper.getIcon('trash,🗑️', { size: 14 })} Desklet removed: ${uuid}`);
@@ -584,13 +605,34 @@ class EverestSandbox {
 
     body.innerHTML = '';
 
-    for (const [key, def] of Object.entries(schema)) {
+    // Component to render structural headers
+    const renderSectionHeader = (def, key) => {
+      const sectionWrap = document.createElement('div');
+      sectionWrap.style.marginTop = '20px';
+      sectionWrap.style.marginBottom = '10px';
+      sectionWrap.style.borderBottom = '1px solid var(--border)';
+      sectionWrap.style.paddingBottom = '6px';
+
+      const titleEl = document.createElement('div');
+      titleEl.style.fontSize = '11px';
+      titleEl.style.fontWeight = '800';
+      titleEl.style.color = 'var(--accent)';
+      titleEl.style.textTransform = 'uppercase';
+      titleEl.style.letterSpacing = '1px';
+      titleEl.textContent = def.title || def.description || key;
+
+      sectionWrap.appendChild(titleEl);
+      body.appendChild(sectionWrap);
+    };
+
+    // Component to render interactive control rows
+    const renderFieldRow = (key, def) => {
       if (def.type === 'header') {
         const header = document.createElement('div');
         header.classList.add('settings-header-row');
         header.textContent = def.description || key;
         body.appendChild(header);
-        continue;
+        return;
       }
       if (def.type === 'separator') {
         const sep = document.createElement('hr');
@@ -598,7 +640,7 @@ class EverestSandbox {
         sep.style.borderTop = '1px solid var(--border)';
         sep.style.margin = '8px 0';
         body.appendChild(sep);
-        continue;
+        return;
       }
 
       const row = document.createElement('div');
@@ -731,10 +773,83 @@ class EverestSandbox {
       row.appendChild(label);
       row.appendChild(control);
       body.appendChild(row);
+    };
+
+    // Map structures and determine final display sequences
+    const keysHandled = new Set();
+    const sectionsToRender = [];
+
+    const layout = schema.layout;
+
+    // Scan pages for section ordering
+    if (layout && layout.pages) {
+      for (const pageId of layout.pages) {
+        const page = schema[pageId] || layout[pageId];
+        if (page && page.sections) {
+          for (const secId of page.sections) {
+            const sec = schema[secId] || layout[secId];
+            if (sec) sectionsToRender.push({ id: secId, def: sec, keys: sec.keys || [] });
+          }
+        }
+      }
+    }
+
+    // Flat section fallback
+    if (sectionsToRender.length === 0 && layout && layout.sections) {
+      for (const secId of layout.sections) {
+        const sec = schema[secId] || layout[secId];
+        if (sec) sectionsToRender.push({ id: secId, def: sec, keys: sec.keys || [] });
+      }
+    }
+
+    // Scrape raw sections if layout directives are fully absent
+    if (sectionsToRender.length === 0) {
+      for (const [key, def] of Object.entries(schema)) {
+        if (def.type === 'section') {
+          sectionsToRender.push({ id: key, def: def, keys: def.keys || [] });
+        }
+      }
+    }
+
+    //  Aggregate settings field keys to render
+    const fieldsMap = {};
+    for (const [key, def] of Object.entries(schema)) {
+      if (key !== 'layout' && def.type !== 'layout' && def.type !== 'page' && def.type !== 'section') {
+        fieldsMap[key] = def;
+      }
+    }
+
+    // Re-assemble form by nesting elements inside sections
+    for (const section of sectionsToRender) {
+      renderSectionHeader(section.def, section.id);
+
+      // Match explicit arrays declared inside the section layout schema
+      for (const key of section.keys) {
+        if (fieldsMap[key] && !keysHandled.has(key)) {
+          renderFieldRow(key, fieldsMap[key]);
+          keysHandled.add(key);
+        }
+      }
+
+      // Match field descriptors declaring dynamic section links
+      for (const [key, def] of Object.entries(fieldsMap)) {
+        if (def.section === section.id && !keysHandled.has(key)) {
+          renderFieldRow(key, def);
+          keysHandled.add(key);
+        }
+      }
+    }
+
+    //  Empty orphan queue (keys not associated with any valid section)
+    for (const [key, def] of Object.entries(fieldsMap)) {
+      if (!keysHandled.has(key)) {
+        renderFieldRow(key, def);
+        keysHandled.add(key);
+      }
     }
 
     overlay.classList.add('open');
-    
+
     // Ensure dialog is visible on screen
     const dialog = document.querySelector('.settings-dialog');
     if (dialog && dialog.style.left) {
@@ -748,9 +863,10 @@ class EverestSandbox {
 
   _bindKeyboard() {
     document.addEventListener('keydown', async (e) => {
-      // Alt+F2 — Toggle Looking Glass
-      if (e.altKey && e.key === 'F2') {
+      // Ctrl+/ or Ctrl+? — Toggle Looking Glass
+      if (e.ctrlKey && (e.key === '/' || e.key === '?')) {
         e.preventDefault();
+        this.console.log('⌨️ Looking Glass toggled via Ctrl+/');
         this.console.toggle();
         document.getElementById('btn-toggle-lg')?.classList.toggle('active', this.console._isOpen);
       }
@@ -768,7 +884,7 @@ class EverestSandbox {
       const scope = window.lastFocusedScope;
       if (!scope) return;
 
-      // 1. Ctrl + A (Select All)
+      // Ctrl + A (Select All)
       if (e.ctrlKey && e.key.toLowerCase() === 'a') {
         e.preventDefault();
         if (scope.type === 'desktop') {
@@ -800,7 +916,7 @@ class EverestSandbox {
         return [];
       };
 
-      // 2. Ctrl + C (Copy)
+      // Ctrl + C (Copy)
       if (e.ctrlKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
         const selected = getSelectedItems();
@@ -815,7 +931,7 @@ class EverestSandbox {
         return;
       }
 
-      // 3. Ctrl + X (Cut)
+      // Ctrl + X (Cut)
       if (e.ctrlKey && e.key.toLowerCase() === 'x') {
         e.preventDefault();
         const selected = getSelectedItems();
@@ -845,7 +961,7 @@ class EverestSandbox {
         return;
       }
 
-      // 4. Ctrl + V (Paste)
+      // Ctrl + V (Paste)
       if (e.ctrlKey && e.key.toLowerCase() === 'v') {
         e.preventDefault();
         const clip = window.desktopClipboard;
@@ -887,7 +1003,7 @@ class EverestSandbox {
         return;
       }
 
-      // 5. Delete button
+      // Delete button
       if (e.key === 'Delete') {
         e.preventDefault();
         const selected = getSelectedItems();

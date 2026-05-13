@@ -24,12 +24,12 @@ class SettingsBase {
     this._storageKey = `everest-settings-${uuid}-${instanceId}`;
     this._vfsPath = `~/.config/extensions/${uuid}/${instanceId}.json`;
 
-    // 1. Initial defaults from schema (if already registered)
+    // Initial defaults from schema (if already registered)
     if (_schemaRegistry[uuid]) {
       this._loadSchema(_schemaRegistry[uuid]);
     }
 
-    // 2. Load persisted values (Async from VFS, sync fallback from localStorage)
+    // Load persisted values (Async from VFS, sync fallback from localStorage)
     this._loadPersisted();
   }
 

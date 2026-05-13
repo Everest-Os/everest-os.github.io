@@ -12,6 +12,7 @@
 import { createImportsTree } from '../runtime/imports.js';
 import { registerSchema } from '../runtime/settings.js';
 import { IconHelper } from '../runtime/iconHelper.js';
+import { Sandbox } from '../runtime/sandbox.js';
 
 // Robust base URL detection for subfolder deployment
 const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/') 
@@ -25,8 +26,12 @@ export class ExtensionLoader {
     this._loadedExtensions = new Map();
     this._explicitlyRemoved = new Set();
     this.CONFIG_PATH = '~/.config/extensions.json';
+    this._styleSheet = null;
 
     window.addEventListener('resize', () => this._onWindowResize());
+    window.addEventListener('sandbox-critical-failure', (e) => {
+      this.unload(e.detail.uuid);
+    });
   }
 
   _onWindowResize() {
@@ -63,7 +68,7 @@ export class ExtensionLoader {
 
       let configChanged = false;
 
-      // 1. Restore User Extensions
+      // Restore User Extensions
       for (let i = 0; i < userExtensions.length; i++) {
         const ext = userExtensions[i];
         if (ext) {
@@ -92,7 +97,7 @@ export class ExtensionLoader {
         console.log('✅ Extension paths updated in configuration (Self-Healed)');
       }
 
-      // 2. Auto-load Statusbar Applets (unless removed)
+      // Auto-load Statusbar Applets (unless removed)
       try {
         const statusbarDir = '/system/plugins/applets/statusbar';
         const items = await this.vfs.readdir(statusbarDir).catch(() => []);
@@ -109,7 +114,7 @@ export class ExtensionLoader {
         }
       } catch (e) { }
 
-      // 3. Auto-load System Desklets (unless removed)
+      // Auto-load System Desklets (unless removed)
       try {
         const systemDeskletsDir = '/system/plugins/desklets/system';
         const deskItems = await this.vfs.readdir(systemDeskletsDir).catch(() => []);
@@ -126,7 +131,7 @@ export class ExtensionLoader {
         }
       } catch (e) { }
 
-      // 4. Fallback for Essential Applets
+      // Fallback for Essential Applets
       const defaults = ['menu@playground'];
       for (const uuid of defaults) {
         if (!this._loadedExtensions.has(uuid) && !this._explicitlyRemoved.has(uuid)) {
@@ -249,6 +254,7 @@ export class ExtensionLoader {
     // Load the main script
     try {
       const metadata = JSON.parse(metaStr);
+      metadata.path = finalPath; // Ensure path resolution for system plugins
 
       const mainScript = type === 'desklets' ? 'desklet.js' : type === 'applets' ? 'applet.js' : 'extension.js';
       const mainJs = await this.vfs.readFile(`${finalPath}/${mainScript}`);
@@ -313,9 +319,9 @@ export class ExtensionLoader {
       };
 
       // Create a Function that:
-      // 1. Makes `imports`, `global`, common vars available
-      // 2. Runs the code
-      // 3. Captures all top-level `var` and `function` declarations by
+      // Makes `imports`, `global`, common vars available
+      // Runs the code
+      // Captures all top-level `var` and `function` declarations by
       //    wrapping in eval and extracting from local scope
       const wrapper = new Function(
         'imports', 'global', 'require', 'module', 'exports',
@@ -491,14 +497,16 @@ export class ExtensionLoader {
         }
         try {
           log?.log(`🚀 Calling main() for ${uuid}...`);
-          instance = result.main(metadata, 0, 40, `sandbox-${uuid}`);
-          log?.log(`✅ main() returned ${instance ? 'an instance' : 'nothing'}`);
-          instance.metadata = metadata;
-          if (settingsSchema && instance.settings) {
-            instance.settings._loadSchema(settingsSchema);
+          instance = Sandbox.run(uuid, 'main', result.main, metadata, 0, 40, `sandbox-${uuid}`);
+          if (instance) {
+            log?.log(`✅ main() returned an instance`);
+            instance.metadata = metadata;
+            if (settingsSchema && instance.settings) {
+              instance.settings._loadSchema(settingsSchema);
+            }
+            this._renderApplet(instance, metadata);
+            log?.log(`🎯 Applet "${metadata.name}" rendered to panel`);
           }
-          this._renderApplet(instance, metadata);
-          log?.log(`🎯 Applet "${metadata.name}" rendered to panel`);
         } catch (err) {
           log?.logError(`❌ Applet instantiation error: ${err.message}`);
           log?.logError(`   Stack: ${err.stack}`);
@@ -509,13 +517,15 @@ export class ExtensionLoader {
           return { error: 'Missing main' };
         }
         try {
-          instance = result.main(metadata, `sandbox-${uuid}`);
-          instance.metadata = metadata;
-          if (settingsSchema && instance.settings) {
-            instance.settings._loadSchema(settingsSchema);
+          instance = Sandbox.run(uuid, 'main', result.main, metadata, `sandbox-${uuid}`);
+          if (instance) {
+            instance.metadata = metadata;
+            if (settingsSchema && instance.settings) {
+              instance.settings._loadSchema(settingsSchema);
+            }
+            this._renderDesklet(instance, metadata);
+            log?.log(`🎯 Desklet "${metadata.name}" rendered to desktop`);
           }
-          this._renderDesklet(instance, metadata);
-          log?.log(`🎯 Desklet "${metadata.name}" rendered to desktop`);
         } catch (err) {
           log?.logError(`❌ Desklet instantiation error: ${err.message}`);
           log?.logError(`   Stack: ${err.stack}`);
@@ -524,11 +534,11 @@ export class ExtensionLoader {
         instance = { init: result.init, enable: result.enable, disable: result.disable, _enabled: false };
         try {
           if (result.init) {
-            result.init(metadata);
+            Sandbox.run(uuid, 'init', result.init, metadata);
             log?.log(`🔧 Extension "${metadata.name}" initialized`);
           }
           if (result.enable) {
-            result.enable();
+            Sandbox.run(uuid, 'enable', result.enable);
             instance._enabled = true;
             log?.log(`✅ Extension "${metadata.name}" enabled`);
           }
@@ -573,10 +583,42 @@ export class ExtensionLoader {
     applet._element.dataset.uuid = metadata.uuid;
     applet._element.classList.add('sandbox-applet');
 
+    // Create Shadow DOM for CSS Isolation
+    const shadowHost = document.createElement('div');
+    shadowHost.classList.add('applet-shadow-host');
+    shadowHost.dataset.uuid = metadata.uuid;
+    const shadow = shadowHost.attachShadow({ mode: 'open' });
+    
+    // Inject design system tokens and basic applet styles
+    const style = document.createElement('style');
+    style.textContent = `
+      :host { display: flex; align-items: center; height: 100%; }
+      * { box-sizing: border-box; }
+      .applet-box { display: flex; align-items: center; gap: 8px; padding: 0 8px; height: 100%; cursor: pointer; transition: background 0.2s; border-radius: 4px; }
+      .applet-box:hover { background: rgba(255,255,255,0.1); }
+      .applet-icon { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
+      .applet-label { font-size: 13px; font-weight: 500; opacity: 0.9; }
+      svg { fill: currentColor; }
+    `;
+    shadow.appendChild(style);
+
+    // Also inject the plugin's specific CSS if it was loaded in head
+    const pluginStyle = document.getElementById(`style-${metadata.uuid}`);
+    if (pluginStyle) {
+      const clone = pluginStyle.cloneNode(true);
+      shadow.appendChild(clone);
+    }
+
+    shadow.appendChild(applet._element);
+
+    // Replace the applet element with the shadow host for the panel manager
+    const originalElement = applet._element;
+    applet._element = shadowHost;
+
     // Determine zone (Menu on left, others on right)
     const zone = metadata.uuid.includes('menu') ? 'left' : 'right';
     this.desktop.panelManager.addApplet(applet, zone);
-    log?.log(`🎯 Applet "${metadata.name || metadata.uuid}" rendered to ${zone} zone`);
+    log?.log(`🎯 Applet "${metadata.name || metadata.uuid}" rendered to ${zone} zone (Isolated)`);
   }
 
   async _renderDesklet(desklet, metadata) {
@@ -593,18 +635,19 @@ export class ExtensionLoader {
     frame.dataset.uuid = uuid;
 
     // Load saved position
-    let rx, ry;
+    let rx, ry, savedW = null, savedH = null;
     try {
       const posStr = await this.vfs.readFile('~/.config/desklet-positions.json');
       const positions = JSON.parse(posStr);
-      if (positions[uuid]) {
-        if (positions[uuid].rx !== undefined) {
-          rx = positions[uuid].rx;
-          ry = positions[uuid].ry;
-          if (positions[uuid].w) frame.style.width = positions[uuid].w + 'px';
-          if (positions[uuid].h) frame.style.height = positions[uuid].h + 'px';
-          if (positions[uuid].s) frame.dataset.scale = positions[uuid].s;
-        } else {
+    // Determine initial dimensions
+    if (positions[uuid]) {
+      if (positions[uuid].rx !== undefined) {
+        rx = positions[uuid].rx;
+        ry = positions[uuid].ry;
+        savedW = positions[uuid].w;
+        savedH = positions[uuid].h;
+        if (positions[uuid].s) frame.dataset.scale = positions[uuid].s;
+      } else {
           // Legacy pixel support
           const desktop = document.getElementById('everest-desktop');
           const dw = desktop?.clientWidth || window.innerWidth;
@@ -624,44 +667,120 @@ export class ExtensionLoader {
     frame.dataset.ry = ry;
     frame.classList.add('sandbox-desklet');
     frame.style.visibility = 'hidden'; // Prevent flash at 0,0
-    desktop.appendChild(frame);
+
+    // Create Shadow DOM for CSS Isolation
+    const shadowHost = document.createElement('div');
+    shadowHost.className = frame.className;
+    shadowHost.dataset.uuid = uuid;
+    shadowHost.style.cssText = frame.style.cssText;
+    if (frame.dataset.scale) {
+      shadowHost.dataset.scale = frame.dataset.scale;
+    }
+    if (savedW) shadowHost.style.width = savedW + 'px';
+    if (savedH) shadowHost.style.height = savedH + 'px';
+    shadowHost.dataset.rx = rx;
+    shadowHost.dataset.ry = ry;
+    
+    const shadow = shadowHost.attachShadow({ mode: 'open' });
+    const style = document.createElement('style');
+    style.textContent = `
+      :host { position: absolute; display: flex !important; flex-direction: column; overflow: visible; box-sizing: border-box !important; }
+      * { box-sizing: border-box; }
+      .desklet-frame { flex: 1; display: block; position: relative !important; width: 100% !important; height: 100% !important; }
+      .desklet-resize-handle { 
+        position: absolute; 
+        right: -12px; 
+        bottom: -12px; 
+        width: 24px; 
+        height: 24px; 
+        background: var(--accent); 
+        border-radius: 50%; 
+        cursor: nwse-resize; 
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      }
+      .desklet-resize-handle::after {
+        content: '↘';
+        color: white;
+        font-size: 14px;
+      }
+    `;
+    shadow.appendChild(style);
+    shadow.appendChild(document.createElement('slot')); // Allow dynamic elements like handles to show up
+
+    // Inject plugin's specific CSS
+    const pluginStyle = document.getElementById(`style-${uuid}`);
+    if (pluginStyle) {
+      const clone = pluginStyle.cloneNode(true);
+      shadow.appendChild(clone);
+    }
+
+    frame.style.visibility = 'visible'; // Ensure content is visible inside shadow
+    frame.style.width = '100%';
+    frame.style.height = '100%';
+    shadow.appendChild(frame);
+
+    // Replace the frame with the shadow host
+    desklet._frame = shadowHost;
+    
+    // Leverage the runtime restoration system to configure internal content proportions
+    if (desklet._restoreSizeAndScale) {
+      try { desklet._restoreSizeAndScale(); } catch(e) {}
+    }
+
+    const finalFrame = shadowHost;
+
+    desktop.appendChild(finalFrame);
 
     // Calculate final position after it has been added to DOM (to get real width/height)
     const applyPosition = () => {
+      const currentFrame = desklet._frame; // shadowHost
       const desktopWidth = desktop.clientWidth;
       const desktopHeight = desktop.clientHeight;
-      const dw = frame.offsetWidth || 0;
-      const dh = frame.offsetHeight || 0;
+      
+      // Prioritize pre-computed saved dimensions to guarantee instant accuracy with no layout lag
+      const dw = savedW !== null ? savedW : (currentFrame.offsetWidth || 0);
+      const dh = savedH !== null ? savedH : (currentFrame.offsetHeight || 0);
 
-      const finalRx = parseFloat(frame.dataset.rx);
-      const finalRy = parseFloat(frame.dataset.ry);
+      const finalRx = parseFloat(currentFrame.dataset.rx);
+      const finalRy = parseFloat(currentFrame.dataset.ry);
 
-      frame.style.left = (finalRx * (desktopWidth - dw)) + 'px';
-      frame.style.top = (finalRy * (desktopHeight - dh)) + 'px';
-      frame.style.visibility = 'visible';
+      currentFrame.style.left = (finalRx * (desktopWidth - dw)) + 'px';
+      currentFrame.style.top = (finalRy * (desktopHeight - dh)) + 'px';
+      currentFrame.style.visibility = 'visible';
     };
 
     // Apply immediately and after a short delay to account for dynamic rendering
     applyPosition();
     setTimeout(applyPosition, 50);
     setTimeout(applyPosition, 300);
+    
+    // Trigger UI nudges to stabilize sizing
+    setTimeout(() => {
+      try { desklet._relayout?.(); } catch(e) {}
+      window.dispatchEvent(new Event('resize')); 
+    }, 500);
 
     // Save position on drag end
     const savePosition = async () => {
-      const newX = parseInt(frame.style.left, 10);
-      const newY = parseInt(frame.style.top, 10);
+      const currentFrame = desklet._frame; // This is the shadowHost now
+      const newX = parseInt(currentFrame.style.left, 10);
+      const newY = parseInt(currentFrame.style.top, 10);
       if (isNaN(newX) || isNaN(newY)) return;
 
-      const desktop = document.getElementById('everest-desktop');
-      const desktopWidth = desktop?.clientWidth || window.innerWidth;
-      const desktopHeight = desktop?.clientHeight || window.innerHeight;
-      const deskletWidth = frame.offsetWidth || 0;
-      const deskletHeight = frame.offsetHeight || 0;
+      // Use the exact same lexical 'desktop' container as applyPosition to eliminate pixel desyncs
+      const desktopWidth = desktop.clientWidth;
+      const desktopHeight = desktop.clientHeight;
+      const deskletWidth = currentFrame.offsetWidth || 0;
+      const deskletHeight = currentFrame.offsetHeight || 0;
 
       const newRx = newX / Math.max(1, desktopWidth - deskletWidth);
       const newRy = newY / Math.max(1, desktopHeight - deskletHeight);
-      frame.dataset.rx = newRx;
-      frame.dataset.ry = newRy;
+      currentFrame.dataset.rx = newRx;
+      currentFrame.dataset.ry = newRy;
 
       try {
         let positions = {};
@@ -669,9 +788,13 @@ export class ExtensionLoader {
           const posStr = await this.vfs.readFile('~/.config/desklet-positions.json');
           positions = JSON.parse(posStr);
         } catch { /* fresh */ }
-        const deskletData = { rx: newRx, ry: newRy };
-        if (frame.style.width) deskletData.w = parseInt(frame.style.width, 10);
-        if (frame.style.height) deskletData.h = parseInt(frame.style.height, 10);
+        const deskletData = { 
+          rx: newRx, 
+          ry: newRy,
+          w: currentFrame.offsetWidth,
+          h: currentFrame.offsetHeight,
+          s: currentFrame.dataset.scale || null
+        };
         
         positions[uuid] = deskletData;
         await this.vfs.writeFile('~/.config/desklet-positions.json', JSON.stringify(positions, null, 2));
@@ -696,19 +819,6 @@ export class ExtensionLoader {
       const el = document.querySelector(`.sandbox-desklet[data-uuid="${uuid}"]`);
       if (el) el.remove();
       try { ext.instance.destroy?.(); } catch (e) { }
-      // Clean up desklet position
-      (async () => {
-        try {
-          const posStr = await this.vfs.readFile('~/.config/desklet-positions.json');
-          if (posStr) {
-            const positions = JSON.parse(posStr);
-            if (positions[uuid]) {
-              delete positions[uuid];
-              await this.vfs.writeFile('~/.config/desklet-positions.json', JSON.stringify(positions, null, 2));
-            }
-          }
-        } catch (e) { }
-      })();
     } else if (ext.type === 'extensions' && ext.instance._enabled && ext.instance.disable) {
       try { ext.instance.disable(); } catch (e) { }
     }
@@ -733,8 +843,15 @@ export class ExtensionLoader {
   }
 
   markAsRemoved(uuid) {
-    this._explicitlyRemoved.add(uuid);
-    this._save();
+    const ext = this._loadedExtensions.get(uuid);
+    if (!ext) return;
+    
+    const vfsPath = ext.metadata?.path || '';
+    // Only track explicit removal of system components to prevent their auto-load routines
+    if (vfsPath.startsWith('/system')) {
+      this._explicitlyRemoved.add(uuid);
+      this._save();
+    }
   }
 
   unmarkAsRemoved(uuid) {
@@ -742,18 +859,38 @@ export class ExtensionLoader {
     this._save();
   }
 
+  async clearDeskletConfig(uuid) {
+    try {
+      const posStr = await this.vfs.readFile('~/.config/desklet-positions.json').catch(() => '{}');
+      let positions = {};
+      try {
+        positions = JSON.parse(posStr) || {};
+      } catch (e) {
+        positions = {};
+      }
+      
+      if (positions[uuid]) {
+        delete positions[uuid];
+        await this.vfs.writeFile('~/.config/desklet-positions.json', JSON.stringify(positions, null, 2));
+        console.log(`🧹 Cleared persistence config for desklet: ${uuid}`);
+      }
+    } catch (err) {
+      console.error(`Failed to clear configuration for removed desklet ${uuid}:`, err);
+    }
+  }
+
   async discover() {
     const discovered = [];
     const types = ['applets', 'desklets', 'extensions'];
 
     for (const type of types) {
-      // 1. System Plugins (Protected, VFS intercepted)
+      // System Plugins (Protected, VFS intercepted)
       try { await this._discoverPath(`/system/plugins/${type}`, type, 'system', discovered); } catch (e) { }
 
-      // 2. Legacy System Plugins (Just in case)
+      // Legacy System Plugins (Just in case)
       try { await this._discoverPath(`~/Plugins/${type}`, type, 'system', discovered); } catch (e) { }
 
-      // 3. User Plugins (Deletable)
+      // User Plugins (Deletable)
       try { await this._discoverPath(`~/.local/share/plugins/${type}`, type, 'user', discovered); } catch (e) { }
     }
     return discovered;

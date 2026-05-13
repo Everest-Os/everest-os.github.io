@@ -128,8 +128,8 @@ export class IconHelper {
       }
 
       // We use the monochrome mask if:
-      // 1. We explicitly want symbolic rendering, OR the asset is inherently symbolic (from a symbolic folder)
-      // 2. The asset is an SVG (masks don't work well with PNGs for this purpose)
+      // We explicitly want symbolic rendering, OR the asset is inherently symbolic (from a symbolic folder)
+      // The asset is an SVG (masks don't work well with PNGs for this purpose)
       const isSymbolicAsset = src.includes('/symbolic/');
       if ((wantSymbolic || isSymbolicAsset) && src.includes('.svg')) {
         return `<div class="symbolic-icon ${className}" style="

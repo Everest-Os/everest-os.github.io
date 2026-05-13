@@ -1,0 +1,86 @@
+{
+  "layout": {
+    "type": "layout",
+    "pages": ["page1"],
+    "sections": ["sec_layout", "sec_bg", "sec_text"]
+  },
+  "page1": {
+    "type": "page",
+    "title": "Settings",
+    "sections": ["sec_layout", "sec_bg", "sec_text"]
+  },
+  "sec_layout": {
+    "type": "section",
+    "title": "General Settings"
+  },
+  "sec_bg": {
+    "type": "section",
+    "title": "Background Appearance"
+  },
+  "sec_text": {
+    "type": "section",
+    "title": "Typography"
+  },
+  "show-time": {
+    "type": "switch",
+    "default": true,
+    "description": "Display Time Section",
+    "section": "sec_layout"
+  },
+  "show-seconds": {
+    "type": "switch",
+    "default": false,
+    "description": "Show Seconds",
+    "section": "sec_layout"
+  },
+  "show-date": {
+    "type": "switch",
+    "default": false,
+    "description": "Show Date",
+    "section": "sec_layout"
+  },
+  "use-theme-bg": {
+    "type": "switch",
+    "default": true,
+    "description": "Use System Theme Background",
+    "section": "sec_bg"
+  },
+  "custom-bg": {
+    "type": "colorchooser",
+    "default": "#1e1e1e",
+    "description": "Custom Background Color",
+    "section": "sec_bg"
+  },
+  "custom-opacity": {
+    "type": "spinbutton",
+    "default": 80,
+    "min": 0,
+    "max": 100,
+    "step": 5,
+    "units": "percent",
+    "description": "Opacity",
+    "section": "sec_bg"
+  },
+  "blur-radius": {
+    "type": "spinbutton",
+    "default": 12,
+    "min": 0,
+    "max": 50,
+    "step": 1,
+    "units": "pixel",
+    "description": "Blur Radius",
+    "section": "sec_bg"
+  },
+  "use-theme-text": {
+    "type": "switch",
+    "default": true,
+    "description": "Use System Theme Text Colors",
+    "section": "sec_text"
+  },
+  "custom-text-color": {
+    "type": "colorchooser",
+    "default": "#ffffff",
+    "description": "Custom Text Color",
+    "section": "sec_text"
+  }
+}

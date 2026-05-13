@@ -152,7 +152,7 @@ export class PackageManager {
 
     const updates = [];
 
-    // 1. Check installed Apps
+    // Check installed Apps
     const installedApps = this.appLoader?.getApps().filter(a => a.source !== 'builtin') || [];
     for (const app of installedApps) {
       const regApp = reg.apps?.find(a => a.id === app.id);
@@ -161,7 +161,7 @@ export class PackageManager {
       }
     }
 
-    // 2. Check installed extensions
+    // Check installed extensions
     const discoveredExts = this.loader ? await this.loader.discover() : [];
     const installedExts = discoveredExts.filter(e => e.source !== 'system');
     for (const ext of installedExts) {
