@@ -61,6 +61,7 @@ class NepaliDateDesklet extends Desklet.Desklet {
             this.settings.bind("month-color", "month_color", () => this._onSettingsChanged());
             this.settings.bind("weekday-color", "weekday_color", () => this._onSettingsChanged());
             this.settings.bind("today-bg-color", "today_bg_color", () => this._onSettingsChanged());
+            this.settings.bind("today-text-color", "today_text_color", () => this._onSettingsChanged());
             this.settings.bind("time-color", "time_color", () => this._onSettingsChanged());
 
             this.viewMode = this.view_mode || 'daily';
@@ -303,8 +304,8 @@ class NepaliDateDesklet extends Desklet.Desklet {
         }
 
         const scaledFontSize = this.font_size * this.widget_scale;
-        const scaledPadding = 15 * this.widget_scale;
-        const scaledRadius = 15 * this.widget_scale;
+        const scaledPadding = 18 * this.widget_scale;
+        const scaledRadius = 24 * this.widget_scale;
 
         let style = `color: ${this.text_color}; background-color: ${bgColor}; font-size: ${scaledFontSize}pt; padding: ${scaledPadding}px; border-radius: ${scaledRadius}px;`;
 
@@ -469,7 +470,7 @@ class NepaliDateDesklet extends Desklet.Desklet {
                     // Only highlight today if we are viewing the current year and month
                     if (this.displayedYear === bsDate.year && this.displayedMonth === bsDate.monthIndex && curDay === bsDate.day) {
                         styleClass += " calendar-day-today";
-                        const scaledTodayRadius = 5 * this.widget_scale;
+                        const scaledTodayRadius = 8 * this.widget_scale;
                         currentDayStyle += `background-color: ${this.today_bg_color}; border-radius: ${scaledTodayRadius}px;`;
                         labelStyle = `color: ${this.today_text_color};`;
                     }

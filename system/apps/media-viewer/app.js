@@ -62,7 +62,6 @@ export async function launch(ctx, options = {}) {
       container.appendChild(audio);
     } else if (VIDEO_EXTS.includes(ext)) {
       if (ext === 'yt') {
-        // ProzillaOS handles .yt files by reading their content as a URL
         const ytUrl = await vfs.readFile(path);
         const iframe = document.createElement('iframe');
         iframe.src = ytUrl.replace("watch?v=", "embed/");

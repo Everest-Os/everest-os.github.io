@@ -1,5 +1,5 @@
 /**
- * Calculator App - Ported from ProzillaOS
+ * Calculator App
  */
 
 export async function launch(ctx, options = {}) {
