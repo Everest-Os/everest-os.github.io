@@ -183,8 +183,11 @@ export function showSystemDialog({
     overlay.style.opacity = '1';
     dialog.style.transform = 'scale(1) translateY(0)';
     if (input) {
-      input.focus();
-      input.select();
+      const isMobile = window.innerWidth <= 1024 || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+      if (!isMobile) {
+        input.focus();
+        input.select();
+      }
     }
   });
 }

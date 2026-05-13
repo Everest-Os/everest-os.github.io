@@ -13,24 +13,25 @@
   --menu-opacity: 0.95;
   --panel-blur: 20px;
   --menu-blur: 20px;
-  
+
   --panel-margin-x: 60px;
   --panel-margin-y: 12px;
   --panel-radius: 12px;
-  
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 18px;
   --radius-main: var(--radius-md);
-  
+
   /* Derived Colors */
   --bg-desktop: rgb(var(--bg-desktop-rgb));
   --bg-panel-rgba: rgba(var(--bg-panel-rgb), var(--panel-opacity));
   --bg-menu-rgba: rgba(var(--bg-menu-rgb), var(--menu-opacity));
-  
+
   --bg-surface: rgb(var(--bg-surface-rgb));
-  --bg-surface-hover: rgba(var(--bg-surface-rgb), 1.15); /* Approximated */
+  --bg-surface-hover: rgba(var(--bg-surface-rgb), 1.15);
+  /* Approximated */
   --bg-surface-active: rgba(var(--bg-surface-rgb), 1.3);
   --bg-elevated: #303030;
   --bg-card: rgba(var(--bg-surface-rgb), 1.1);
@@ -61,9 +62,9 @@
   --radius-lg: 14px;
   --radius-xl: 18px;
 
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 20px rgba(53, 132, 228, 0.2);
 
   --font-main: 'Inter', 'Cantarell', system-ui, -apple-system, sans-serif;
@@ -86,33 +87,35 @@
 /* ── Light Themes ─────────────────────────────────────────────────── */
 
 /* Light Theme for Shell (Panel/Menu) */
-html.light-panel-theme, body.light-panel-theme {
+html.light-panel-theme,
+body.light-panel-theme {
   --bg-panel-rgb: 255, 255, 255;
   --bg-menu-rgb: 255, 255, 255;
   --bg-context-menu-rgba: rgba(255, 255, 255, 0.75);
   --border: rgba(0, 0, 0, 0.12);
-  --shadow-sm: 0 2px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
   --text-primary-rgb: 44, 62, 80;
 }
 
 /* Light Theme for Applications/Windows/Dialogs */
-html.light-theme, body.light-theme {
+html.light-theme,
+body.light-theme {
   --bg-surface-rgb: 245, 245, 247;
   --text-primary-rgb: 44, 62, 80;
-  
+
   --bg-elevated: #e5e5e7;
   --bg-card: #ffffff;
   --bg-card-hover: #f5f5f7;
   --bg-input: #efeff1;
   --bg-tooltip: rgba(255, 255, 255, 0.95);
-  
+
   --border: rgba(0, 0, 0, 0.08);
   --border-accent: rgba(53, 132, 228, 0.4);
-  
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.1);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.1);
 
   --bg-hover: rgba(0, 0, 0, 0.05);
   --bg-active: rgba(0, 0, 0, 0.08);
@@ -120,13 +123,16 @@ html.light-theme, body.light-theme {
 }
 
 /* ── Reset & Base ──────────────────────────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -142,15 +148,18 @@ html, body {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* ── Buttons ───────────────────────────────────────────────────────── */
@@ -166,9 +175,23 @@ html, body {
   transition: all var(--transition-fast);
   font-family: var(--font-main);
 }
-.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.btn-primary:active { background: var(--accent-active); transform: translateY(0); }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:active {
+  background: var(--accent-active);
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .btn-secondary {
   background: var(--bg-input);
@@ -181,8 +204,16 @@ html, body {
   transition: all var(--transition-fast);
   font-family: var(--font-main);
 }
-.btn-secondary:hover { background: var(--bg-surface-hover); border-color: rgba(255,255,255,0.15); }
-.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-secondary:hover {
+  background: var(--bg-surface-hover);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .btn-danger {
   background: var(--danger);
@@ -196,9 +227,15 @@ html, body {
   transition: all var(--transition-fast);
   font-family: var(--font-main);
 }
-.btn-danger:hover { background: var(--danger-hover); }
 
-.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-danger:hover {
+  background: var(--danger-hover);
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+}
 
 /* ── Night Light ──────────────────────────────────────────────────── */
 body.night-light::after {

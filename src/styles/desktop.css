@@ -7,9 +7,11 @@
   display: flex;
   width: calc(100vw / var(--system-scale));
   height: calc(100vh / var(--system-scale));
+  height: calc(100dvh / var(--system-scale));
+  overflow: hidden;
+  position: relative;
   transform: scale(var(--system-scale));
   transform-origin: top left;
-  overflow: hidden;
 }
 
 .fullscreen-btn {
@@ -53,7 +55,7 @@
 .sidebar {
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);
-  height: 100vh;
+  height: 100%;
   background: var(--bg-surface);
   border-right: 1px solid var(--border);
   display: flex;
@@ -282,6 +284,8 @@
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, #0f1923 0%, #1a2a3a 30%, #0d2137 60%, #162b3e 100%);
+  background-size: cover;
+  background-position: center;
 }
 
 .everest-desktop {
@@ -349,6 +353,21 @@
   margin-top: 8px;
 }
 
+.desktop-icon-rename-input {
+  width: 90%;
+  background: white;
+  border: 2px solid var(--accent);
+  color: #000;
+  font-size: 11px;
+  text-align: center;
+  border-radius: 4px;
+  padding: 2px 4px;
+  outline: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  margin-top: 4px;
+  font-family: inherit;
+}
+
 /* ── Panel ─────────────────────────────────────────────────────────── */
 .everest-panel {
   height: var(--panel-height);
@@ -403,6 +422,116 @@
   padding-left: 12px;
   margin-left: 8px;
   border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+  .everest-panel {
+    margin: 4px !important;
+    height: 56px !important;
+    width: calc(100% - 8px) !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    border-radius: 12px !important;
+    z-index: 1000 !important;
+  }
+
+  .desktop-watermark {
+    font-size: 38px;
+    bottom: 85px;
+    right: 20px;
+    text-align: right;
+    opacity: 0.3;
+  }
+
+  .desktop-watermark span {
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  .panel-left {
+    padding-right: 4px;
+  }
+
+  .panel-center {
+    padding: 0 4px;
+  }
+
+  .panel-right {
+    margin-left: 4px;
+    padding-left: 4px;
+  }
+
+  .panel-menu-label {
+    display: none;
+  }
+
+  .panel-menu-button {
+    padding: 0 12px;
+  }
+
+  .window-list-item {
+    padding: 0 10px;
+    max-width: 50px;
+    /* Icon only */
+    justify-content: center;
+  }
+
+  .wl-title {
+    display: none;
+  }
+
+  .resize-handle {
+    display: none !important;
+  }
+
+  .applet-label {
+    display: none;
+  }
+
+  /* Force clock/calendar applet to show its label */
+  .sandbox-applet[data-uuid="calendar@playground"] .applet-label {
+    display: block !important;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 4px;
+    white-space: normal;
+  }
+
+  .panel-clock {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+
+  .app-menu {
+    width: calc(100% - 20px) !important;
+    left: 10px !important;
+    bottom: 60px !important;
+    height: 70% !important;
+  }
+
+  .app-menu-sidebar {
+    width: 60px;
+  }
+
+  .btn-split {
+    background: rgba(53, 132, 228, 0.2);
+    color: #3584e4;
+  }
+
+
+  .app-menu-category {
+    padding: 12px 0;
+    text-align: center;
+    font-size: 10px;
+  }
+
+  .app-menu-category.active {
+    border-left: none;
+    border-bottom: 2px solid #3584e4;
+  }
 }
 
 /* ── Panel Position Variants ───────────────────────────────────────── */
@@ -610,6 +739,10 @@
   white-space: nowrap;
 }
 
+.sandbox-applet[data-uuid="calendar@playground"] .applet-label {
+  white-space: normal;
+}
+
 /* System tray */
 .system-tray-group {
   display: flex;
@@ -679,11 +812,6 @@
 /* ── Desklet Frame ─────────────────────────────────────────────────── */
 .desklet-frame {
   position: absolute;
-  background: rgba(30, 30, 30, 0.9);
-  backdrop-filter: blur(16px);
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: var(--shadow-lg);
   min-width: 40px;
   overflow: visible;
   display: flex;
@@ -695,8 +823,111 @@
   font-size: 13px;
 }
 
-.desklet-frame.sandbox-desklet {
-  border-color: rgba(143, 240, 164, 0.2);
+.desklet-frame:not(.no-decorations):not(.has-custom-background) {
+  border-radius: var(--radius-lg);
+  background: rgba(30, 30, 30, 0.9);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-lg);
+}
+
+
+
+
+.desklet-resizing-mode {
+  box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.4), var(--shadow-lg) !important;
+  border: 2px solid var(--accent) !important;
+  background: rgba(var(--accent-rgb), 0.1) !important;
+  z-index: 1000 !important;
+  transition: all 0.2s ease;
+}
+
+.desklet-resizing-mode::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 2px dashed var(--accent);
+  border-radius: calc(var(--radius-lg) + 4px);
+  pointer-events: none;
+  animation: rotate-border 10s linear infinite;
+}
+
+@keyframes rotate-border {
+  from {
+    outline: 2px dashed var(--accent);
+  }
+}
+
+.desklet-resize-handle {
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  font-size: 16px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  border: 2.5px solid white;
+  z-index: 1001;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.desklet-resize-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 25;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+  backdrop-filter: blur(4px);
+  animation: desklet-fade-in 0.3s ease;
+  pointer-events: auto;
+}
+
+.resize-done-btn {
+  position: absolute;
+  top: 15vh;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: white;
+  padding: 12px 32px;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  z-index: 2000;
+}
+
+.resize-done-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
+.resize-done-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+@keyframes desklet-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes desklet-appear {
@@ -766,7 +997,7 @@
 
 .desklet-frame.no-decorations .desklet-content {
   border-radius: inherit;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* ── PopupMenu ─────────────────────────────────────────────────────── */
@@ -1229,6 +1460,8 @@
 
 .settings-overlay.open {
   display: flex;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .settings-dialog {
@@ -1237,8 +1470,9 @@
   -webkit-backdrop-filter: blur(20px) saturate(150%);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  width: 500px;
-  max-height: 70vh;
+  width: 90%;
+  max-width: 500px;
+  max-height: 85vh;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   pointer-events: auto;
@@ -1273,17 +1507,44 @@
 
 .settings-body {
   padding: 16px 18px;
-  overflow-y: auto;
   max-height: 55vh;
+  overflow-y: auto;
 }
 
 .setting-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border);
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width: 768px) {
+  .setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .setting-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .setting-control {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .setting-control input[type="text"],
+  .setting-control input[type="number"],
+  .setting-control select {
+    width: 100% !important;
+    height: 36px;
+  }
 }
 
 .setting-label {
@@ -1307,6 +1568,12 @@
   font-size: 12px;
   width: 120px;
   outline: none;
+  transition: border-color 0.2s;
+}
+
+.setting-control input:focus,
+.setting-control select:focus {
+  border-color: var(--accent);
 }
 
 .setting-control select {
@@ -1503,8 +1770,8 @@
 }
 
 .desktop-icon {
-  width: 80px;
-  padding: 8px;
+  width: 90px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1714,10 +1981,33 @@
   opacity: 1;
 }
 
+@media screen and (max-width: 768px) {
+  .app-window {
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+  }
+
+  .app-titlebar {
+    height: 44px;
+    /* Larger hit area for touch */
+  }
+
+  .app-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}
+
 .app-window.maximized {
   border-radius: 0;
   border: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-window.dragging {
+  transition: none !important;
 }
 
 .app-window.light-window {
@@ -1800,6 +2090,11 @@
 
 .app-btn.btn-close:hover {
   background: var(--error-color);
+  color: white;
+}
+
+.app-btn.btn-split:hover {
+  background: var(--accent);
   color: white;
 }
 
@@ -1887,4 +2182,58 @@
     opacity: 0;
     transform: scale(0.95) translateY(10px);
   }
+}
+
+/* ── Split Divider ────────────────────────────────────────────────── */
+.mobile-split-divider {
+  position: absolute;
+  z-index: 9999;
+  background: transparent;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.mobile-split-divider.vertical {
+  cursor: ns-resize;
+  width: 100%;
+  height: 8px;
+}
+
+.mobile-split-divider.horizontal {
+  cursor: ew-resize;
+  width: 8px;
+  height: 100%;
+}
+
+.mobile-split-divider::after {
+  content: '';
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.mobile-split-divider.vertical::after {
+  width: 60px;
+  height: 4px;
+}
+
+.mobile-split-divider.horizontal::after {
+  width: 4px;
+  height: 60px;
+}
+
+.mobile-split-divider.dragging::after {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.mobile-split-divider.vertical.dragging::after {
+  width: 100px;
+}
+
+.mobile-split-divider.horizontal.dragging::after {
+  height: 100px;
 }

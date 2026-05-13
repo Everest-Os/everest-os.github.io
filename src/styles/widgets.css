@@ -38,8 +38,14 @@
   font-family: inherit;
   white-space: nowrap;
 }
-.st-button:hover { background: var(--bg-active); }
-.st-button:active { background: rgba(0,0,0,0.1); }
+
+.st-button:hover {
+  background: var(--bg-active);
+}
+
+.st-button:active {
+  background: rgba(0, 0, 0, 0.1);
+}
 
 .st-icon {
   display: flex;
@@ -60,6 +66,7 @@
   transition: border-color var(--transition-fast);
   min-width: 60px;
 }
+
 .st-entry:focus {
   border-color: var(--accent);
 }
@@ -171,9 +178,9 @@ select:focus {
 .calendar-jump-box {
   padding: 8px;
   margin-bottom: 8px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .calendar-month-selector-btn {

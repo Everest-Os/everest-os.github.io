@@ -188,18 +188,17 @@ export class AppMenu {
       const isInsideSettings = e.target.closest('#settings-overlay') || e.target.closest('#system-settings');
       
       if (this.isOpen && !isInsideMenu && !isInsideSettings) {
-        // If it's a right-click, always close the menu
+        // If it's a right-click/contextmenu, always close the menu
         if (e.type === 'contextmenu') {
           this.close();
         } 
-        // If it's a left-click, only close if NOT clicking the menu button (let the button handle toggle)
+        // If it's a pointer down, only close if NOT clicking the menu button (let the button handle toggle)
         else if (!isMenuBtn) {
           this.close();
         }
       }
     };
-    document.addEventListener('click', closer, { capture: true });
-    document.addEventListener('mousedown', closer, { capture: true });
+    document.addEventListener('pointerdown', closer, { capture: true });
     document.addEventListener('contextmenu', closer, { capture: true });
 
     // Escape to close
@@ -404,7 +403,10 @@ export class AppMenu {
     const searchInput = this.menuElement.querySelector('input');
     if (searchInput) {
       searchInput.value = '';
-      searchInput.focus();
+      const isMobile = window.innerWidth <= 1024 || (window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+      if (!isMobile) {
+        searchInput.focus();
+      }
     }
 
     this._renderCategories();

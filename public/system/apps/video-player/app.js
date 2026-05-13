@@ -149,9 +149,24 @@ export function launch(ctx, options = {}) {
     }
   };
 
-  volume.oninput = () => {
-    video.volume = volume.value / 100;
+  const { VolumeManager } = window.osAPI;
+  const updateActualVolume = () => {
+    const master = VolumeManager.volume / 100;
+    const local = volume.value / 100;
+    video.volume = master * local;
   };
+
+  volume.oninput = () => {
+    updateActualVolume();
+  };
+
+  const volHandler = () => updateActualVolume();
+  window.addEventListener('system-volume-changed', volHandler);
+  win._onClose = () => {
+    window.removeEventListener('system-volume-changed', volHandler);
+  };
+
+  updateActualVolume();
 
   fullscreen.onclick = () => {
     if (video.requestFullscreen) {

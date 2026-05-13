@@ -8,16 +8,18 @@ import { showSystemDialog } from './dialog.js';
 import { IconHelper } from './iconHelper.js';
 
 // Robust base URL detection for subfolder deployment
-const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/') 
-  ? import.meta.env.BASE_URL 
+const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/')
+  ? import.meta.env.BASE_URL
   : (window.location.pathname.includes('/EverestOS') ? '/EverestOS/' : '/');
 
 export class DesktopIcons {
-  constructor(desktopArea, vfs, appLoader) {
+  constructor(desktopArea, vfs, appLoader, loader) {
     this.desktopArea = desktopArea;
     this.vfs = vfs;
-    this.appLoader = appLoader; // Needed to launch file manager / text editor
+    this.appLoader = appLoader;
+    this.loader = loader;
     this.DESKTOP_PATH = '/home/user/Desktop';
+    this._renameTarget = null;
   }
 
   init() {
@@ -44,76 +46,123 @@ export class DesktopIcons {
       this.container.querySelectorAll('.desktop-icon').forEach(el => el.classList.remove('selected'));
     });
 
-    // Context menu for the blank desktop area
-    this.desktopArea.addEventListener('contextmenu', async (e) => {
-      // Don't show if we right-clicked an icon (handled by icon's own contextmenu)
-      if (e.target.closest('.desktop-icon')) return;
+    // MASTER CONTEXT MENU CONTROLLER
+    // Handles all context menus on the desktop layer, ensuring icons and desklets
+    // are correctly identified even in mobile simulation modes.
+    document.addEventListener('contextmenu', async (e) => {
+      // Prevent infinite loops from injected events
+      if (e._synthetic) return;
 
-      e.preventDefault();
-      window.lastFocusedScope = { type: 'desktop', container: this.container, render: () => this.render(), vfs: this.vfs };
-      this.container.querySelectorAll('.desktop-icon').forEach(el => el.classList.remove('selected'));
+      const path = e.composedPath();
+      const x = e.clientX || window._lastPointerPos?.x || 0;
+      const y = e.clientY || window._lastPointerPos?.y || 0;
+      
+      // 1. Find the target item using both path and elementFromPoint
+      let itemEl = path.find(el => el.classList && (el.classList.contains('desktop-icon') || el.classList.contains('desklet-frame')));
+      
+      if (!itemEl) {
+        const elAtPoint = document.elementFromPoint(x, y);
+        itemEl = elAtPoint?.closest('.desktop-icon, .desklet-frame');
+      }
 
-      const clip = window.desktopClipboard;
-      const canPaste = !!(clip && clip.path && clip.items);
+      // 2. If we found an icon/desklet, inject the event back into it
+      if (itemEl) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const injectedEvent = new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true,
+          clientX: x,
+          clientY: y,
+          button: 2
+        });
+        injectedEvent._synthetic = true;
+        itemEl.dispatchEvent(injectedEvent);
+        return;
+      }
 
-      const menuItems = [
-        {
-          icon: 'folder-new,📁', label: 'New Folder', action: async () => {
-            let name = 'New Folder';
-            try { await this.vfs.mkdir(`${this.DESKTOP_PATH}/${name}`); } catch (err) {
-              let i = 1;
-              while (i < 100) {
-                try { await this.vfs.mkdir(`${this.DESKTOP_PATH}/${name} ${i}`); break; } catch (e) { i++; }
+      // 3. Yield to system windows and panel
+      if (path.some(el => el.classList && (
+        el.classList.contains('app-window') || 
+        el.classList.contains('everest-panel') ||
+        el.classList.contains('applet-container')
+      ))) return;
+
+      // 4. If we're on the desktop area, show background menu
+      const isDesktop = path.some(el => el === this.desktopArea || el === this.container);
+      if (isDesktop) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        window.lastFocusedScope = { type: 'desktop', container: this.container, render: () => this.render(), vfs: this.vfs };
+        this.container.querySelectorAll('.desktop-icon').forEach(el => el.classList.remove('selected'));
+
+        const clip = window.desktopClipboard;
+        const canPaste = !!(clip && clip.path && clip.items);
+
+        const menuItems = [
+          {
+            icon: 'folder-new,📁', label: 'New Folder', action: async () => {
+              const tmpName = '.new_folder_' + Date.now();
+              const tmpPath = `${this.DESKTOP_PATH}/${tmpName}`;
+              try { 
+                await this.vfs.mkdir(tmpPath);
+                this._renameTarget = tmpPath;
+                this.render();
+              } catch (err) {
+                console.error('Failed to create new folder', err);
               }
             }
-          }
-        },
-        {
-          icon: 'document-new,📄', label: 'New Text File', action: async () => {
-            let name = 'New Text File.txt';
-            try { await this.vfs.writeFile(`${this.DESKTOP_PATH}/${name}`, ''); } catch (err) {
-              let i = 1;
-              while (i < 100) {
-                try { await this.vfs.writeFile(`${this.DESKTOP_PATH}/New Text File ${i}.txt`, ''); break; } catch (e) { i++; }
+          },
+          {
+            icon: 'document-new,📄', label: 'New Text File', action: async () => {
+              const tmpName = '.new_file_' + Date.now() + '.txt';
+              const tmpPath = `${this.DESKTOP_PATH}/${tmpName}`;
+              try { 
+                await this.vfs.writeFile(tmpPath, '');
+                this._renameTarget = tmpPath;
+                this.render();
+              } catch (err) {
+                console.error('Failed to create new file', err);
               }
             }
+          },
+          { separator: true },
+          {
+            icon: 'paste,📋', label: 'Paste', disabled: !canPaste, action: async () => {
+              if (!canPaste) return;
+              try {
+                for (const si of clip.items) {
+                  const targetPath = `${this.DESKTOP_PATH}/${si.name}`;
+                  if (clip.type === 'copy') await this.vfs.copy(si.path, targetPath);
+                  else if (clip.type === 'cut') await this.vfs.rename(si.path, targetPath);
+                }
+                window.desktopClipboard = { type: null, path: null, name: null, items: null };
+              } catch (e) { showSystemDialog({ title: 'Paste Failed', message: e.message, type: 'alert' }); }
+            }
+          },
+          { separator: true },
+          {
+            icon: '🧩',
+            label: 'Add Desklets',
+            action: () => {
+              document.dispatchEvent(new CustomEvent('open-extension-manager', { detail: { type: 'desklets' } }));
+            }
+          },
+          {
+            icon: 'desktop,🖥️', label: 'Desktop Settings', action: () => {
+              document.dispatchEvent(new CustomEvent('launch-app', { detail: { id: 'system-settings', args: ['desktop', 'icons'] } }));
+            }
+          },
+          {
+            icon: 'appearance,🎨', label: 'Change Background', action: () => {
+              document.dispatchEvent(new CustomEvent('launch-app', { detail: { id: 'system-settings', args: ['desktop'] } }));
+            }
           }
-        },
-        { separator: true },
-        {
-          icon: 'paste,📋', label: 'Paste', disabled: !canPaste, action: async () => {
-            if (!canPaste) return;
-            try {
-              for (const si of clip.items) {
-                const targetPath = `${this.DESKTOP_PATH}/${si.name}`;
-                if (clip.type === 'copy') await this.vfs.copy(si.path, targetPath);
-                else if (clip.type === 'cut') await this.vfs.rename(si.path, targetPath);
-              }
-              window.desktopClipboard = { type: null, path: null, name: null, items: null };
-            } catch (e) { showSystemDialog({ title: 'Paste Failed', message: e.message, type: 'alert' }); }
-          }
-        },
-        { separator: true },
-        {
-          icon: '🧩',
-          label: 'Add Desklets',
-          action: () => {
-            document.dispatchEvent(new CustomEvent('open-extension-manager', { detail: { type: 'desklets' } }));
-          }
-        },
-        {
-          icon: 'desktop,🖥️', label: 'Desktop Settings', action: () => {
-            document.dispatchEvent(new CustomEvent('launch-app', { detail: { id: 'system-settings', args: ['desktop', 'icons'] } }));
-          }
-        },
-        {
-          icon: 'appearance,🎨', label: 'Change Background', action: () => {
-            document.dispatchEvent(new CustomEvent('launch-app', { detail: { id: 'system-settings', args: ['desktop'] } }));
-          }
-        }
-      ];
-
-      showContextMenu(menuItems, e.clientX, e.clientY);
+        ];
+        showContextMenu(menuItems, e.clientX || window._lastPointerPos?.x || 0, e.clientY || window._lastPointerPos?.y || 0);
+      }
     });
 
     this.render();
@@ -141,14 +190,14 @@ export class DesktopIcons {
       let items = await this.vfs.readdir(this.DESKTOP_PATH);
 
       // Fetch content for .desktop files so we can show their icons
-      items = await Promise.all(items.map(async item => {
+      items = (await Promise.all(items.map(async item => {
         if (item.name.endsWith('.desktop') && item.type !== 'dir') {
           try {
             item.content = await this.vfs.readFile(item.path);
           } catch (e) { }
         }
         return item;
-      }));
+      }))).filter(i => i !== null);
 
       let savedPositions = {};
       try { savedPositions = JSON.parse(await this.vfs.readFile('~/.config/desktop-positions.json')); } catch (e) { }
@@ -289,11 +338,64 @@ export class DesktopIcons {
         if (!iconSymbol) iconSymbol = IconHelper.getIcon('file,📄', { size: settings.iconSize });
 
         const shadowStyle = settings.labelShadow !== false ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.5);' : 'text-shadow: none;';
+        
+        const labelEl = document.createElement('div');
+        labelEl.className = 'desktop-icon-label';
+        labelEl.style.fontSize = settings.labelSize + 'px';
+        labelEl.style.color = settings.labelColor;
+        labelEl.style.cssText += shadowStyle;
+        labelEl.textContent = item.name;
 
         iconEl.innerHTML = `
           <div class="desktop-icon-img" style="font-size:${Math.floor(settings.iconSize * 0.8)}px; height:${settings.iconSize + 4}px; display:flex; align-items:center; justify-content:center;">${iconSymbol}</div>
-          <div class="desktop-icon-label" style="font-size:${settings.labelSize}px; color:${settings.labelColor}; ${shadowStyle}">${item.name}</div>
         `;
+        iconEl.appendChild(labelEl);
+
+        if (this._renameTarget === item.path) {
+          labelEl.textContent = '';
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = item.name.startsWith('.') ? (item.type === 'dir' ? 'New Folder' : 'New Text File.txt') : item.name;
+          input.classList.add('desktop-icon-rename-input');
+          labelEl.appendChild(input);
+          
+          setTimeout(() => {
+            input.focus();
+            const dotIdx = input.value.lastIndexOf('.');
+            if (dotIdx > 0) input.setSelectionRange(0, dotIdx);
+            else input.select();
+          }, 50);
+
+          const finishRename = async () => {
+            if (this._renameTarget !== item.path) return;
+            const newName = input.value.trim() || (item.type === 'dir' ? 'New Folder' : 'New Text File.txt');
+            this._renameTarget = null;
+            
+            try {
+              const uniqueName = await this._generateUniqueName(item.path, newName);
+              if (uniqueName !== newName) {
+                showSystemDialog({
+                  title: 'Name Conflict',
+                  message: `"${newName}" already exists in this folder.\n\nTo avoid conflicts, the item has been renamed to "${uniqueName}".`,
+                  type: 'alert'
+                });
+              }
+              await this.vfs.rename(item.path, `${this.DESKTOP_PATH}/${uniqueName}`);
+            } catch (e) {
+              console.error('Rename failed', e);
+            }
+            this.render();
+          };
+
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') finishRename();
+            if (e.key === 'Escape') {
+              this._renameTarget = null;
+              this.render();
+            }
+          });
+          input.addEventListener('blur', finishRename);
+        }
 
         const openFile = () => {
           if (item.type === 'dir') {
@@ -322,12 +424,7 @@ export class DesktopIcons {
           }
         };
 
-        iconEl.addEventListener('dblclick', (e) => {
-          e.stopPropagation();
-          openFile();
-        });
-
-        // Make selectable
+        // Selection logic
         iconEl.dataset.path = item.path;
         iconEl.dataset.name = item.name;
         if (item._isVirtual) iconEl.dataset.virtual = 'true';
@@ -349,103 +446,133 @@ export class DesktopIcons {
           iconEl.style.top = pos.y + 'px';
         }
 
-        // Draggable
+        // Draggable & Touch Logic
         let isDragging = false, startX, startY, startLeft, startTop;
-        iconEl.addEventListener('mousedown', (e) => {
-          if (e.button !== 0) return;
-          isDragging = true;
-          startX = e.clientX;
-          startY = e.clientY;
+        let lastTapTime = 0, longPressTimeout, ctxTimeout;
+        this._hasDragged = false;
 
-          if (iconEl.style.position !== 'absolute') {
-            startLeft = iconEl.offsetLeft;
-            startTop = iconEl.offsetTop;
-            iconEl.style.position = 'absolute';
-            iconEl.style.left = startLeft + 'px';
-            iconEl.style.top = startTop + 'px';
-          } else {
-            startLeft = parseInt(iconEl.style.left, 10) || 0;
-            startTop = parseInt(iconEl.style.top, 10) || 0;
+        const onPointerMove = (moveEvent) => {
+          const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--system-scale')) || 1;
+          const dx = (moveEvent.clientX - startX) / scale;
+          const dy = (moveEvent.clientY - startY) / scale;
+          if (Math.abs(dx * scale) > 5 || Math.abs(dy * scale) > 5) {
+            isDragging = true;
+            clearTimeout(longPressTimeout);
+            clearTimeout(ctxTimeout);
+            this._hasDragged = true;
+          }
+          if (!isDragging) return;
+          iconEl.style.left = (startLeft + dx) + 'px';
+          iconEl.style.top = (startTop + dy) + 'px';
+        };
+
+        const onPointerUp = async (e) => {
+          clearTimeout(longPressTimeout);
+          clearTimeout(ctxTimeout);
+          iconEl.removeEventListener('pointermove', onPointerMove);
+          iconEl.removeEventListener('pointerup', onPointerUp);
+          iconEl.removeEventListener('pointercancel', onPointerUp);
+
+          if (isDragging) {
+            isDragging = false;
+            iconEl.releasePointerCapture(e.pointerId);
+
+            // Snap to grid
+            const gSize = settings.gridSize || 90;
+            const offset = 10;
+            let x = parseInt(iconEl.style.left, 10);
+            let y = parseInt(iconEl.style.top, 10);
+            x = Math.round((x - offset) / gSize) * gSize + offset;
+            y = Math.round((y - offset) / gSize) * gSize + offset;
+
+            const desktop = document.getElementById('everest-desktop');
+            const desktopWidth = desktop?.clientWidth || window.innerWidth;
+            const desktopHeight = desktop?.clientHeight || window.innerHeight;
+
+            // Bounds check
+            x = Math.max(10, Math.min(x, desktopWidth - gSize));
+            y = Math.max(10, Math.min(y, desktopHeight - gSize));
+
+            iconEl.style.left = x + 'px';
+            iconEl.style.top = y + 'px';
+
+            // Save positions
+            try {
+              const currentPos = JSON.parse(await this.vfs.readFile('~/.config/desktop-positions.json') || '{}');
+              currentPos[item.name] = { x, y };
+              await this.vfs.writeFile('~/.config/desktop-positions.json', JSON.stringify(currentPos, null, 2));
+            } catch (e) { }
+          }
+        };
+
+        const onPointerDown = (e) => {
+          const isRightClick = e.button === 2 || (e.ctrlKey && e.button === 0);
+          
+          if (isRightClick) {
+            e.preventDefault();
+            e.stopPropagation();
+            this._showContextMenu(item, e.clientX, e.clientY);
+            return;
           }
 
-          const onMouseMove = (moveEvent) => {
-            if (!isDragging) return;
-            const dx = moveEvent.clientX - startX;
-            const dy = moveEvent.clientY - startY;
-            iconEl.style.left = (startLeft + dx) + 'px';
-            iconEl.style.top = (startTop + dy) + 'px';
+          if (e.button !== 0 && e.pointerType === 'mouse') return;
+          
+          const now = Date.now();
+          const tapDelay = e.pointerType === 'mouse' ? 300 : 400;
+          if (now - lastTapTime < tapDelay) {
+            clearTimeout(longPressTimeout);
+            clearTimeout(ctxTimeout);
+            openFile();
+            lastTapTime = 0;
+            return;
+          }
+          lastTapTime = now;
+
+          isDragging = false; 
+          this._hasDragged = false;
+          startX = e.clientX;
+          startY = e.clientY;
+          startLeft = parseInt(iconEl.style.left, 10) || 0;
+          startTop = parseInt(iconEl.style.top, 10) || 0;
+
+          const startDrag = () => {
+            isDragging = true;
+            this._hasDragged = false;
+            iconEl.setPointerCapture(e.pointerId);
           };
 
-          const onMouseUp = async () => {
-            if (isDragging) {
-              isDragging = false;
-              document.removeEventListener('mousemove', onMouseMove);
-              document.removeEventListener('mouseup', onMouseUp);
-              // Snap to grid (grid size from settings)
-              const gSize = settings.gridSize || 90;
-              const offset = 10;
-              let x = parseInt(iconEl.style.left, 10);
-              let y = parseInt(iconEl.style.top, 10);
-
-              // Snap to grid with offset
-              x = Math.round((x - offset) / gSize) * gSize + offset;
-              y = Math.round((y - offset) / gSize) * gSize + offset;
-
-              // Bounds check
-              x = Math.max(10, Math.min(x, window.innerWidth - gSize));
-              y = Math.max(10, Math.min(y, window.innerHeight - gSize));
-
-              // Load current positions to check for overlapping
-              let pos = {};
-              try { pos = JSON.parse(await this.vfs.readFile('~/.config/desktop-positions.json')); } catch (e) { }
-
-              // Check if cell is taken by another icon
-              let nx = x, ny = y;
-              let found = false, radius = 0;
-              while (!found && radius < 30) {
-                for (let dx = -radius; dx <= radius; dx++) {
-                  for (let dy = -radius; dy <= radius; dy++) {
-                    let cx = x + dx * gSize;
-                    let cy = y + dy * gSize;
-                    // Ensure we stay within bounds but respect the offset
-                    cx = Math.max(offset, Math.min(cx, window.innerWidth - gSize));
-                    cy = Math.max(offset, Math.min(cy, window.innerHeight - gSize));
-
-                    const isOccupied = Object.entries(pos).some(([name, p]) => name !== item.name && p && p.x === cx && p.y === cy);
-                    if (!isOccupied) {
-                      nx = cx;
-                      ny = cy;
-                      found = true;
-                      break;
-                    }
-                  }
-                  if (found) break;
-                }
-                radius++;
+          if (e.pointerType !== 'mouse') {
+            longPressTimeout = setTimeout(() => {
+              if (!this._hasDragged) {
+                startDrag();
+                if (navigator.vibrate) navigator.vibrate(20);
               }
-              x = nx;
-              y = ny;
+            }, 250);
 
-              iconEl.style.left = x + 'px';
-              iconEl.style.top = y + 'px';
+            ctxTimeout = setTimeout(() => {
+              if (!this._hasDragged && !isDragging) {
+                e.stopPropagation();
+                const rect = iconEl.getBoundingClientRect();
+                this._showContextMenu(item, rect.left + rect.width / 2, rect.top + rect.height / 2);
+              }
+            }, 600);
+          } else {
+            startDrag();
+          }
 
-              // Save position
-              try {
-                pos[item.name] = { x, y };
-                // Use VFS to save (handles static mode automatically)
-                await this.vfs.writeFile('~/.config/desktop-positions.json', JSON.stringify(pos, null, 2));
-              } catch (e) { console.warn("Failed to save desktop icon position"); }
-            }
-          };
+          iconEl.addEventListener('pointermove', onPointerMove);
+          iconEl.addEventListener('pointerup', onPointerUp);
+          iconEl.addEventListener('pointercancel', onPointerUp);
+        };
 
-          document.addEventListener('mousemove', onMouseMove);
-          document.addEventListener('mouseup', onMouseUp);
-        });
+        iconEl.style.touchAction = 'none';
+        iconEl.addEventListener('pointerdown', onPointerDown);
 
         // Context Menu
         iconEl.addEventListener('contextmenu', (e) => {
           e.preventDefault();
           e.stopPropagation();
+          
           window.lastFocusedScope = { type: 'desktop', container: this.container, render: () => this.render(), vfs: this.vfs };
           if (!iconEl.classList.contains('selected')) {
             this.container.querySelectorAll('.desktop-icon').forEach(el => el.classList.remove('selected'));
@@ -463,14 +590,8 @@ export class DesktopIcons {
             { separator: true },
             {
               icon: 'rename,📝', label: 'Rename', disabled: item._isVirtual, action: () => {
-                showSystemDialog({
-                  title: 'Rename', type: 'prompt', value: item.name, onConfirm: async (val) => {
-                    if (val) {
-                      await this.vfs.rename(item.path, `${this.DESKTOP_PATH}/${val}`);
-                      this.render();
-                    }
-                  }
-                });
+                this._renameTarget = item.path;
+                this.render();
               }
             },
             { icon: 'copy,📄', label: 'Copy', action: () => { window.desktopClipboard = { type: 'copy', items: selectedItems, path: selectedItems[0].path, name: selectedItems[0].name }; } },
@@ -491,7 +612,40 @@ export class DesktopIcons {
         this.container.appendChild(iconEl);
       });
     } catch (e) {
-      console.warn("Failed to render desktop icons", e);
+      console.error('DesktopIcons: Render failed', e);
     }
+  }
+
+
+  _showContextMenu(item, x, y) {
+    // Legacy method - mostly replaced by inline listener but kept for safety
+  }
+
+  async _generateUniqueName(path, baseName) {
+    const parentDir = path.split('/').slice(0, -1).join('/');
+    const items = await this.vfs.readdir(parentDir).catch(() => []);
+    const existingNames = new Set(items.map(i => i.name));
+    
+    let name = baseName;
+    if (!existingNames.has(name)) return name;
+    
+    let base = name;
+    let ext = '';
+    const dotIdx = name.lastIndexOf('.');
+    if (dotIdx > 0 && !name.startsWith('.')) {
+        base = name.slice(0, dotIdx);
+        ext = name.slice(dotIdx);
+    }
+    
+    let numMatch = base.match(/^(.*?)\s+(\d+)$/);
+    let pureBase = numMatch ? numMatch[1].trim() : base.trim();
+    let num = numMatch ? parseInt(numMatch[2], 10) : 1;
+    
+    while (existingNames.has(name)) {
+        num++;
+        name = `${pureBase} ${num}${ext}`;
+    }
+    
+    return name;
   }
 }

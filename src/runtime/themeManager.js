@@ -1,6 +1,6 @@
 // Robust base URL detection for subfolder deployment
-const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/') 
-  ? import.meta.env.BASE_URL 
+const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/')
+  ? import.meta.env.BASE_URL
   : (window.location.pathname.includes('/EverestOS') ? '/EverestOS/' : '/');
 
 export class ThemeManager {

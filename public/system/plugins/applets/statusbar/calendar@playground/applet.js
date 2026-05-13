@@ -10,14 +10,16 @@ class MyApplet extends Applet.TextApplet {
     super(metadata, orientation, panel_height, instance_id);
     this.metadata = metadata;
     this.set_applet_tooltip("Clock & Calendar");
-    
+
     // Initialize Settings
     try {
       this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
       this.settings.bind("use-24h", "use24h", this._updateClock.bind(this));
       this.settings.bind("show-seconds", "showSeconds", this._updateClock.bind(this));
       this.settings.bind("show-date", "showDate", this._updateClock.bind(this));
-      this.settings.bind("format-preset", "formatPreset", this._updateClock.bind(this));
+      this.settings.bind("display-two-lines", "displayTwoLines", this._updateClock.bind(this));
+      this.settings.bind("time-font-size", "timeFontSize", this._updateClock.bind(this));
+      this.settings.bind("date-format-preset", "dateFormatPreset", this._updateClock.bind(this));
       this.settings.bind("custom-format", "customFormat", this._updateClock.bind(this));
     } catch (e) {
       console.error("Calendar Applet: Settings binding failed", e);
@@ -33,45 +35,51 @@ class MyApplet extends Applet.TextApplet {
 
   _updateClock() {
     const now = new Date();
-    
-    let formatStr = null;
-    if (this.formatPreset && this.formatPreset !== 'default') {
-      formatStr = this.formatPreset === 'custom' ? this.customFormat : this.formatPreset;
-    }
-    
-    if (formatStr && formatStr.trim().length > 0) {
-      // Very basic formatting support for standard tokens
-      let formatted = formatStr
-        .replace(/%H/g, now.getHours().toString().padStart(2, '0'))
-        .replace(/%I/g, (now.getHours() % 12 || 12).toString().padStart(2, '0'))
-        .replace(/%M/g, now.getMinutes().toString().padStart(2, '0'))
-        .replace(/%S/g, now.getSeconds().toString().padStart(2, '0'))
-        .replace(/%p/g, now.getHours() >= 12 ? 'PM' : 'AM')
-        .replace(/%Y/g, now.getFullYear())
-        .replace(/%m/g, (now.getMonth() + 1).toString().padStart(2, '0'))
-        .replace(/%d/g, now.getDate().toString().padStart(2, '0'))
-        .replace(/%a/g, now.toLocaleDateString([], { weekday: 'short' }))
-        .replace(/%A/g, now.toLocaleDateString([], { weekday: 'long' }))
-        .replace(/%b/g, now.toLocaleDateString([], { month: 'short' }))
-        .replace(/%B/g, now.toLocaleDateString([], { month: 'long' }));
-      
-      this.set_applet_label(formatted);
-      return;
-    }
 
+    // 1. Format Time
     const options = {
       hour: '2-digit',
       minute: '2-digit',
       second: this.showSeconds ? '2-digit' : undefined,
       hour12: !this.use24h
     };
-    
-    let timeStr = now.toLocaleTimeString([], options);
+    const timeStr = now.toLocaleTimeString([], options);
+
+    // 2. Format Date
+    let dateStr = "";
     if (this.showDate) {
-      const dateStr = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-      this.set_applet_label(`${timeStr}  ${dateStr}`);
+      let format = this.dateFormatPreset === 'custom' ? this.customFormat : this.dateFormatPreset;
+      if (!format || format === 'default') {
+        dateStr = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+      } else {
+        dateStr = format
+          .replace(/%Y/g, now.getFullYear())
+          .replace(/%m/g, (now.getMonth() + 1).toString().padStart(2, '0'))
+          .replace(/%d/g, now.getDate().toString().padStart(2, '0'))
+          .replace(/%a/g, now.toLocaleDateString([], { weekday: 'short' }))
+          .replace(/%A/g, now.toLocaleDateString([], { weekday: 'long' }))
+          .replace(/%b/g, now.toLocaleDateString([], { month: 'short' }))
+          .replace(/%B/g, now.toLocaleDateString([], { month: 'long' }));
+      }
+    }
+
+    // 3. Render
+    const isMobile = window.innerWidth <= 768;
+    const useTwoLines = this.displayTwoLines || isMobile;
+
+    if (useTwoLines) {
+      this.set_applet_label(`
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1; gap:1px; height:100%;">
+          <span style="font-size:${this.timeFontSize || 13}px; font-weight:700;">${timeStr}</span>
+          ${this.showDate ? `<span style="font-size:11px; opacity:0.7; font-weight:500;">${dateStr}</span>` : ''}
+        </div>
+      `);
     } else {
-      this.set_applet_label(timeStr);
+      let label = `<span style="font-size:${this.timeFontSize || 13}px;">${timeStr}</span>`;
+      if (this.showDate && dateStr) {
+        label += ` <span style="font-size:12px; margin-left:6px; opacity:0.8;">${dateStr}</span>`;
+      }
+      this.set_applet_label(label);
     }
   }
 
@@ -123,7 +131,7 @@ class MyApplet extends Applet.TextApplet {
     const rect = this.actor._element.getBoundingClientRect();
     popup.style.bottom = (window.innerHeight - rect.top + 5) + 'px';
     popup.style.right = (window.innerWidth - rect.right) + 'px';
-    
+
     document.body.appendChild(popup);
 
     const close = (e) => {
@@ -140,7 +148,7 @@ class MyApplet extends Applet.TextApplet {
     const today = now.getDate();
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-    
+
     let html = '';
     for (let i = 0; i < firstDay; i++) html += '<span></span>';
     for (let d = 1; d <= daysInMonth; d++) {

@@ -2,8 +2,8 @@
   "enabled": [
     {
       "type": "applets",
-      "uuid": "battery@playground",
-      "vfsPath": "/system/plugins/applets/statusbar/battery@playground"
+      "uuid": "menu@playground",
+      "vfsPath": "/system/plugins/applets/menu@playground"
     },
     {
       "type": "applets",
@@ -12,28 +12,28 @@
     },
     {
       "type": "applets",
+      "uuid": "battery@playground",
+      "vfsPath": "/system/plugins/applets/statusbar/battery@playground"
+    },
+    {
+      "type": "applets",
       "uuid": "network@playground",
       "vfsPath": "/system/plugins/applets/statusbar/network@playground"
-    },
-    {
-      "type": "applets",
-      "uuid": "volume@playground",
-      "vfsPath": "/system/plugins/applets/statusbar/volume@playground"
-    },
-    {
-      "type": "applets",
-      "uuid": "menu@playground",
-      "vfsPath": "/system/plugins/applets/menu@playground"
     },
     {
       "type": "desklets",
       "uuid": "SevenSegmentClock@lxs242",
       "vfsPath": "/system/plugins/desklets/SevenSegmentClock@lxs242"
+    },
+    {
+      "type": "applets",
+      "uuid": "volume@playground",
+      "vfsPath": "/system/plugins/applets/statusbar/volume@playground"
     }
   ],
   "removed": [
+    "panchang@india",
     "clock@playground",
-    "nepali-date@khumnath",
-    "panchang@india"
+    "nepali-date@khumnath"
   ]
 }

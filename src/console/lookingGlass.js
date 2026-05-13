@@ -102,11 +102,15 @@ export class LookingGlass {
     // Resizing
     const handle = this.container.querySelector('.lg-resize-handle');
     if (handle) {
-      handle.addEventListener('mousedown', (e) => {
+      handle.style.touchAction = 'none';
+      handle.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
         const startY = e.clientY;
         const startHeight = this._height;
+        
+        handle.setPointerCapture(e.pointerId);
 
-        const onMouseMove = (moveEvent) => {
+        const onPointerMove = (moveEvent) => {
           const dy = startY - moveEvent.clientY;
           this._height = Math.max(100, Math.min(window.innerHeight * 0.8, startHeight + dy));
           if (this._isOpen) {
@@ -114,13 +118,16 @@ export class LookingGlass {
           }
         };
 
-        const onMouseUp = () => {
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
+        const onPointerUp = (e) => {
+          handle.releasePointerCapture(e.pointerId);
+          handle.removeEventListener('pointermove', onPointerMove);
+          handle.removeEventListener('pointerup', onPointerUp);
+          handle.removeEventListener('pointercancel', onPointerUp);
         };
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        handle.addEventListener('pointermove', onPointerMove);
+        handle.addEventListener('pointerup', onPointerUp);
+        handle.addEventListener('pointercancel', onPointerUp);
         e.preventDefault();
       });
     }

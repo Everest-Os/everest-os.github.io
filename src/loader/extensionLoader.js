@@ -593,7 +593,7 @@ export class ExtensionLoader {
     frame.dataset.uuid = uuid;
 
     // Load saved position
-    let x, y, rx, ry;
+    let rx, ry;
     try {
       const posStr = await this.vfs.readFile('~/.config/desklet-positions.json');
       const positions = JSON.parse(posStr);
@@ -601,31 +601,50 @@ export class ExtensionLoader {
         if (positions[uuid].rx !== undefined) {
           rx = positions[uuid].rx;
           ry = positions[uuid].ry;
-          x = rx * window.innerWidth;
-          y = ry * window.innerHeight;
+          if (positions[uuid].w) frame.style.width = positions[uuid].w + 'px';
+          if (positions[uuid].h) frame.style.height = positions[uuid].h + 'px';
+          if (positions[uuid].s) frame.dataset.scale = positions[uuid].s;
         } else {
           // Legacy pixel support
-          x = positions[uuid].x;
-          y = positions[uuid].y;
-          rx = x / window.innerWidth;
-          ry = y / window.innerHeight;
+          const desktop = document.getElementById('everest-desktop');
+          const dw = desktop?.clientWidth || window.innerWidth;
+          const dh = desktop?.clientHeight || window.innerHeight;
+          rx = (positions[uuid].x || 0) / dw;
+          ry = (positions[uuid].y || 0) / dh;
         }
       }
     } catch { /* fresh */ }
 
-    if (x === undefined || y === undefined) {
+    if (rx === undefined || ry === undefined) {
       rx = 0.1 + Math.random() * 0.4;
       ry = 0.1 + Math.random() * 0.4;
-      x = rx * window.innerWidth;
-      y = ry * window.innerHeight;
     }
 
     frame.dataset.rx = rx;
     frame.dataset.ry = ry;
-    frame.style.left = x + 'px';
-    frame.style.top = y + 'px';
     frame.classList.add('sandbox-desklet');
+    frame.style.visibility = 'hidden'; // Prevent flash at 0,0
     desktop.appendChild(frame);
+
+    // Calculate final position after it has been added to DOM (to get real width/height)
+    const applyPosition = () => {
+      const desktopWidth = desktop.clientWidth;
+      const desktopHeight = desktop.clientHeight;
+      const dw = frame.offsetWidth || 0;
+      const dh = frame.offsetHeight || 0;
+
+      const finalRx = parseFloat(frame.dataset.rx);
+      const finalRy = parseFloat(frame.dataset.ry);
+
+      frame.style.left = (finalRx * (desktopWidth - dw)) + 'px';
+      frame.style.top = (finalRy * (desktopHeight - dh)) + 'px';
+      frame.style.visibility = 'visible';
+    };
+
+    // Apply immediately and after a short delay to account for dynamic rendering
+    applyPosition();
+    setTimeout(applyPosition, 50);
+    setTimeout(applyPosition, 300);
 
     // Save position on drag end
     const savePosition = async () => {
@@ -633,8 +652,14 @@ export class ExtensionLoader {
       const newY = parseInt(frame.style.top, 10);
       if (isNaN(newX) || isNaN(newY)) return;
 
-      const newRx = newX / window.innerWidth;
-      const newRy = newY / window.innerHeight;
+      const desktop = document.getElementById('everest-desktop');
+      const desktopWidth = desktop?.clientWidth || window.innerWidth;
+      const desktopHeight = desktop?.clientHeight || window.innerHeight;
+      const deskletWidth = frame.offsetWidth || 0;
+      const deskletHeight = frame.offsetHeight || 0;
+
+      const newRx = newX / Math.max(1, desktopWidth - deskletWidth);
+      const newRy = newY / Math.max(1, desktopHeight - deskletHeight);
       frame.dataset.rx = newRx;
       frame.dataset.ry = newRy;
 
@@ -644,17 +669,15 @@ export class ExtensionLoader {
           const posStr = await this.vfs.readFile('~/.config/desklet-positions.json');
           positions = JSON.parse(posStr);
         } catch { /* fresh */ }
-        positions[uuid] = { rx: newRx, ry: newRy };
+        const deskletData = { rx: newRx, ry: newRy };
+        if (frame.style.width) deskletData.w = parseInt(frame.style.width, 10);
+        if (frame.style.height) deskletData.h = parseInt(frame.style.height, 10);
+        
+        positions[uuid] = deskletData;
         await this.vfs.writeFile('~/.config/desklet-positions.json', JSON.stringify(positions, null, 2));
       } catch { /* ok */ }
     };
-
-    // Listen for mouseup on the document but only save if this desklet was dragged
-    document.addEventListener('mouseup', () => {
-      if (desklet._hasDragged) {
-        savePosition();
-      }
-    });
+    desklet._savePosition = savePosition;
 
     try { desklet.on_desklet_added_to_desktop(); } catch (e) { /* ok */ }
   }
@@ -696,11 +719,13 @@ export class ExtensionLoader {
     return true;
   }
 
-  reload(uuid) {
+  async reload(uuid) {
     const ext = this._loadedExtensions.get(uuid);
     if (!ext) return;
+    const vfsPath = ext.instance._vfsPath || ext.data?.path;
+    const type = ext.type;
     this.unload(uuid);
-    return this._evaluate(ext.data);
+    return this.loadFromVfs(uuid, vfsPath, type);
   }
 
   getLoaded() {

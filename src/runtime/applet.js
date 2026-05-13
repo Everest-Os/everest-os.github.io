@@ -284,7 +284,11 @@ class TextApplet extends AppletBase {
   }
 
   set_applet_label(text) {
-    this._labelEl.textContent = text;
+    if (text.includes('<br') || text.includes('<div') || text.includes('<span')) {
+      this._labelEl.innerHTML = text;
+    } else {
+      this._labelEl.textContent = text;
+    }
   }
 }
 

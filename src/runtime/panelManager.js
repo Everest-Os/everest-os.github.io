@@ -34,10 +34,13 @@ export class PanelManager {
         this._height = saved.height || 48;
         this._iconSize = saved.iconSize || 16;
         this._showAppName = saved.showAppName !== undefined ? saved.showAppName : true;
+      } else {
+        this._iconSize = 16;
+        this._showAppName = window.innerWidth > 768;
       }
     } catch {
       this._iconSize = 16;
-      this._showAppName = true;
+      this._showAppName = window.innerWidth > 768;
     }
     this._panel = document.getElementById('everest-panel');
     this._desktopArea = document.getElementById('desktop-area');

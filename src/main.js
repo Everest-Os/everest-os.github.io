@@ -23,6 +23,7 @@ import { showContextMenu } from './runtime/contextMenu.js';
 import { showSystemDialog } from './runtime/dialog.js';
 import { ZipHelper } from './runtime/zipHelper.js';
 import { showNotification } from './runtime/notification.js';
+import { VolumeManager } from './runtime/volumeManager.js';
 import { PackageManager } from './runtime/packageManager.js';
 
 window.osAPI = {
@@ -31,6 +32,7 @@ window.osAPI = {
   showSystemDialog,
   ZipHelper,
   showNotification,
+  VolumeManager: new VolumeManager(),
   PackageManager: null // initialized in main
 };
 
@@ -370,9 +372,9 @@ class EverestSandbox {
       dragHeader.style.userSelect = 'none';
 
       let isDragging = false, startX, startY, initialLeft, initialTop;
-      const onMouseDown = (e) => {
+      const onPointerDown = (e) => {
         if (e.target.closest('button, input, select, a')) return;
-        if (e.button !== 0) return;
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
         isDragging = true;
         startX = e.clientX;
         startY = e.clientY;
@@ -381,22 +383,42 @@ class EverestSandbox {
         initialTop = rect.top;
         dialog.style.left = initialLeft + 'px';
         dialog.style.top = initialTop + 'px';
+        
+        dragHeader.setPointerCapture(e.pointerId);
         e.preventDefault();
       };
 
-      dragHeader.addEventListener('mousedown', onMouseDown);
+      dragHeader.addEventListener('pointerdown', onPointerDown);
+      dragHeader.style.touchAction = 'none';
 
-      document.addEventListener('mousemove', (e) => {
+      dragHeader.addEventListener('pointermove', (e) => {
         if (!isDragging) return;
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
-        dialog.style.left = (initialLeft + dx) + 'px';
-        dialog.style.top = (initialTop + dy) + 'px';
+        
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+        
+        // Bounds checking
+        const rect = dialog.getBoundingClientRect();
+        const maxX = window.innerWidth - rect.width;
+        const maxY = window.innerHeight - rect.height;
+        
+        newLeft = Math.max(0, Math.min(newLeft, maxX));
+        newTop = Math.max(0, Math.min(newTop, maxY));
+        
+        dialog.style.left = newLeft + 'px';
+        dialog.style.top = newTop + 'px';
       });
 
-      document.addEventListener('mouseup', () => {
+      const onPointerUp = (e) => {
+        if (!isDragging) return;
         isDragging = false;
-      });
+        dragHeader.releasePointerCapture(e.pointerId);
+      };
+
+      dragHeader.addEventListener('pointerup', onPointerUp);
+      dragHeader.addEventListener('pointercancel', onPointerUp);
     }
 
     // Listen for open-extension-settings event from extension manager
@@ -448,11 +470,11 @@ class EverestSandbox {
     });
 
     // Listen for reload-extension from context menu
-    window.addEventListener('reload-extension', (e) => {
+    window.addEventListener('reload-extension', async (e) => {
       const { uuid } = e.detail;
       this.console.log(`${IconHelper.getIcon('refresh,🔄', { size: 14 })} Reloading ${uuid}...`);
       try {
-        this.loader.reload(uuid);
+        await this.loader.reload(uuid);
         this.console.log(`✅ Reloaded ${uuid}`);
       } catch (err) {
         this.console.logError(`❌ Reload failed: ${err.message}`);
@@ -712,13 +734,15 @@ class EverestSandbox {
     }
 
     overlay.classList.add('open');
-
+    
+    // Ensure dialog is visible on screen
     const dialog = document.querySelector('.settings-dialog');
-    if (dialog) {
-      dialog.style.position = 'absolute';
-      dialog.style.margin = '0';
-      dialog.style.left = 'calc(50% - 250px)';
-      dialog.style.top = 'calc(50% - 200px)';
+    if (dialog && dialog.style.left) {
+      const rect = dialog.getBoundingClientRect();
+      if (rect.left < 0 || rect.top < 0 || rect.right > window.innerWidth || rect.bottom > window.innerHeight) {
+        dialog.style.left = '';
+        dialog.style.top = '';
+      }
     }
   }
 

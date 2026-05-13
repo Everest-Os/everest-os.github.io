@@ -1,11 +1,11 @@
 // Robust base URL detection for subfolder deployment
-const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/') 
-  ? import.meta.env.BASE_URL 
+const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/')
+  ? import.meta.env.BASE_URL
   : (window.location.pathname.includes('/EverestOS') ? '/EverestOS/' : '/');
 
 export class IconHelper {
   static getIcons() {
-    return window.currentThemeIcons || {
+    const defaults = {
       folder: '📂',
       file: '📄',
       home: '🏠',
@@ -24,6 +24,17 @@ export class IconHelper {
       calendar: '📅',
       clock: '⏰',
       battery: '🔋',
+      'battery-empty': '🪫',
+      'battery-caution': '🪫',
+      'battery-low': '🪫',
+      'battery-good': '🔋',
+      'battery-full': '🔋',
+      'battery-charged': '🔌',
+      'battery-empty-charging': '⚡🪫',
+      'battery-caution-charging': '⚡🪫',
+      'battery-low-charging': '⚡🪫',
+      'battery-good-charging': '⚡🔋',
+      'battery-full-charging': '⚡🔋',
       shortcut: '🔗',
       info: 'ℹ️',
       search: '🔍',
@@ -34,15 +45,17 @@ export class IconHelper {
       display: '📺',
       size: 32
     };
+    const theme = window.currentThemeIcons || {};
+    return { ...defaults, ...theme };
   }
 
   static getIcon(type, options = {}) {
     if (!type) return '';
     const icons = this.getIcons();
-    
+
     let iconName = type;
     let fallback = null;
-    
+
     if (type.includes(',')) {
       const parts = type.split(',');
       iconName = parts[0].trim();
@@ -55,7 +68,7 @@ export class IconHelper {
       const baseName = iconName.replace('-symbolic', '');
       val = icons[baseName];
     }
-    
+
     // If not found in theme as key, check if the name itself is a path/filename
     if (!val && (iconName.includes('.svg') || iconName.includes('.png') || iconName.includes('/'))) {
       val = iconName;
@@ -104,7 +117,7 @@ export class IconHelper {
       // Smart Resolution: Determine if we want symbolic or color
       // If symbolic is not explicitly true, we prefer color.
       const wantSymbolic = options.symbolic === true;
-      
+
       // If we don't want symbolic, but we have a symbolic name, try to find the color version
       if (!wantSymbolic && iconName.endsWith('-symbolic')) {
         const baseName = iconName.replace('-symbolic', '');

@@ -18,26 +18,40 @@
     "default": true,
     "description": "Show date"
   },
+  "display-two-lines": {
+    "type": "switch",
+    "default": false,
+    "description": "Display in two lines (Date below time)"
+  },
+  "time-font-size": {
+    "type": "spinbutton",
+    "default": 13,
+    "min": 8,
+    "max": 24,
+    "units": "px",
+    "description": "Time Font Size"
+  },
   "custom": {
     "type": "header",
-    "description": "Advanced Formatting"
+    "description": "Date Formatting"
   },
-  "format-preset": {
+  "date-format-preset": {
     "type": "combobox",
     "default": "default",
-    "description": "Format Preset",
+    "description": "Date Format",
     "options": {
-      "Basic (Use toggles above)": "default",
-      "24-Hour (14:30)": "%H:%M",
-      "12-Hour (02:30 PM)": "%I:%M %p",
-      "Short Date & Time (Mon Oct 14, 14:30)": "%a %b %d, %H:%M",
-      "Long Date & Time (Monday, October 14, 2024 - 02:30 PM)": "%A, %B %d, %Y - %I:%M %p",
+      "Locale Default (Mon Oct 14)": "default",
+      "Short (Oct 14)": "%b %d",
+      "ISO (2024-10-14)": "%Y-%m-%d",
+      "US Style (10/14/2024)": "%m/%d/%Y",
+      "With Weekday (Mon, Oct 14)": "%a, %b %d",
+      "Long (Monday, October 14, 2024)": "%A, %B %d, %Y",
       "Custom (Use field below)": "custom"
     }
   },
   "custom-format": {
     "type": "format_builder",
-    "default": "%a %H:%M",
-    "description": "Custom format string (used when 'Custom' is selected)"
+    "default": "%a %b %d",
+    "description": "Custom date format (used when 'Custom' is selected)"
   }
 }

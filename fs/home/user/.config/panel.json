@@ -1,7 +1,7 @@
 {
   "position": "bottom",
   "autoHide": false,
-  "height": 56,
-  "iconSize": 24,
+  "height": 54,
+  "iconSize": 20,
   "showAppName": true
 }

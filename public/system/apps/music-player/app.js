@@ -132,9 +132,26 @@ export function launch(ctx, options = {}) {
     }
   };
 
-  volume.oninput = () => {
-    audio.volume = volume.value / 100;
+  const updateActualVolume = () => {
+    const master = VolumeManager.volume / 100;
+    const local = volume.value / 100;
+    audio.volume = master * local;
   };
+
+  volume.oninput = () => {
+    updateActualVolume();
+  };
+
+  // Sync with system volume changes (e.g. from panel applet)
+  const volHandler = () => updateActualVolume();
+  window.addEventListener('system-volume-changed', volHandler);
+  
+  // Clean up listener when window closes
+  win._onClose = () => {
+    window.removeEventListener('system-volume-changed', volHandler);
+  };
+
+  updateActualVolume();
 
   content.querySelector('#mp-open').onclick = async () => {
     const p = await filePicker.pickFile({

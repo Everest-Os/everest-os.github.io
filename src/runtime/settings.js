@@ -119,6 +119,10 @@ class SettingsBase {
         }
       }
     }
+    
+    window.dispatchEvent(new CustomEvent('settings-changed', {
+      detail: { uuid: this._uuid, instanceId: this._instanceId, key, value }
+    }));
   }
 
   _persist() {

@@ -323,6 +323,7 @@ SevenSegmentClockDesklet.prototype = {
 	,_updateUI: function() {
 		
 		let outputBox = this.main_layout.replace(/c/,"clock ").replace(/d/,"date ").replace(/u/,"unix ").trim().split(" ");
+		const isMobile = window.innerWidth <= 768;
 		
 		var width, height, widthNew, heightNew;
 		var divWidth, divWidthNew;
@@ -356,7 +357,7 @@ SevenSegmentClockDesklet.prototype = {
 					} 
 				break;
 				case "date":
-					if(!this.show_date) { continue; }
+					if(!this.show_date || isMobile) { continue; }
 					heightNew = this.date_height;
 					if(this.date_format.match(/ymd|ydm/))
 					{
@@ -367,7 +368,7 @@ SevenSegmentClockDesklet.prototype = {
 					if(this.enable2SA) { digit_location += "sssnnndn"; }
 				break;
 				case "unix":
-					if(!this.show_unix) { continue; }
+					if(!this.show_unix || isMobile) { continue; }
 					heightNew = this.unix_height;
 					digit_location = 'ndnnndnnndnnn';
 				break;

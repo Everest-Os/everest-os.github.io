@@ -6,6 +6,12 @@
 import { IconHelper } from './iconHelper.js';
 
 let _activeContextMenu = null;
+let _lastPointerPos = { x: 0, y: 0 };
+
+// Global tracker for coordinates (helps on mobile where contextmenu event might have 0,0)
+const track = (e) => { _lastPointerPos = { x: e.clientX, y: e.clientY }; };
+window.addEventListener('pointerdown', track, { capture: true, passive: true });
+window.addEventListener('mousedown', track, { capture: true, passive: true });
 
 export function closeActiveContextMenu() {
   if (_activeContextMenu) {
@@ -21,6 +27,12 @@ export function closeActiveContextMenu() {
  * @param {number} y - Client Y position
  */
 export function showContextMenu(items, x, y, isSubmenu = false, avoidElement = null) {
+  // If coordinates are missing or zero (common on mobile long-press simulations), use last known pointer position
+  if (!isSubmenu && x === 0 && y === 0) {
+    x = _lastPointerPos.x;
+    y = _lastPointerPos.y;
+  }
+
   if (!isSubmenu) closeActiveContextMenu();
 
   const menu = document.createElement('div');
@@ -168,8 +180,8 @@ export function showContextMenu(items, x, y, isSubmenu = false, avoidElement = n
   const closer = (e) => {
     if (!menu.contains(e.target)) {
       closeActiveContextMenu();
-      document.removeEventListener('mousedown', closer);
+      document.removeEventListener('click', closer);
     }
   };
-  setTimeout(() => document.addEventListener('mousedown', closer), 50);
+  setTimeout(() => document.addEventListener('click', closer), 50);
 }

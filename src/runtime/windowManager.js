@@ -13,6 +13,15 @@ export class WindowManager {
     this.windows = new Map();
     this.activeWindow = null;
     this.zIndexCounter = 100;
+    this.mobileSplitRatio = 0.5;
+    this.desktopSplitRatio = 0.5;
+    this.splitDivider = null;
+    this._lastIsMobile = window.innerWidth <= 768;
+    this._createSplitDivider();
+
+    window.addEventListener('resize', () => {
+      this._relayout();
+    });
 
     window.addEventListener('icon-theme-changed', () => {
       this.windows.forEach(win => {
@@ -81,6 +90,9 @@ export class WindowManager {
       frame.style.top = options.y + 'px';
     }
 
+    // Default to maximized on small screens
+    const isMobile = window.innerWidth <= 768;
+
     // Title Bar
     const titleBar = document.createElement('div');
     titleBar.classList.add('app-titlebar');
@@ -107,8 +119,14 @@ export class WindowManager {
     btnMin.innerHTML = '&#8722;'; // Minus
 
     const btnMax = document.createElement('button');
-    btnMax.classList.add('app-btn', 'btn-max');
-    btnMax.innerHTML = '&#9723;'; // Square
+    if (isMobile) {
+      btnMax.classList.add('app-btn', 'btn-split');
+      btnMax.title = 'Split Screen';
+      btnMax.innerHTML = IconHelper.getIcon('view-dual,🔳', { size: 14 });
+    } else {
+      btnMax.classList.add('app-btn', 'btn-max');
+      btnMax.innerHTML = '&#9723;'; // Square
+    }
 
     const btnClose = document.createElement('button');
     btnClose.classList.add('app-btn', 'btn-close');
@@ -175,7 +193,12 @@ export class WindowManager {
 
     btnMax.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.toggleMaximize(id);
+      if (isMobile) {
+        const rect = btnMax.getBoundingClientRect();
+        this._showSplitMenu(winObj, rect.left, rect.bottom);
+      } else {
+        this.toggleMaximize(id);
+      }
     });
 
     btnMin.addEventListener('click', (e) => {
@@ -183,12 +206,32 @@ export class WindowManager {
       this.minimizeWindow(id);
     });
 
-    titleBar.addEventListener('dblclick', () => this.toggleMaximize(id));
-
     this._makeDraggable(winObj);
     this._makeResizable(winObj);
 
-    this.focusWindow(id);
+    if (isMobile) {
+      // Find occupied slots
+      let topOccupied = null;
+      let bottomOccupied = null;
+      for (const w of this.windows.values()) {
+        if (w.id === id) continue;
+        if (w.snapState === 'top') topOccupied = w.id;
+        if (w.snapState === 'bottom') bottomOccupied = w.id;
+      }
+
+      if (!topOccupied && !bottomOccupied) {
+        this.toggleMaximize(id);
+      } else if (!topOccupied) {
+        this.snapWindow(id, 'top');
+      } else if (!bottomOccupied) {
+        this.snapWindow(id, 'bottom');
+      } else {
+        // Both occupied, launch fullscreen
+        this.toggleMaximize(id);
+      }
+    } else {
+      this.focusWindow(id);
+    }
 
     // Register with PanelManager taskbar
     if (this.panelManager) {
@@ -268,6 +311,18 @@ export class WindowManager {
       if (this.panelManager) {
         this.panelManager.removeWindow(`app-${id}`);
       }
+
+      // On mobile, if only one snapped window remains, maximize it
+      if (window.innerWidth <= 768) {
+        const remaining = Array.from(this.windows.values());
+        if (remaining.length === 1) {
+          const lastWin = remaining[0];
+          if (lastWin.snapState) {
+            this.toggleMaximize(lastWin.id);
+          }
+        }
+      }
+      this._updateSplitDivider();
     }, 200);
   }
 
@@ -308,8 +363,10 @@ export class WindowManager {
 
       win.frame.classList.add('maximized');
       win.isMaximized = true;
+      win.snapState = null; // Clear snap state
     }
     this._updateFsButtonPosition();
+    this._updateSplitDivider();
   }
 
   minimizeWindow(id) {
@@ -354,63 +411,153 @@ export class WindowManager {
   _makeDraggable(win) {
     let isDragging = false;
     let startX, startY, startLeft, startTop;
+    let longPressTimeout;
+    let lastTapTime = 0;
 
-    const onMouseDown = (e) => {
+    const onPointerDown = (e) => {
       // Don't drag if clicking buttons
       if (e.target.closest('.app-btn')) return;
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
 
-      isDragging = true;
+      const isMobile = window.innerWidth <= 768;
+      const now = Date.now();
+      const timeSinceLastTap = now - lastTapTime;
+      
+      // Custom double-tap detection for mobile (more reliable than dblclick)
+      if (timeSinceLastTap < 300) {
+        clearTimeout(longPressTimeout);
+        
+        if (win.isMaximized) {
+          if (isMobile) {
+            const windows = Array.from(this.windows.values());
+            const isTopOccupied = windows.some(w => w.id !== win.id && w.snapState === 'top');
+            this.snapWindow(win.id, isTopOccupied ? 'bottom' : 'top');
+          } else {
+            this.snapWindow(win.id, 'left');
+          }
+        } else {
+          this.toggleMaximize(win.id);
+        }
+        
+        lastTapTime = 0; // Reset
+        return;
+      }
+      lastTapTime = now;
+      
       startX = e.clientX;
       startY = e.clientY;
       startLeft = parseFloat(win.frame.style.left || 0);
       startTop = parseFloat(win.frame.style.top || 0);
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-
-      // Prevent text selection while dragging
-      e.preventDefault();
-    };
-
-    const onMouseMove = (e) => {
-      if (!isDragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-
-      // If maximized or snapped, restore/unsnap on drag
-      if ((win.isMaximized || win.snapState) && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
-        if (win.isMaximized) {
-          this.toggleMaximize(win.id);
-        } else {
-          this.unsnapWindow(win.id, e.clientX);
+      const startDrag = () => {
+        isDragging = true;
+        win.frame.classList.add('dragging');
+        win.titleBar.setPointerCapture(e.pointerId);
+        
+        // Visual/Haptic feedback for mobile
+        if (isMobile && navigator.vibrate) {
+          navigator.vibrate(20);
         }
+      };
 
-        // Recalculate start positions after restore to keep window under cursor
-        startLeft = parseFloat(win.frame.style.left);
-        startTop = parseFloat(win.frame.style.top);
-        startX = e.clientX;
-        startY = e.clientY;
-        return;
+      if (isMobile) {
+        // Require long press on mobile
+        longPressTimeout = setTimeout(() => {
+          startDrag();
+        }, 250);
+      } else {
+        startDrag();
       }
 
-      const newLeft = startLeft + dx;
-      const newTop = startTop + dy;
-      win.frame.style.left = `${newLeft}px`;
-      win.frame.style.top = `${Math.max(0, newTop)}px`; // Prevent dragging above top edge
-
-      // Edge detection for snapping
-      this._handleSnapDetection(e.clientX, e.clientY);
+      win.titleBar.addEventListener('pointermove', onPointerMove);
+      win.titleBar.addEventListener('pointerup', onPointerUp);
+      win.titleBar.addEventListener('pointercancel', onPointerUp);
     };
 
-    const onMouseUp = (e) => {
+    const onPointerMove = (e) => {
+      const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--system-scale')) || 1;
+      const dx = (e.clientX - startX) / scale;
+      const dy = (e.clientY - startY) / scale;
+      const isMobile = window.innerWidth <= 768;
+
+      if (isMobile && !isDragging) {
+        // Cancel long press if moved too much before activation
+        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+          clearTimeout(longPressTimeout);
+        }
+      }
+
+      if (!isDragging) return;
+
+      if (isMobile) {
+        if (win.isMaximized || win.snapState) {
+          // Follow cursor 1:1 for immediate feel with hardware acceleration
+          // Even snapped windows now follow the cursor to allow 'picking and dropping'
+          win.frame.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.98)`;
+          
+          if (Math.abs(dx) > 15 || Math.abs(dy) > 15) {
+            this._handleSnapDetection(e.clientX, e.clientY);
+          }
+        }
+      } else {
+        // Desktop move
+        const dragThreshold = 10;
+        if ((win.isMaximized || win.snapState) && (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold)) {
+          if (win.isMaximized) {
+            this.toggleMaximize(win.id);
+          } else {
+            this.unsnapWindow(win.id, e.clientX);
+          }
+          // Reset start positions to current to avoid jumping after unsnap
+          startX = e.clientX;
+          startY = e.clientY;
+          startLeft = parseFloat(win.frame.style.left || 0);
+          startTop = parseFloat(win.frame.style.top || 0);
+        }
+
+        const dw = this.desktopArea.clientWidth;
+        const dh = this.desktopArea.clientHeight;
+        const ww = win.frame.offsetWidth;
+        const wh = win.frame.offsetHeight;
+
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
+        
+        // Desktop bounds enforcement
+        newLeft = Math.max(0, Math.min(dw - ww, newLeft));
+        newTop = Math.max(0, Math.min(dh - wh, newTop));
+        
+        win.frame.style.left = `${newLeft}px`;
+        win.frame.style.top = `${newTop}px`;
+
+        this._handleSnapDetection(e.clientX, e.clientY);
+      }
+      
+      this._updateFsButtonPosition();
+    };
+
+    const onPointerUp = (e) => {
+      clearTimeout(longPressTimeout);
+      if (!isDragging) return;
       isDragging = false;
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+      win.titleBar.releasePointerCapture(e.pointerId);
+      win.titleBar.removeEventListener('pointermove', onPointerMove);
+      win.titleBar.removeEventListener('pointerup', onPointerUp);
+      win.titleBar.removeEventListener('pointercancel', onPointerUp);
+
+      win.frame.classList.remove('dragging');
+
+      // Clear mobile feedback transform
+      if (window.innerWidth <= 768) {
+        win.frame.style.transform = '';
+      }
 
       this._applySnap(win.id, e.clientX, e.clientY);
     };
 
-    win.titleBar.addEventListener('mousedown', onMouseDown);
+    win.titleBar.addEventListener('pointerdown', onPointerDown);
+    // Ensure touch-action is none to prevent browser handling touch gestures
+    win.titleBar.style.touchAction = 'none';
   }
 
   _makeResizable(win) {
@@ -420,8 +567,11 @@ export class WindowManager {
     const handles = win.frame.querySelectorAll('.resize-handle');
 
     handles.forEach(handle => {
-      handle.addEventListener('mousedown', (e) => {
+      handle.style.touchAction = 'none';
+      handle.addEventListener('pointerdown', (e) => {
         if (win.isMaximized) return;
+        // On mobile, snapped windows are resizable
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
 
         e.preventDefault();
         e.stopPropagation();
@@ -434,7 +584,9 @@ export class WindowManager {
         // Get desktop bounds for relative positioning
         const desktopRect = this.desktopArea.getBoundingClientRect();
 
-        const onMouseMove = (e) => {
+        handle.setPointerCapture(e.pointerId);
+
+        const onPointerMove = (e) => {
           let newWidth = startRect.width;
           let newHeight = startRect.height;
           let newLeft = startRect.left - desktopRect.left;
@@ -470,13 +622,16 @@ export class WindowManager {
           win.frame.style.top = `${newTop}px`;
         };
 
-        const onMouseUp = () => {
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
+        const onPointerUp = (e) => {
+          handle.releasePointerCapture(e.pointerId);
+          handle.removeEventListener('pointermove', onPointerMove);
+          handle.removeEventListener('pointerup', onPointerUp);
+          handle.removeEventListener('pointercancel', onPointerUp);
         };
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        handle.addEventListener('pointermove', onPointerMove);
+        handle.addEventListener('pointerup', onPointerUp);
+        handle.addEventListener('pointercancel', onPointerUp);
       });
     });
   }
@@ -504,18 +659,29 @@ export class WindowManager {
    * Update window icon
    */
   _handleSnapDetection(x, y) {
-    const threshold = 10;
+    const isMobile = window.innerWidth <= 768;
+    const threshold = isMobile ? 40 : 10;
     const dw = this.desktopArea.clientWidth;
     const dh = this.desktopArea.clientHeight;
 
-    if (x < threshold) {
-      this._showSnapGhost(0, 0, dw / 2, dh);
-    } else if (x > dw - threshold) {
-      this._showSnapGhost(dw / 2, 0, dw / 2, dh);
-    } else if (y < threshold) {
-      this._showSnapGhost(0, 0, dw, dh);
+    if (isMobile) {
+      if (y < threshold) {
+        this._showSnapGhost(0, 0, dw, dh / 2); // Top half on mobile
+      } else if (y > dh - threshold) {
+        this._showSnapGhost(0, dh / 2, dw, dh / 2); // Bottom half on mobile
+      } else {
+        this.snapGhost.style.display = 'none';
+      }
     } else {
-      this.snapGhost.style.display = 'none';
+      if (y < threshold || y > dh - threshold) {
+        this._showSnapGhost(0, 0, dw, dh); // Maximize on desktop (top or bottom edge)
+      } else if (x < threshold) {
+        this._showSnapGhost(0, 0, dw / 2, dh); // Left half
+      } else if (x > dw - threshold) {
+        this._showSnapGhost(dw / 2, 0, dw / 2, dh); // Right half
+      } else {
+        this.snapGhost.style.display = 'none';
+      }
     }
   }
 
@@ -529,7 +695,8 @@ export class WindowManager {
   }
 
   _applySnap(id, x, y) {
-    const threshold = 10;
+    const isMobile = window.innerWidth <= 768;
+    const threshold = isMobile ? 40 : 10;
     const dw = this.desktopArea.clientWidth;
     const dh = this.desktopArea.clientHeight;
     const win = this.windows.get(id);
@@ -537,12 +704,22 @@ export class WindowManager {
 
     this.snapGhost.style.display = 'none';
 
-    if (x < threshold) {
-      this.snapWindow(id, 'left');
-    } else if (x > dw - threshold) {
-      this.snapWindow(id, 'right');
-    } else if (y < threshold) {
-      this.toggleMaximize(id);
+    if (isMobile) {
+      if (y < threshold) {
+        this.snapWindow(id, 'top');
+      } else if (y > dh - threshold) {
+        this.snapWindow(id, 'bottom');
+      }
+    } else {
+      if (y < threshold || y > dh - threshold) {
+        if (!win.isMaximized) {
+          this.toggleMaximize(id);
+        }
+      } else if (x < threshold) {
+        this.snapWindow(id, 'left');
+      } else if (x > dw - threshold) {
+        this.snapWindow(id, 'right');
+      }
     }
   }
 
@@ -561,23 +738,242 @@ export class WindowManager {
 
     const dw = this.desktopArea.clientWidth;
     const dh = this.desktopArea.clientHeight;
+    const isMobile = window.innerWidth <= 768;
 
     win.frame.classList.add('maximized');
     win.snapState = type;
+    win.isMaximized = false; // Tiled is not Fullscreen
 
     if (type === 'left') {
       win.frame.style.left = '0px';
       win.frame.style.top = '0px';
-      win.frame.style.width = '50%';
+      const width = isMobile ? (dw / 2) : (dw * this.desktopSplitRatio);
+      win.frame.style.width = width + 'px';
       win.frame.style.height = '100%';
     } else if (type === 'right') {
-      win.frame.style.left = '50%';
+      const left = isMobile ? (dw / 2) : (dw * this.desktopSplitRatio);
+      win.frame.style.left = left + 'px';
       win.frame.style.top = '0px';
-      win.frame.style.width = '50%';
+      win.frame.style.width = (dw - left) + 'px';
       win.frame.style.height = '100%';
+    } else if (type === 'top') {
+      win.frame.style.left = '0px';
+      win.frame.style.top = '0px';
+      win.frame.style.width = '100%';
+      const height = isMobile ? (dh * this.mobileSplitRatio) : (dh / 2);
+      win.frame.style.height = height + 'px';
+    } else if (type === 'bottom') {
+      win.frame.style.left = '0px';
+      const top = isMobile ? (dh * this.mobileSplitRatio) : (dh / 2);
+      win.frame.style.top = top + 'px';
+      win.frame.style.width = '100%';
+      win.frame.style.height = (dh - top) + 'px';
     }
 
     this._updateFsButtonPosition();
+    this._updateSplitDivider();
+  }
+
+  _createSplitDivider() {
+    const divider = document.createElement('div');
+    divider.className = 'mobile-split-divider';
+    divider.style.display = 'none';
+    this.desktopArea.appendChild(divider);
+    this.splitDivider = divider;
+
+    let isDragging = false;
+
+    divider.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      divider.setPointerCapture(e.pointerId);
+      divider.classList.add('dragging');
+      e.preventDefault();
+    });
+
+    divider.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+
+      if (this._resizeAnimationFrame) cancelAnimationFrame(this._resizeAnimationFrame);
+      
+      this._resizeAnimationFrame = requestAnimationFrame(() => {
+        const dw = this.desktopArea.clientWidth;
+        const dh = this.desktopArea.clientHeight;
+        const isMobile = window.innerWidth <= 768;
+        
+        // Detect current orientation from active split
+        let isVertical = isMobile;
+        this.windows.forEach(w => {
+            if (w.snapState === 'left' || w.snapState === 'right') isVertical = false;
+            if (w.snapState === 'top' || w.snapState === 'bottom') isVertical = true;
+        });
+
+        if (isVertical) {
+            const newRatio = Math.max(0.1, Math.min(0.9, e.clientY / dh));
+            this.mobileSplitRatio = newRatio;
+            const topHeight = dh * newRatio;
+            this.windows.forEach(w => {
+                if (w.snapState === 'top') {
+                    w.frame.style.height = `${topHeight}px`;
+                } else if (w.snapState === 'bottom') {
+                    w.frame.style.top = `${topHeight}px`;
+                    w.frame.style.height = `${dh - topHeight}px`;
+                }
+            });
+        } else {
+            const newRatio = Math.max(0.1, Math.min(0.9, e.clientX / dw));
+            this.desktopSplitRatio = newRatio;
+            const leftWidth = dw * newRatio;
+            this.windows.forEach(w => {
+                if (w.snapState === 'left') {
+                    w.frame.style.width = `${leftWidth}px`;
+                } else if (w.snapState === 'right') {
+                    w.frame.style.left = `${leftWidth}px`;
+                    w.frame.style.width = `${dw - leftWidth}px`;
+                }
+            });
+        }
+        this._updateSplitDivider();
+      });
+    });
+
+    divider.addEventListener('pointerup', () => {
+      isDragging = false;
+      divider.classList.remove('dragging');
+    });
+  }
+
+  _updateSplitDivider() {
+    if (!this.splitDivider) return;
+
+    const dw = this.desktopArea.clientWidth;
+    const dh = this.desktopArea.clientHeight;
+    
+    let topWin = null, bottomWin = null;
+    let leftWin = null, rightWin = null;
+
+    this.windows.forEach(w => {
+        if (w.snapState === 'top') topWin = w;
+        if (w.snapState === 'bottom') bottomWin = w;
+        if (w.snapState === 'left') leftWin = w;
+        if (w.snapState === 'right') rightWin = w;
+    });
+
+    if (topWin && bottomWin) {
+      const y = dh * this.mobileSplitRatio;
+      this.splitDivider.style.display = 'flex';
+      this.splitDivider.classList.remove('horizontal');
+      this.splitDivider.classList.add('vertical');
+      this.splitDivider.style.top = (y - 4) + 'px';
+      this.splitDivider.style.left = '0';
+      this.splitDivider.style.width = '100%';
+      this.splitDivider.style.height = '8px';
+      this.splitDivider.style.zIndex = '9999';
+    } else if (leftWin && rightWin) {
+      const x = dw * this.desktopSplitRatio;
+      this.splitDivider.style.display = 'flex';
+      this.splitDivider.classList.remove('vertical');
+      this.splitDivider.classList.add('horizontal');
+      this.splitDivider.style.left = (x - 4) + 'px';
+      this.splitDivider.style.top = '0';
+      this.splitDivider.style.width = '8px';
+      this.splitDivider.style.height = '100%';
+      this.splitDivider.style.zIndex = '9999';
+    } else {
+      this.splitDivider.style.display = 'none';
+    }
+  }
+
+  _showSplitMenu(win, x, y) {
+    const isMobile = window.innerWidth <= 768;
+    
+    // Check occupied slots on mobile
+    let topWin = null;
+    let bottomWin = null;
+    if (isMobile) {
+      this.windows.forEach(w => {
+        if (w.id === win.id) return;
+        if (w.snapState === 'top') topWin = w;
+        if (w.snapState === 'bottom') bottomWin = w;
+      });
+    }
+
+    const items = isMobile ? [
+      {
+        icon: 'view-split-top,🔼',
+        label: topWin ? `Split with ${topWin.options.title || 'App'}` : 'Split Top',
+        action: () => {
+          if (topWin && bottomWin) {
+             // If both occupied, we need to choose which one to replace
+             this._showWindowSelection(win.id, 'top');
+          } else {
+             this.snapWindow(win.id, 'top');
+          }
+        },
+      },
+      {
+        icon: 'view-split-bottom,🔽',
+        label: bottomWin ? `Split with ${bottomWin.options.title || 'App'}` : 'Split Bottom',
+        action: () => {
+          if (topWin && bottomWin) {
+             this._showWindowSelection(win.id, 'bottom');
+          } else {
+             this.snapWindow(win.id, 'bottom');
+          }
+        },
+      },
+    ] : [
+      {
+        icon: 'view-split-left,🌓',
+        label: 'Split Left',
+        action: () => this.snapWindow(win.id, 'left'),
+      },
+      {
+        icon: 'view-split-right,🌗',
+        label: 'Split Right',
+        action: () => this.snapWindow(win.id, 'right'),
+      },
+    ];
+
+    items.push({
+      icon: 'view-fullscreen,⬜',
+      label: 'Full Screen',
+      action: () => {
+        if (!win.isMaximized) {
+          this.toggleMaximize(win.id);
+        }
+      },
+    });
+
+    import('./contextMenu.js').then(({ showContextMenu }) => {
+      showContextMenu(items, x, y, false, win.frame.querySelector('.btn-split'));
+    });
+  }
+
+  _showWindowSelection(id, targetSlot) {
+    const items = [];
+    this.windows.forEach(w => {
+      if (w.id === id) return;
+      if (w.snapState === 'top' || w.snapState === 'bottom') {
+        items.push({
+          icon: w.options.icon || 'archive,📦',
+          label: `Replace ${w.options.title || 'App'}`,
+          action: () => {
+            // Unsnap the old window
+            this.toggleMaximize(w.id);
+            // Snap the new one to its slot
+            this.snapWindow(id, w.snapState);
+          }
+        });
+      }
+    });
+
+    // Show selection menu
+    import('./contextMenu.js').then(({ showContextMenu }) => {
+      const win = this.windows.get(id);
+      const btn = win.frame.querySelector('.btn-split');
+      const rect = btn.getBoundingClientRect();
+      showContextMenu(items, rect.left, rect.bottom, false, btn);
+    });
   }
 
   unsnapWindow(id, mouseX) {
@@ -604,19 +1000,32 @@ export class WindowManager {
     const fsBtn = document.getElementById('fullscreen-btn');
     if (!fsBtn) return;
 
-    // Check if any window is currently snapped to the right or maximized
     let needsShift = false;
+    const dw = window.innerWidth;
+
     for (const win of this.windows.values()) {
-      if (win.snapState === 'right' || win.isMaximized) {
+      if (win.isMinimized) continue;
+      
+      // Check if maximized or specifically snapped to corners that collide
+      if (win.isMaximized || win.snapState === 'right' || win.snapState === 'top') {
+        needsShift = true;
+        break;
+      }
+
+      // Proximity check: if window top-right corner is near screen top-right
+      const winRect = win.frame.getBoundingClientRect();
+      if (winRect.right > dw - 80 && winRect.top < 80) {
         needsShift = true;
         break;
       }
     }
 
     if (needsShift) {
-      fsBtn.style.transform = 'translateY(100px)';
+      fsBtn.style.transform = 'translateY(80px)';
+      fsBtn.style.opacity = '0.7';
     } else {
       fsBtn.style.transform = 'translateY(0)';
+      fsBtn.style.opacity = '1';
     }
   }
 
@@ -634,5 +1043,55 @@ export class WindowManager {
         this.panelManager._renderWindowList();
       }
     }
+  }
+
+  _relayout() {
+    const isMobile = window.innerWidth <= 768;
+    const transitioningToMobile = isMobile && !this._lastIsMobile;
+    const transitioningToDesktop = !isMobile && this._lastIsMobile;
+    
+    this.windows.forEach(win => {
+      if (transitioningToMobile) {
+        if (win.id === this.activeWindow && !win.snapState && !win.isMaximized) {
+          this.toggleMaximize(win.id);
+        } else if (win.snapState) {
+          let newState = win.snapState;
+          if (win.snapState === 'left') newState = 'top';
+          if (win.snapState === 'right') newState = 'bottom';
+          this.snapWindow(win.id, newState);
+        }
+      } else if (transitioningToDesktop) {
+        if (win.isMaximized) {
+          this.toggleMaximize(win.id);
+        } else if (win.snapState) {
+          this.unsnapWindow(win.id);
+        }
+      } else {
+        // Continuous resizing logic
+        if (win.isMaximized) {
+          // Re-maximize to update bounds
+          this.toggleMaximize(win.id);
+          this.toggleMaximize(win.id);
+        } else if (win.snapState) {
+          this.snapWindow(win.id, win.snapState);
+        } else {
+          // Contain within bounds
+          const dw = this.desktopArea.clientWidth;
+          const dh = this.desktopArea.clientHeight;
+          const ww = win.frame.offsetWidth;
+          const wh = win.frame.offsetHeight;
+          let left = parseFloat(win.frame.style.left);
+          let top = parseFloat(win.frame.style.top);
+          left = Math.max(10, Math.min(dw - ww - 10, left));
+          top = Math.max(10, Math.min(dh - wh - 10, top));
+          win.frame.style.left = left + 'px';
+          win.frame.style.top = top + 'px';
+        }
+      }
+    });
+    
+    this._lastIsMobile = isMobile;
+    this._updateFsButtonPosition();
+    this._updateSplitDivider();
   }
 }
