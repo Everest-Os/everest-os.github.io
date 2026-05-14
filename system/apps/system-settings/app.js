@@ -139,11 +139,7 @@ export async function launch(ctx, options = {}) {
     width: 800,
     height: 600,
     content: content,
-    onClose: () => {
-      if (currentSection === 'menu') {
-        window.dispatchEvent(new CustomEvent('everest:close-menu'));
-      }
-    }
+    onClose: () => { }
   });
 
   const sidebar = content.querySelector('#settings-sidebar');
@@ -174,46 +170,8 @@ export async function launch(ctx, options = {}) {
   });
 
   let currentSection = initialSection;
-  let originalPos = null;
 
   const setSection = async (id) => {
-    // Live preview for menu settings
-    if (id === 'menu') {
-      window.dispatchEvent(new CustomEvent('everest:open-menu'));
-
-      // Move window so it doesn't overlap the menu
-      if (!originalPos) {
-        originalPos = {
-          left: win.frame.style.left,
-          top: win.frame.style.top
-        };
-      }
-
-      try {
-        const savedStr = await vfs.readFile('~/.config/menu.json');
-        const menuSettings = savedStr ? JSON.parse(savedStr) : { menuWidth: 420 };
-        const menuWidth = menuSettings.menuWidth || 420;
-        // Shift window to the right of the menu with some margin
-        win.frame.style.left = (menuWidth + 60) + 'px';
-        // Ensure it doesn't go off screen
-        const maxLeft = window.innerWidth - win.frame.offsetWidth - 20;
-        if (parseFloat(win.frame.style.left) > maxLeft) {
-          win.frame.style.left = maxLeft + 'px';
-        }
-      } catch (e) {
-        win.frame.style.left = '450px';
-      }
-
-    } else if (currentSection === 'menu') {
-      window.dispatchEvent(new CustomEvent('everest:close-menu'));
-      // Restore original position
-      if (originalPos) {
-        win.frame.style.left = originalPos.left;
-        win.frame.style.top = originalPos.top;
-        originalPos = null;
-      }
-    }
-
     currentSection = id;
     navItems.forEach(item => {
       item.classList.toggle('active', item.dataset.section === id);
@@ -231,6 +189,7 @@ export async function launch(ctx, options = {}) {
       marginY: appearanceSettings.panelMarginY !== undefined ? appearanceSettings.panelMarginY : 12,
       marginX: appearanceSettings.panelMarginX !== undefined ? appearanceSettings.panelMarginX : 60,
       radius: appearanceSettings.panelRadius !== undefined ? appearanceSettings.panelRadius : 12,
+      windowRadius: appearanceSettings.windowRadius !== undefined ? appearanceSettings.windowRadius : 12,
       color: appearanceSettings.panelColor || '#1e1e1e',
       borderColor: appearanceSettings.panelBorderColor || '#6496ff',
       borderOpacity: appearanceSettings.panelBorderOpacity !== undefined ? appearanceSettings.panelBorderOpacity : 0.3
@@ -345,6 +304,14 @@ export async function launch(ctx, options = {}) {
           </div>
           <input type="range" id="radius-range" min="0" max="32" value="${s.radius}" style="width:100%;">
         </div>
+        <div style="height:12px;"></div>
+        <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+          <div style="display:flex; justify-content:space-between;">
+            <label>Window Curvature</label>
+            <span id="window-radius-val">${s.windowRadius}px</span>
+          </div>
+          <input type="range" id="window-radius-range" min="0" max="32" value="${s.windowRadius}" style="width:100%;">
+        </div>
       </div>
     `;
 
@@ -362,6 +329,8 @@ export async function launch(ctx, options = {}) {
       // Apply immediately
       if (key === 'panelRadius') {
         root.style.setProperty('--panel-radius', val + 'px');
+      } else if (key === 'windowRadius') {
+        root.style.setProperty('--window-radius', val + 'px');
       } else if (key === 'panelBlur') {
         root.style.setProperty('--panel-blur', val + 'px');
       } else if (key === 'panelOpacity' || key === 'panelColor') {
@@ -462,6 +431,12 @@ export async function launch(ctx, options = {}) {
       const val = parseInt(e.target.value);
       body.querySelector('#radius-val').textContent = val + 'px';
       updateAppearance('panelRadius', val);
+    });
+
+    body.querySelector('#window-radius-range').addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      body.querySelector('#window-radius-val').textContent = val + 'px';
+      updateAppearance('windowRadius', val);
     });
 
     const modeGroup = body.querySelector('#panel-mode-group');
@@ -785,7 +760,11 @@ export async function launch(ctx, options = {}) {
           } else {
             persistBtn.textContent = '❌ Denied by browser';
             setTimeout(() => { persistBtn.textContent = 'Try Again'; }, 2000);
-            alert('Your browser denied the request to make storage persistent.\\n\\nBrowsers usually require you to bookmark the page, install it as a Web App (PWA), or interact with it more before granting this permission.\\n\\nTry bookmarking the page and trying again!');
+            window.osAPI.showSystemDialog({
+              title: 'Storage Persistence Denied',
+              message: 'Your browser denied the request to make storage persistent.\\n\\nBrowsers usually require you to bookmark the page, install it as a Web App (PWA), or interact with it more before granting this permission.\\n\\nTry bookmarking the page and trying again!',
+              type: 'alert'
+            });
           }
         } catch {
           persistBtn.textContent = '❌ Not supported';
@@ -835,12 +814,17 @@ export async function launch(ctx, options = {}) {
             throw new Error('Invalid backup format');
           }
 
-          if (confirm(`Restore ${backupData.files.length} items from ${backupData.os || 'unknown'} (${backupData.timestamp || 'unknown'})? This will write files to the active storage backend.`)) {
-            showStatus('⏳ Restoring files...');
-            const { restored, errors } = await performVfsRestore(backupData);
-            showStatus(`✅ Restored ${restored} items${errors > 0 ? `, ${errors} errors` : ''}. Reloading...`);
-            setTimeout(() => location.reload(), 1500);
-          }
+          window.osAPI.showSystemDialog({
+            title: 'Restore Backup',
+            message: `Restore ${backupData.files.length} items from ${backupData.os || 'unknown'} (${backupData.timestamp || 'unknown'})? This will write files to the active storage backend.`,
+            type: 'confirm',
+            onConfirm: async () => {
+              showStatus('⏳ Restoring files...');
+              const { restored, errors } = await performVfsRestore(backupData);
+              showStatus(`✅ Restored ${restored} items${errors > 0 ? `, ${errors} errors` : ''}. Reloading...`);
+              setTimeout(() => location.reload(), 1500);
+            }
+          });
         } catch (err) {
           showStatus(`❌ Import failed: ${err.message}`);
         }
@@ -851,18 +835,23 @@ export async function launch(ctx, options = {}) {
     // Reset & Fetch Fresh (only present in static/IndexedDB mode)
     const resetBtn = body.querySelector('#btn-reset-system');
     if (resetBtn) {
-      resetBtn.onclick = async () => {
-        if (confirm('This will erase ALL local data (files, settings, plugins) and re-download the original system image.\n\n⚠️ Have you exported a backup? This cannot be undone.')) {
-          resetBtn.disabled = true;
-          resetBtn.textContent = '⏳ Clearing & re-fetching...';
-          try {
-            await vfs.wipe();
-            location.reload();
-          } catch (e) {
-            resetBtn.disabled = false;
-            resetBtn.textContent = '❌ Failed — try again';
+      resetBtn.onclick = () => {
+        window.osAPI.showSystemDialog({
+          title: 'Reset System',
+          message: 'This will erase ALL local data (files, settings, plugins) and re-download the original system image.\n\n⚠️ Have you exported a backup? This cannot be undone.',
+          type: 'confirm',
+          onConfirm: async () => {
+            resetBtn.disabled = true;
+            resetBtn.textContent = '⏳ Clearing & re-fetching...';
+            try {
+              await vfs.wipe();
+              location.reload();
+            } catch (e) {
+              resetBtn.disabled = false;
+              resetBtn.textContent = '❌ Failed — try again';
+            }
           }
-        }
+        });
       };
     }
   };
@@ -877,7 +866,8 @@ export async function launch(ctx, options = {}) {
       menuBlur: 20,
       showCategoryIcons: true,
       enableSearch: true,
-      iconSize: 28
+      iconSize: 28,
+      menuRadius: null
     };
 
     try {
@@ -889,9 +879,146 @@ export async function launch(ctx, options = {}) {
       await vfs.writeFile('~/.config/menu.json', JSON.stringify(settings, null, 2));
       // Notify AppMenu to reload
       document.dispatchEvent(new CustomEvent('reload-menu-settings'));
+      updateLivePreview();
     };
 
+    let rawBg = 'url("/system/backgrounds/bg_mountain_sunset_1777608248335.png")';
+    if (ctx.desktopSettings && ctx.desktopSettings.settings && ctx.desktopSettings.settings.background) {
+      rawBg = ctx.desktopSettings.settings.background;
+    } else {
+      try {
+        const desktopStr = await vfs.readFile('~/.config/desktop.json');
+        if (desktopStr) {
+          const dtSettings = JSON.parse(desktopStr);
+          if (dtSettings.background) rawBg = dtSettings.background;
+        }
+      } catch (e) { }
+    }
+
+    let currentDesktopBg = rawBg;
+    if (rawBg && rawBg.startsWith('url(')) {
+      const match = rawBg.match(/url\(['"]?([^'"]+?)['"]?\)/);
+      if (match) {
+        const path = match[1];
+        if (path.startsWith('~') || path.startsWith('/home/user')) {
+          try {
+            const dataUrl = await vfs.readFile(path);
+            currentDesktopBg = `url('${dataUrl}')`;
+          } catch (e) {
+            currentDesktopBg = `url('${vfs.getFsPath('/system/backgrounds/bg_geometric_glass_1777608272454.png')}')`;
+          }
+        } else if (path.startsWith('/system/')) {
+          currentDesktopBg = `url('${vfs.getFsPath(path)}')`;
+        }
+      }
+    }
+
     body.innerHTML = `
+      <div style="position:sticky; top:-24px; margin:-24px -24px 24px -24px; padding:24px 24px 16px 24px; background:var(--bg-surface); z-index:10; border-bottom:1px solid var(--border); box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+        <div class="settings-section-title" style="margin-top:0;">Menu Preview</div>
+        <div class="settings-card" style="padding:0; overflow:hidden; height:160px; position:relative; border-radius:12px; border:1px solid var(--border); margin-bottom:0; box-shadow:inset 0 0 40px rgba(0,0,0,0.4);">
+          <!-- The Scaled Virtual Desktop (renders 1:1, downscaled 0.4x by GPU) -->
+          <div id="preview-desktop-viewport" style="position:absolute; top:0; left:0; width:250%; height:250%; transform:scale(0.4); transform-origin:top left; background:${currentDesktopBg}; background-size:cover; background-position:center;">
+            <!-- Contrast overlay -->
+            <div style="position:absolute; inset:0; background:rgba(0,0,0,0.08); pointer-events:none;"></div>
+            
+            <!-- Simulated 1:1 Taskbar Panel -->
+            <div id="preview-taskbar-panel" style="position:absolute; bottom:0; left:0; right:0; height:48px; background:rgba(var(--bg-panel-rgb), 0.85); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.08); z-index:2; display:flex; align-items:center; padding:0 16px; transition:all 0.1s;">
+              <!-- Simulated Panel Button -->
+              <div id="preview-panel-btn" style="display:flex; align-items:center; gap:8px; padding:6px 12px; border-radius:8px; background:rgba(255,255,255,0.1); font-size:14px;">
+                <span id="preview-btn-icon" style="display:flex; align-items:center; justify-content:center; min-width:24px; min-height:24px;">🌿</span>
+                <span id="preview-btn-label" style="font-size:13px; font-weight:600; color:var(--text-primary);">Menu</span>
+              </div>
+            </div>
+
+            <!-- Simulated 1:1 Floating Menu Container -->
+            <div id="preview-menu-container" style="position:absolute; top:16px; bottom:60px; left:16px; width:420px; border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 12px 36px rgba(0,0,0,0.4); transition:border-radius 0.1s, width 0.1s, background 0.1s, backdrop-filter 0.1s;">
+              
+              <!-- Simulated Quick Actions Row -->
+              <div style="display:flex; justify-content:center; gap:12px; padding:16px 16px 4px 16px;">
+                <div style="width:36px; height:36px; border-radius:50%; background:var(--bg-surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);">
+                  ${IconHelper.getIcon('folder,📂', { size: 18 })}
+                </div>
+                <div style="width:36px; height:36px; border-radius:50%; background:var(--bg-surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);">
+                  ${IconHelper.getIcon('terminal,🐚', { size: 18 })}
+                </div>
+                <div style="width:36px; height:36px; border-radius:50%; background:var(--bg-surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);">
+                  ${IconHelper.getIcon('settings,⚙️', { size: 18 })}
+                </div>
+                <div style="width:36px; height:36px; border-radius:50%; background:var(--bg-surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);">
+                  ${IconHelper.getIcon('info,ℹ️', { size: 18 })}
+                </div>
+              </div>
+
+              <!-- Simulated 1:1 Search Container -->
+              <div id="preview-menu-search" style="padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.15);">
+                <div style="height:34px; border-radius:8px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; padding-left:12px;">
+                  <div style="width:10px; height:10px; border-radius:50%; border:2px solid rgba(255,255,255,0.35);"></div>
+                </div>
+              </div>
+              
+              <!-- Simulated Content -->
+              <div style="display:flex; flex:1; min-height:0;">
+                <!-- Simulated Categories -->
+                <div id="preview-menu-categories" style="width:110px; border-right:1px solid rgba(255,255,255,0.06); padding:12px; background:rgba(0,0,0,0.08); display:flex; flex-direction:column; gap:8px;">
+                  <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; background:rgba(var(--accent-rgb), 0.15); color:var(--text-accent);">
+                    ${IconHelper.getIcon('applications,apps', { size: 16 })}
+                    <span style="font-size:12px; font-weight:600;">All Apps</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; color:var(--text-secondary);">
+                    ${IconHelper.getIcon('internet,globe', { size: 16 })}
+                    <span style="font-size:12px; font-weight:500;">Internet</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; color:var(--text-secondary);">
+                    ${IconHelper.getIcon('multimedia,play', { size: 16 })}
+                    <span style="font-size:12px; font-weight:500;">Media</span>
+                  </div>
+                </div>
+                
+                <!-- Simulated Layout Grid Items -->
+                <div style="flex:1; padding:16px; display:flex; flex-direction:column; gap:12px;">
+                  <div style="border-radius:8px; background:transparent; display:flex; align-items:center; gap:12px; padding:0 10px;">
+                    ${IconHelper.getIcon('browser,🌐', { size: 32 })}
+                    <div style="display:flex; flex-direction:column;">
+                      <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Web Browser</span>
+                      <span style="font-size:11px; color:var(--text-secondary);">Browse the internet</span>
+                    </div>
+                  </div>
+                  <div style="border-radius:8px; background:transparent; display:flex; align-items:center; gap:12px; padding:0 10px;">
+                    ${IconHelper.getIcon('terminal,>_', { size: 32 })}
+                    <div style="display:flex; flex-direction:column;">
+                      <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Terminal</span>
+                      <span style="font-size:11px; color:var(--text-secondary);">Command line interface</span>
+                    </div>
+                  </div>
+                  <div style="border-radius:8px; background:transparent; display:flex; align-items:center; gap:12px; padding:0 10px;">
+                    ${IconHelper.getIcon('folder,📁', { size: 32 })}
+                    <div style="display:flex; flex-direction:column;">
+                      <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Files</span>
+                      <span style="font-size:11px; color:var(--text-secondary);">Manage your documents</span>
+                    </div>
+                  </div>
+                  <div style="border-radius:8px; background:transparent; display:flex; align-items:center; gap:12px; padding:0 10px;">
+                    ${IconHelper.getIcon('text-editor,📝', { size: 32 })}
+                    <div style="display:flex; flex-direction:column;">
+                      <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Text Editor</span>
+                      <span style="font-size:11px; color:var(--text-secondary);">Edit text files</span>
+                    </div>
+                  </div>
+                  <div style="border-radius:8px; background:transparent; display:flex; align-items:center; gap:12px; padding:0 10px;">
+                    ${IconHelper.getIcon('calculator,🧮', { size: 32 })}
+                    <div style="display:flex; flex-direction:column;">
+                      <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Calculator</span>
+                      <span style="font-size:11px; color:var(--text-secondary);">Perform calculations</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="settings-section-title">Menu Button</div>
       <div class="settings-card">
         <div class="settings-row" style="align-items:center; margin-bottom:12px;">
@@ -954,6 +1081,17 @@ export async function launch(ctx, options = {}) {
             <span id="menu-opacity-val">${Math.round(settings.menuOpacity * 100)}%</span>
           </div>
           <input type="range" id="menu-opacity-range" min="40" max="100" value="${Math.round(settings.menuOpacity * 100)}" style="width:100%;">
+
+          <div style="height:8px;"></div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label>Menu Corner Radius</label>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="menu-radius-val" style="font-size:12px; color:var(--text-secondary);">${settings.menuRadius !== undefined && settings.menuRadius !== null ? settings.menuRadius + 'px' : 'Theme Default'}</span>
+              <button class="btn-secondary btn-sm" id="btn-reset-menu-radius" style="padding:2px 8px; font-size:10px; min-height:20px; min-width:auto; line-height:1; ${settings.menuRadius !== undefined && settings.menuRadius !== null ? '' : 'display:none;'}">Reset</button>
+            </div>
+          </div>
+          <input type="range" id="menu-radius-range" min="0" max="40" value="${settings.menuRadius !== undefined && settings.menuRadius !== null ? settings.menuRadius : 12}" style="width:100%;">
         </div>
       </div>
 
@@ -978,7 +1116,81 @@ export async function launch(ctx, options = {}) {
       const icon = settings.icon;
       iconPreview.innerHTML = IconHelper.getIcon(icon, { size: 28 });
     };
+
+    const updateLivePreview = () => {
+      const menuPreview = body.querySelector('#preview-menu-container');
+      if (!menuPreview) return;
+
+      // 1. Real pixel Width configuration directly applied
+      menuPreview.style.width = `${settings.menuWidth || 420}px`;
+
+      // 2. Real Opacity and exact Theme Color background applied
+      const menuColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-menu-rgb') || '30, 30, 30';
+      menuPreview.style.background = `rgba(${menuColor}, ${settings.menuOpacity})`;
+
+      // 3. Real Blur intensity applied
+      const blurVal = settings.menuBlur !== undefined ? settings.menuBlur : 20;
+      menuPreview.style.backdropFilter = `blur(${blurVal}px) saturate(180%)`;
+      menuPreview.style.WebkitBackdropFilter = `blur(${blurVal}px) saturate(180%)`;
+
+      // 4. Real Corner Radius directly applied
+      let finalRadius = '12px';
+      if (settings.menuRadius !== undefined && settings.menuRadius !== null) {
+        finalRadius = `${settings.menuRadius}px`;
+      } else {
+        const computedStyle = getComputedStyle(document.documentElement);
+        finalRadius = computedStyle.getPropertyValue('--menu-radius') || computedStyle.getPropertyValue('--radius-md') || '12px';
+      }
+      menuPreview.style.borderRadius = finalRadius;
+
+      // 5. Component visibility and display states
+      const searchArea = body.querySelector('#preview-menu-search');
+      if (searchArea) searchArea.style.display = settings.enableSearch !== false ? 'block' : 'none';
+
+      const categories = body.querySelector('#preview-menu-categories');
+      if (categories) categories.style.display = settings.showCategoryIcons !== false ? 'flex' : 'none';
+
+      const previewLabel = body.querySelector('#preview-btn-label');
+      if (previewLabel) previewLabel.style.display = settings.showLabel !== false ? 'inline' : 'none';
+
+      // 6. Simulated real panel icon and size scaling
+      const previewIcon = body.querySelector('#preview-btn-icon');
+      if (previewIcon) {
+        const iconSize = settings.iconSize || 28;
+        previewIcon.style.width = `${iconSize}px`;
+        previewIcon.style.height = `${iconSize}px`;
+        previewIcon.innerHTML = IconHelper.getIcon(settings.icon || 'menu', { size: iconSize });
+      }
+
+      // 7. Update Simulated Taskbar Panel to match actual Panel Settings
+      const taskbarPanel = body.querySelector('#preview-taskbar-panel');
+      if (taskbarPanel) {
+        const docStyle = getComputedStyle(document.documentElement);
+        const panelHeight = appearanceSettings.panelHeight !== undefined ? appearanceSettings.panelHeight : parseInt(docStyle.getPropertyValue('--panel-height')) || 48;
+        const panelMarginX = appearanceSettings.panelMarginX !== undefined ? appearanceSettings.panelMarginX : parseInt(docStyle.getPropertyValue('--panel-margin-x')) || 0;
+        const panelMarginY = appearanceSettings.panelMarginY !== undefined ? appearanceSettings.panelMarginY : parseInt(docStyle.getPropertyValue('--panel-margin-y')) || 0;
+        const panelRadius = appearanceSettings.panelRadius !== undefined ? appearanceSettings.panelRadius : parseInt(docStyle.getPropertyValue('--panel-radius')) || 0;
+        const panelOpacity = appearanceSettings.panelOpacity !== undefined ? appearanceSettings.panelOpacity : 0.85;
+        const panelBlur = appearanceSettings.panelBlur !== undefined ? appearanceSettings.panelBlur : parseInt(docStyle.getPropertyValue('--panel-blur')) || 20;
+
+        taskbarPanel.style.height = `${panelHeight}px`;
+        taskbarPanel.style.left = `${panelMarginX}px`;
+        taskbarPanel.style.right = `${panelMarginX}px`;
+        taskbarPanel.style.bottom = `${panelMarginY}px`;
+        taskbarPanel.style.borderRadius = `${panelRadius}px`;
+        taskbarPanel.style.background = `rgba(${menuColor}, ${panelOpacity})`;
+        taskbarPanel.style.backdropFilter = `blur(${panelBlur}px) saturate(180%)`;
+        taskbarPanel.style.WebkitBackdropFilter = `blur(${panelBlur}px) saturate(180%)`;
+
+        // The floating menu container's bottom position should also adjust based on the panel height + marginY
+        menuPreview.style.bottom = `${panelHeight + (panelMarginY * 2)}px`;
+        // Move the menu over by the panel margin X so it aligns cleanly
+        menuPreview.style.left = `${Math.max(16, panelMarginX)}px`;
+      }
+    };
+
     updatePreview();
+    updateLivePreview();
 
     iconPreview.onclick = () => {
       const isVisible = iconSelector.style.display === 'block';
@@ -996,7 +1208,7 @@ export async function launch(ctx, options = {}) {
           try {
             const items = await vfs.readdir(p);
             allItems.push(...items);
-          } catch(e) {}
+          } catch (e) { }
         }
         customGrid.innerHTML = '';
         allItems.forEach(item => {
@@ -1083,6 +1295,22 @@ export async function launch(ctx, options = {}) {
       const val = e.target.value;
       settings.menuOpacity = parseInt(val) / 100;
       body.querySelector('#menu-opacity-val').textContent = val + '%';
+      save();
+    };
+
+    body.querySelector('#menu-radius-range').oninput = (e) => {
+      const val = parseInt(e.target.value);
+      settings.menuRadius = val;
+      body.querySelector('#menu-radius-val').textContent = val + 'px';
+      body.querySelector('#btn-reset-menu-radius').style.display = '';
+      save();
+    };
+
+    body.querySelector('#btn-reset-menu-radius').onclick = () => {
+      settings.menuRadius = null;
+      body.querySelector('#menu-radius-val').textContent = 'Theme Default';
+      body.querySelector('#menu-radius-range').value = 12; // Fallback default
+      body.querySelector('#btn-reset-menu-radius').style.display = 'none';
       save();
     };
 
@@ -1685,7 +1913,7 @@ export async function launch(ctx, options = {}) {
             }
             renderList();
           } catch (e) {
-            alert(`Failed to ${ext.isLoaded ? 'unload' : 'load'} extension: ${e.message}`);
+            window.osAPI.showSystemDialog({ title: 'Error', message: `Failed to ${ext.isLoaded ? 'unload' : 'load'} extension: ${e.message}`, type: 'alert' });
             btn.disabled = false;
           }
         };
@@ -1703,7 +1931,7 @@ export async function launch(ctx, options = {}) {
                   await vfs.rm(ext.path);
                   renderList();
                 } catch (e) {
-                  alert('Failed to uninstall: ' + e.message);
+                  window.osAPI.showSystemDialog({ title: 'Error', message: 'Failed to uninstall: ' + e.message, type: 'alert' });
                 }
               }
             });
@@ -1740,7 +1968,7 @@ export async function launch(ctx, options = {}) {
     body.innerHTML = `
       <div style="text-align:center; padding:20px 0;">
         <div style="margin-bottom:24px; display:inline-flex; align-items:center; justify-content:center; width:120px; height:120px; background:var(--bg-card); border-radius:50%; border:1px solid var(--border); box-shadow:0 4px 15px rgba(0,0,0,0.2); overflow:hidden;">
-          ${IconHelper.getIcon('/icons/everest-logo.svg', { size: 180 })}
+          ${IconHelper.getIcon('logo', { size: 180 })}
         </div>
         <h2 style="margin-bottom:4px;">EverestOS</h2>
         <p style="color:var(--text-tertiary); font-size:14px; margin-bottom:24px;">Version 1.2.5</p>

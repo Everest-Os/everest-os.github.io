@@ -1,19 +1,19 @@
 {
-  "panelHeight": 54,
+  "panelHeight": 48,
   "panelColor": "#2f2d2d",
   "panelOpacity": 0.5,
-  "panelBlur": 21,
+  "panelBlur": 5,
   "panelBorderColor": "#2359cd",
   "panelBorderOpacity": 0.73,
-  "panelMarginY": 12,
+  "panelMarginY": 13,
   "panelMarginX": 70,
-  "panelRadius": 12,
+  "panelRadius": 15,
   "menuColor": "#1e1e1e",
   "menuOpacity": 1,
   "menuIcon": "🌿",
   "shellTheme": "light",
   "appTheme": "light",
   "contextMenuColor": "#19191e",
-  "contextMenuOpacity": 0.55,
-  "contextMenuBlur": 12
+  "contextMenuOpacity": 0.47,
+  "contextMenuBlur": 20
 }

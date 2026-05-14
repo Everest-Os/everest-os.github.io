@@ -1,0 +1,29 @@
+{
+  "id": "nord-aurora",
+  "name": "Nord Aurora",
+  "mode": "dark",
+  "panelMode": "dark",
+  "variables": {
+    "--bg-desktop-rgb": "46, 52, 64",
+    "--bg-surface-rgb": "59, 66, 82",
+    "--bg-panel-rgb": "46, 52, 64",
+    "--bg-menu-rgb": "46, 52, 64",
+    "--accent-rgb": "136, 192, 208",
+    "--text-primary-rgb": "236, 239, 244",
+    "--radius-main": "16px",
+    "--window-radius": "16px",
+    "--menu-radius": "16px",
+    "--menu-width": "520px",
+    "--menu-height": "450px",
+    "--wm-btn-size": "22px",
+    "--panel-icon-size": "17px",
+    "--wm-titlebar-bg": "rgba(255, 255, 255, 0.02)",
+    "--panel-blur": "24px",
+    "--menu-blur": "24px",
+    "--panel-opacity": "0.94",
+    "--menu-opacity": "0.95",
+    "--wm-bg": "rgba(59, 66, 82, 0.92)",
+    "--wm-border": "rgba(136, 192, 208, 0.15)",
+    "--border": "rgba(255, 255, 255, 0.06)"
+  }
+}

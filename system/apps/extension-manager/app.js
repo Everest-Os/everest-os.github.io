@@ -243,7 +243,7 @@ export async function launch(ctx, options = {}) {
         await loader.loadFromVfs(uuid, btn.dataset.vfs, type);
         render();
       } catch (err) {
-        alert('Failed to load: ' + err.message);
+        showSystemDialog({ title: 'Error', message: 'Failed to load: ' + err.message, type: 'alert' });
         render();
       }
     } else if (action === 'unload') {
@@ -268,7 +268,7 @@ export async function launch(ctx, options = {}) {
             await vfs.rm(vfsPath);
             render();
           } catch (err) {
-            alert('Failed to delete: ' + err.message);
+            showSystemDialog({ title: 'Error', message: 'Failed to delete: ' + err.message, type: 'alert' });
           }
         }
       });
@@ -280,7 +280,7 @@ export async function launch(ctx, options = {}) {
   // Browse folder button
   browseBtn.addEventListener('click', async () => {
     if (!filePicker) {
-      alert('File picker not available');
+      showSystemDialog({ title: 'Error', message: 'File picker not available', type: 'alert' });
       return;
     }
     const folder = await filePicker.pickFolder({
@@ -296,7 +296,7 @@ export async function launch(ctx, options = {}) {
       await loader.loadFromVfs(uuid, folder, activeTab);
       render();
     } catch (err) {
-      alert(`Could not load plugin from "${folder}".\n\nMake sure it contains a valid metadata.json.\n\nError: ${err.message}`);
+      showSystemDialog({ title: 'Error', message: `Could not load plugin from "${folder}".\n\nMake sure it contains a valid metadata.json.\n\nError: ${err.message}`, type: 'alert' });
     }
   });
 

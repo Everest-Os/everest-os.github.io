@@ -3,6 +3,7 @@
   "icons": {
     "folder": "bloom-dark/color/places/folder.svg",
     "folder-open": "bloom-dark/color/places/folder-open.svg",
+    "color-swatch": "bloom-dark/color/actions/color-swatch.svg",
     "home": "bloom-dark/color/actions/home.svg",
     "desktop": "bloom-dark/color/actions/desktop.svg",
     "copy": "bloom-dark/symbolic/actions/copy.svg",
@@ -132,6 +133,7 @@
     "go-previous": "bloom-dark/symbolic/actions/go-previous.svg",
     "go-next": "bloom-dark/symbolic/actions/go-next.svg",
     "go-home": "bloom-dark/symbolic/actions/go-home.svg",
+    "up": "bloom-dark/symbolic/actions/up.svg",
     "zoom-original": "bloom-dark/symbolic/actions/zoom-original.svg",
     "list-add": "bloom-dark/symbolic/actions/list-add.svg",
     "list-remove": "bloom-dark/symbolic/actions/list-remove.svg",

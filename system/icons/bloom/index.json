@@ -3,6 +3,7 @@
   "icons": {
     "folder": "bloom/color/actions/folder.svg",
     "folder-open": "bloom/color/actions/folder-open.svg",
+    "color-swatch": "bloom/color/actions/color-swatch.svg",
     "home": "bloom/color/actions/home.svg",
     "desktop": "bloom/color/actions/desktop.svg",
     "copy": "bloom/symbolic/actions/copy.svg",
@@ -131,6 +132,7 @@
     "go-previous": "bloom/symbolic/actions/go-previous.svg",
     "go-next": "bloom/symbolic/actions/go-next.svg",
     "go-home": "bloom/symbolic/actions/go-home.svg",
+    "up": "bloom/symbolic/actions/up.svg",
     "zoom-original": "bloom/symbolic/actions/zoom-original.svg",
     "list-add": "bloom/symbolic/actions/list-add.svg",
     "list-remove": "bloom/symbolic/actions/list-remove.svg",

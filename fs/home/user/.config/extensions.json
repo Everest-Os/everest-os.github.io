@@ -2,13 +2,13 @@
   "enabled": [
     {
       "type": "applets",
-      "uuid": "menu@playground",
-      "vfsPath": "/system/plugins/applets/menu@playground"
+      "uuid": "calendar@playground",
+      "vfsPath": "/system/plugins/applets/statusbar/calendar@playground"
     },
     {
       "type": "applets",
-      "uuid": "calendar@playground",
-      "vfsPath": "/system/plugins/applets/statusbar/calendar@playground"
+      "uuid": "network@playground",
+      "vfsPath": "/system/plugins/applets/statusbar/network@playground"
     },
     {
       "type": "applets",
@@ -17,8 +17,8 @@
     },
     {
       "type": "applets",
-      "uuid": "network@playground",
-      "vfsPath": "/system/plugins/applets/statusbar/network@playground"
+      "uuid": "menu@playground",
+      "vfsPath": "/system/plugins/applets/menu@playground"
     },
     {
       "type": "applets",
@@ -29,9 +29,16 @@
       "type": "desklets",
       "uuid": "sysinfo@playground",
       "vfsPath": "/system/plugins/desklets/system/sysinfo@playground"
+    },
+    {
+      "type": "applets",
+      "uuid": "sticky-notes@playground",
+      "vfsPath": "/system/plugins/applets/sticky-notes@playground"
     }
   ],
   "removed": [
-    "SevenSegmentClock@lxs242"
+    "SevenSegmentClock@lxs242",
+    "nepali-date@bishalacharya",
+    "quick-actions@everest"
   ]
 }

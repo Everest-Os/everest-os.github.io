@@ -1,0 +1,7 @@
+{
+  "id": "theme-studio",
+  "name": "Theme Studio",
+  "icon": "theme-studio,🎨",
+  "category": "system",
+  "description": "Live CSS variable editor for Everest OS"
+}

@@ -1,0 +1,31 @@
+{
+  "appearance": {
+    "type": "header",
+    "description": "Appearance"
+  },
+  "default-color": {
+    "type": "colorchooser",
+    "default": "#ffeb3b",
+    "description": "Default Note Color"
+  },
+  "font-size": {
+    "type": "spinbutton",
+    "default": 14,
+    "min": 8,
+    "max": 32,
+    "units": "px",
+    "description": "Default Font Size"
+  },
+  "behavior": {
+    "type": "header",
+    "description": "Behavior"
+  },
+  "auto-save-interval": {
+    "type": "spinbutton",
+    "default": 30,
+    "min": 5,
+    "max": 300,
+    "units": "s",
+    "description": "Auto-save Interval"
+  }
+}

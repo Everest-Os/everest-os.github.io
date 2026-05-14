@@ -1,10 +1,11 @@
 {
   "icon": "menu",
   "showLabel": false,
-  "menuWidth": 494,
-  "menuOpacity": 0.86,
-  "menuBlur": 29,
+  "menuWidth": 393,
+  "menuOpacity": 0.46,
+  "menuBlur": 24,
   "showCategoryIcons": true,
   "enableSearch": true,
-  "iconSize": 37
+  "iconSize": 33,
+  "menuRadius": null
 }

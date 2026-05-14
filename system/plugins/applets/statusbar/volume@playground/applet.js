@@ -65,7 +65,7 @@ class MyApplet extends Applet.IconApplet {
            <span style="font-size:13px; font-weight:600; color:var(--text-primary);">Master Volume</span>
            <span id="vol-percentage" style="font-size:11px; color:var(--text-secondary);">${currentVol}%</span>
         </div>
-        <div style="display:flex; align-items:center; gap:12px;">
+        <div style="display:flex; align-items:center; gap:4px;">
           <button id="mute-toggle" style="background:none; border:none; padding:8px; cursor:pointer; color:var(--text-primary); display:flex; align-items:center; border-radius:50%; transition: background 0.2s;" onmouseover="this.style.background='var(--bg-surface-hover)'" onmouseout="this.style.background='none'">
              ${isMuted ? IconHelper.getIcon('audio-volume-muted', { size: 22 }) : IconHelper.getIcon('audio-volume-low', { size: 22 })}
           </button>
@@ -84,7 +84,7 @@ class MyApplet extends Applet.IconApplet {
     const rect = this.actor._element.getBoundingClientRect();
     popup.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
     popup.style.right = (window.innerWidth - rect.right) + 'px';
-    
+
     document.body.appendChild(popup);
 
     const slider = popup.querySelector('#master-vol-slider');
