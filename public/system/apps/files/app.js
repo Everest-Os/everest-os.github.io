@@ -25,7 +25,8 @@ export function launch(ctx, options = {}) {
 
   content.innerHTML = `
     <!-- Sidebar -->
-    <div style="width: 200px; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 0; background: var(--bg-card);">
+    <div style="width: 220px; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 12px; background: var(--bg-card); gap: 4px;">
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); padding: 0 12px 8px 12px;">Locations</div>
       <div class="sidebar-item" data-path="computer://">${IconHelper.getIcon('computer,🖥️', { size: 16, className: 'sidebar-icon' })} Computer</div>
       <div class="sidebar-item active" data-path="/home/user">${IconHelper.getIcon('home,🏠', { size: 16, className: 'sidebar-icon' })} Home</div>
       <div class="sidebar-item" data-path="/home/user/Desktop">${IconHelper.getIcon('desktop,🖥️', { size: 16, className: 'sidebar-icon' })} Desktop</div>
@@ -42,20 +43,21 @@ export function launch(ctx, options = {}) {
     <!-- Main Content -->
     <div style="flex: 1; display: flex; flex-direction: column;">
       <!-- Toolbar -->
-      <div style="height: 50px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; background: var(--bg-elevated);">
-        <button id="fm-up" class="btn-secondary btn-sm" title="Up One Level">${IconHelper.getIcon('up,⬆️', { size: 14 })}</button>
+      <div style="height: 56px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; background: var(--bg-elevated);">
+        <button id="fm-up" class="btn-secondary" style="padding:6px 10px; border-radius:8px;" title="Up One Level">${IconHelper.getIcon('up,⬆️', { size: 16 })}</button>
         <div style="flex: 1; position: relative; display: flex; align-items: center;">
-          <input type="text" id="fm-path" style="width: 100%; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-primary); font-size: 12px; outline: none; font-family: var(--font-mono);">
+          <div style="position:absolute; left:12px; color:var(--text-secondary); pointer-events:none;">${IconHelper.getIcon('folder,📁', { size: 14 })}</div>
+          <input type="text" id="fm-path" style="width: 100%; padding: 8px 12px 8px 34px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-primary); font-size: 13px; outline: none; font-family: var(--font-main); box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); transition: border-color 0.2s;">
         </div>
         <div id="fm-actions" style="display: flex; gap: 8px;">
-          <button id="fm-mkdir" class="btn-secondary btn-sm">${IconHelper.getIcon('folder,📁', { size: 14 })} New Folder</button>
-          <button id="fm-upload" class="btn-primary btn-sm">${IconHelper.getIcon('upload,📤', { size: 14 })} Upload</button>
-          <button id="fm-empty-trash" class="btn-danger btn-sm" style="display: none;">${IconHelper.getIcon('trash,🗑️', { size: 14 })} Empty Trash</button>
+          <button id="fm-mkdir" class="btn-secondary" style="border-radius:8px;">${IconHelper.getIcon('folder,📁', { size: 14 })} New Folder</button>
+          <button id="fm-upload" class="btn-primary" style="border-radius:8px; box-shadow:0 2px 4px rgba(var(--accent-rgb),0.3);">${IconHelper.getIcon('upload,📤', { size: 14 })} Upload</button>
+          <button id="fm-empty-trash" class="btn-danger" style="display: none; border-radius:8px;">${IconHelper.getIcon('trash,🗑️', { size: 14 })} Empty Trash</button>
         </div>
       </div>
 
       <!-- File List -->
-      <div id="fm-list" style="flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 16px; padding: 20px; align-content: start;">
+      <div id="fm-list" style="flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; padding: 20px; align-content: start;">
       </div>
       
       <!-- Status Bar -->
@@ -66,39 +68,53 @@ export function launch(ctx, options = {}) {
 
     <style>
       .sidebar-item {
-        padding: 8px 20px;
+        padding: 8px 12px;
         font-size: 13px;
         cursor: pointer;
-        transition: background 0.2s;
-        border-left: 3px solid transparent;
+        transition: all 0.2s ease;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         gap: 10px;
+        color: var(--text-secondary);
       }
       .sidebar-icon {
         flex-shrink: 0;
       }
-      .sidebar-item:hover { background: var(--bg-surface-hover); }
+      .sidebar-item:hover { 
+        background: var(--bg-surface-hover); 
+        color: var(--text-primary);
+      }
       .sidebar-item.active {
-        background: rgba(var(--accent-rgb), 0.1);
-        border-left-color: var(--accent);
+        background: rgba(var(--accent-rgb), 0.15);
         color: var(--accent);
         font-weight: 600;
+      }
+      #fm-path:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.2);
       }
       .fm-file-item {
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 12px;
-        border-radius: 8px;
+        padding: 12px 8px;
+        border-radius: 10px;
         cursor: pointer;
-        transition: transform 0.1s, background 0.2s;
+        transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
         text-align: center;
         user-select: none;
+        border: 1px solid transparent;
       }
-      .fm-file-item:hover { background: var(--bg-surface-hover); }
-      .fm-file-item.selected { background: rgba(var(--accent-rgb), 0.15) !important; box-shadow: inset 0 0 0 1px var(--accent); }
-      .fm-file-item:active { transform: scale(0.95); }
+      .fm-file-item:hover { 
+        background: var(--bg-surface-hover); 
+        border-color: rgba(255,255,255,0.05);
+      }
+      .fm-file-item.selected { 
+        background: rgba(var(--accent-rgb), 0.15) !important; 
+        border-color: rgba(var(--accent-rgb), 0.4);
+      }
+      .fm-file-item:active { transform: scale(0.96); }
     </style>
     <input type="file" id="fm-file-input" style="display:none" multiple>
   `;
@@ -204,6 +220,7 @@ export function launch(ctx, options = {}) {
           </div>
         </div>
 
+        ${!isServer ? `
         <div class="settings-section-title" style="margin-top: 30px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 12px;">Backup & Recovery</div>
         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
           <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Export a portable backup that works across all storage modes. A backup from IndexedDB can restore to Server FS and vice versa.</p>
@@ -214,6 +231,7 @@ export function launch(ctx, options = {}) {
           <div id="fm-backup-status" style="font-size:11px; color:var(--text-tertiary); display:none; padding:8px 12px; background:rgba(0,0,0,0.1); border-radius:6px;"></div>
           <input type="file" id="fm-import-file" style="display: none;" accept=".json">
         </div>
+        ` : ''}
 
         ${!isServer ? `
         <div class="settings-section-title" style="margin-top: 30px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #ff4444; margin-bottom: 12px;">Reset & Recovery</div>
@@ -325,79 +343,81 @@ export function launch(ctx, options = {}) {
       };
     }
 
-    // Cross-mode Backup
-    fmList.querySelector('#fm-btn-export').onclick = async () => {
-      try {
-        showFmStatus('⏳ Collecting files...');
-        const files = [];
-        const walk = async (dir) => {
-          try {
-            const items = await vfs.readdir(dir);
-            for (const item of items) {
-              if (item.type === 'dir') {
-                files.push({ path: item.path, type: 'dir' });
-                await walk(item.path);
-              } else {
-                try {
-                  const content = await vfs.readFile(item.path);
-                  files.push({ path: item.path, type: 'file', content, size: content.length });
-                } catch { }
-              }
-            }
-          } catch { }
-        };
-        await walk('/');
-        const backup = { version: '1.0', os: 'EverestOS', timestamp: new Date().toISOString(), fileCount: files.length, files };
-        const json = JSON.stringify(backup, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `everest-backup-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showFmStatus(`✅ Backup downloaded — ${files.length} files, ${(blob.size / 1024).toFixed(1)} KB`);
-      } catch (e) { showFmStatus(`❌ Export failed: ${e.message}`); }
-    };
-
-    // Cross-mode Restore
-    const importInput = fmList.querySelector('#fm-import-file');
-    fmList.querySelector('#fm-btn-import').onclick = () => importInput.click();
-    importInput.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
+    // Cross-mode Backup (Only attach if not server)
+    if (!isServer) {
+      fmList.querySelector('#fm-btn-export').onclick = async () => {
         try {
-          const raw = JSON.parse(ev.target.result);
-          let backupData;
-          if (Array.isArray(raw)) {
-            backupData = { files: raw, timestamp: 'legacy', os: 'unknown' };
-          } else if (raw.files) {
-            backupData = raw;
-          } else {
-            throw new Error('Invalid backup format');
-          }
-
-          showSystemDialog({
-            title: 'Import Backup',
-            message: `Restore ${backupData.files.length} items from ${backupData.os || 'unknown'} (${backupData.timestamp || 'unknown'})? Files will be written to the active storage backend (${storageInfo.label}).`,
-            type: 'confirm',
-            onConfirm: async () => {
-              showFmStatus('⏳ Restoring files...');
-              try {
-                const { restored, errors } = await vfs.importBackup(backupData);
-                showFmStatus(`✅ Restored ${restored} items${errors > 0 ? `, ${errors} errors` : ''}. Reloading...`);
-                setTimeout(() => location.reload(), 1500);
-              } catch (err) {
-                showFmStatus(`❌ Import failed: ${err.message}`);
+          showFmStatus('⏳ Collecting files...');
+          const files = [];
+          const walk = async (dir) => {
+            try {
+              const items = await vfs.readdir(dir);
+              for (const item of items) {
+                if (item.type === 'dir') {
+                  files.push({ path: item.path, type: 'dir' });
+                  await walk(item.path);
+                } else {
+                  try {
+                    const content = await vfs.readFile(item.path);
+                    files.push({ path: item.path, type: 'file', content, size: content.length });
+                  } catch { }
+                }
               }
-            }
-          });
-        } catch (err) { showFmStatus(`❌ Import failed: ${err.message}`); }
+            } catch { }
+          };
+          await walk('/');
+          const backup = { version: '1.0', os: 'EverestOS', timestamp: new Date().toISOString(), fileCount: files.length, files };
+          const json = JSON.stringify(backup, null, 2);
+          const blob = new Blob([json], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `everest-backup-${new Date().toISOString().split('T')[0]}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          showFmStatus(`✅ Backup downloaded — ${files.length} files, ${(blob.size / 1024).toFixed(1)} KB`);
+        } catch (e) { showFmStatus(`❌ Export failed: ${e.message}`); }
       };
-      reader.readAsText(file);
-    };
+
+      // Cross-mode Restore
+      const importInput = fmList.querySelector('#fm-import-file');
+      fmList.querySelector('#fm-btn-import').onclick = () => importInput.click();
+      importInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            const raw = JSON.parse(ev.target.result);
+            let backupData;
+            if (Array.isArray(raw)) {
+              backupData = { files: raw, timestamp: 'legacy', os: 'unknown' };
+            } else if (raw.files) {
+              backupData = raw;
+            } else {
+              throw new Error('Invalid backup format');
+            }
+
+            showSystemDialog({
+              title: 'Import Backup',
+              message: `Restore ${backupData.files.length} items from ${backupData.os || 'unknown'} (${backupData.timestamp || 'unknown'})? Files will be written to the active storage backend (${storageInfo.label}).`,
+              type: 'confirm',
+              onConfirm: async () => {
+                showFmStatus('⏳ Restoring files...');
+                try {
+                  const { restored, errors } = await vfs.importBackup(backupData);
+                  showFmStatus(`✅ Restored ${restored} items${errors > 0 ? `, ${errors} errors` : ''}. Reloading...`);
+                  setTimeout(() => location.reload(), 1500);
+                } catch (err) {
+                  showFmStatus(`❌ Import failed: ${err.message}`);
+                }
+              }
+            });
+          } catch (err) { showFmStatus(`❌ Import failed: ${err.message}`); }
+        };
+        reader.readAsText(file);
+      };
+    }
 
     // Reset & Fetch Fresh (only present in static/IndexedDB mode)
     const resetBtn = fmList.querySelector('#fm-btn-reset');

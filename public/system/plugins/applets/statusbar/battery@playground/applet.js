@@ -19,13 +19,13 @@ class MyApplet extends Applet.TextIconApplet {
     if (navigator.getBattery) {
       try {
         this._battery = await navigator.getBattery();
-        
+
         const update = () => this._updateBatteryUI();
         this._battery.addEventListener('levelchange', update);
         this._battery.addEventListener('chargingchange', update);
         this._battery.addEventListener('dischargingtimechange', update);
         this._battery.addEventListener('chargingtimechange', update);
-        
+
         update();
       } catch (e) {
         console.error("Battery API error:", e);
@@ -39,13 +39,13 @@ class MyApplet extends Applet.TextIconApplet {
   _updateBatteryUI() {
     const level = this._battery ? Math.round(this._battery.level * 100) : 100;
     const charging = this._battery ? this._battery.charging : true;
-    
+
     let icon = 'battery-full';
     if (level <= 10) icon = 'battery-empty';
     else if (level <= 25) icon = 'battery-caution';
     else if (level <= 45) icon = 'battery-low';
     else if (level <= 75) icon = 'battery-good';
-    
+
     if (charging) {
       if (level === 100) icon = 'battery-charged';
       else icon += '-charging';
@@ -68,10 +68,10 @@ class MyApplet extends Applet.TextIconApplet {
         </svg>
       `;
     }
-    
+
     const status = charging ? (level === 100 ? "Fully Charged" : "Charging") : "Discharging";
     this.set_applet_tooltip(`Battery: ${level}% (${status})`);
-    
+
     // Refresh popup if open
     const popup = document.getElementById('battery-popup');
     if (popup) {
@@ -167,7 +167,7 @@ class MyApplet extends Applet.TextIconApplet {
     const rect = this.actor._element.getBoundingClientRect();
     popup.style.bottom = (window.innerHeight - rect.top + 5) + 'px';
     popup.style.right = (window.innerWidth - rect.right) + 'px';
-    
+
     document.body.appendChild(popup);
 
     const close = (e) => {

@@ -205,6 +205,7 @@ The following community plugins are included and attributed to their original au
 
 ### Open Source Libraries
 - **[JSZip](https://stuk.github.io/jszip/)** — Used by the Zip Manager and Office App to process and extract `.zip` and `.odt` archives.
+- **[lucide-icon](https://lucide.dev/)** - Used by the File Manager,Terminal and other apps when lucid icon applied
 
 ### Iconography
 - System icons are based on the **Bloom** icon theme from the **deepin** desktop project and various open-source SVG sets.

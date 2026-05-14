@@ -193,3 +193,7 @@ select:focus {
   width: 70px;
   text-align: center;
 }
+
+/* mobile-touch-optimized */
+
+@media (max-width:768px){ .app-titlebar,.panel{padding:8px 10px;} .resize-handle{min-width:18px;min-height:18px;} }

@@ -26,7 +26,8 @@ export class AppMenu {
       menuOpacity: 0.85,
       showCategoryIcons: true,
       enableSearch: true,
-      iconSize: 28
+      iconSize: 28,
+      menuRadius: null
     };
 
   }
@@ -146,7 +147,7 @@ export class AppMenu {
           <button class="menu-quick-icon" data-action="about" title="About System">${IconHelper.getIcon('info,ℹ️', { size: 18 })}</button>
         </div>
       </div>
-      <div style="padding:15px 20px; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.08);">
+      <div id="app-search-container" style="padding:15px 20px; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.08);">
         <input type="text" placeholder="Search applications..." style="width:100%; padding:12px 18px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-primary); font-size:14px; outline:none; transition: all 0.2s; box-shadow:inset 0 2px 4px rgba(0,0,0,0.1);" id="app-search">
       </div>
       <div style="display:flex; flex:1; min-height:0;">
@@ -393,12 +394,16 @@ export class AppMenu {
     if (isTop) {
       this.menuElement.style.top = 'calc(var(--panel-height) + var(--panel-margin-y) * 2)';
       this.menuElement.style.bottom = 'auto';
-      this.menuElement.style.borderRadius = 'var(--radius-md)';
     } else {
       this.menuElement.style.bottom = 'calc(var(--panel-height) + var(--panel-margin-y) * 2)';
       this.menuElement.style.top = 'auto';
-      this.menuElement.style.borderRadius = 'var(--radius-md)';
     }
+    
+    // Apply radius setting
+    const radius = this.settings.menuRadius !== undefined && this.settings.menuRadius !== null 
+      ? this.settings.menuRadius + 'px' 
+      : 'var(--menu-radius, var(--radius-md, 12px))';
+    this.menuElement.style.borderRadius = radius;
 
     const searchInput = this.menuElement.querySelector('input');
     if (searchInput) {
@@ -497,17 +502,24 @@ export class AppMenu {
 
     // Category visibility
     const showCats = this.settings.showCategoryIcons !== false;
-    const catContainer = this.menuElement.querySelector('#app-categories');
-    if (catContainer) {
-      catContainer.style.display = showCats ? 'flex' : 'none';
+    if (showCats) {
+      this.menuElement.classList.remove('cats-user-hidden');
+    } else {
+      this.menuElement.classList.add('cats-user-hidden');
     }
 
     // Search visibility
     const enableSearch = this.settings.enableSearch !== false;
-    const searchHeader = this.menuElement.querySelector('div[style*="border-bottom"]');
+    const searchHeader = this.menuElement.querySelector('#app-search-container');
     if (searchHeader) {
       searchHeader.style.display = enableSearch ? 'block' : 'none';
     }
+
+    // Border Radius
+    const radius = this.settings.menuRadius !== undefined && this.settings.menuRadius !== null 
+      ? this.settings.menuRadius + 'px' 
+      : 'var(--menu-radius, var(--radius-md, 12px))';
+    this.menuElement.style.borderRadius = radius;
   }
 
   _openMenuSettings() {
@@ -796,6 +808,63 @@ export class AppMenu {
         this._saveSettings();
       });
       container.appendChild(createOption('Enable Search / Search Box', searchInput));
+
+      // Menu Radius
+      const radiusOption = document.createElement('div');
+      radiusOption.style.display = 'flex';
+      radiusOption.style.flexDirection = 'column';
+      radiusOption.style.gap = '5px';
+
+      const radiusHeader = document.createElement('div');
+      radiusHeader.style.display = 'flex';
+      radiusHeader.style.justifyContent = 'space-between';
+
+      const radiusTitle = document.createElement('span');
+      radiusTitle.textContent = 'Menu Corner Radius (px)';
+      radiusTitle.style.fontSize = '13.5px';
+      radiusTitle.style.color = 'var(--text-primary)';
+
+      const radiusVal = document.createElement('span');
+      radiusVal.textContent = (this.settings.menuRadius !== null ? this.settings.menuRadius : 'Auto') + (this.settings.menuRadius !== null ? 'px' : '');
+      radiusVal.style.fontSize = '12px';
+      radiusVal.style.color = 'var(--text-secondary)';
+
+      radiusHeader.appendChild(radiusTitle);
+      radiusHeader.appendChild(radiusVal);
+      radiusOption.appendChild(radiusHeader);
+
+      const radiusSlider = document.createElement('input');
+      radiusSlider.type = 'range';
+      radiusSlider.min = '0';
+      radiusSlider.max = '40';
+      radiusSlider.value = this.settings.menuRadius !== null ? this.settings.menuRadius : 12;
+      radiusSlider.style.accentColor = '#3584e4';
+      radiusSlider.addEventListener('input', () => {
+        const val = parseInt(radiusSlider.value, 10);
+        radiusVal.textContent = val + 'px';
+        this.settings.menuRadius = val;
+        this._saveSettings();
+      });
+
+      const resetRadiusBtn = document.createElement('button');
+      resetRadiusBtn.textContent = 'Reset to Theme Default';
+      resetRadiusBtn.style.marginTop = '4px';
+      resetRadiusBtn.style.fontSize = '11px';
+      resetRadiusBtn.style.padding = '4px 8px';
+      resetRadiusBtn.style.background = 'rgba(255,255,255,0.1)';
+      resetRadiusBtn.style.border = '1px solid var(--border)';
+      resetRadiusBtn.style.borderRadius = '4px';
+      resetRadiusBtn.style.color = 'var(--text-secondary)';
+      resetRadiusBtn.style.cursor = 'pointer';
+      resetRadiusBtn.onclick = () => {
+        this.settings.menuRadius = null;
+        radiusVal.textContent = 'Auto';
+        this._saveSettings();
+      };
+
+      radiusOption.appendChild(radiusSlider);
+      radiusOption.appendChild(resetRadiusBtn);
+      container.appendChild(radiusOption);
 
       mainContent.appendChild(container);
     };

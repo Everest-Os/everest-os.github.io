@@ -25,6 +25,7 @@ export async function loadAppearance(vfs) {
       if (settings.panelMarginY !== undefined) root.style.setProperty('--panel-margin-y', `${settings.panelMarginY}px`);
       if (settings.panelMarginX !== undefined) root.style.setProperty('--panel-margin-x', `${settings.panelMarginX}px`);
       if (settings.panelRadius !== undefined) root.style.setProperty('--panel-radius', `${settings.panelRadius}px`);
+      if (settings.windowRadius !== undefined) root.style.setProperty('--window-radius', `${settings.windowRadius}px`);
 
       const panelBorderColor = settings.panelBorderColor || '#6496ff';
       const panelBorderOpacity = settings.panelBorderOpacity !== undefined ? settings.panelBorderOpacity : 0.3;

@@ -47,6 +47,20 @@ export class DesktopIcons {
     });
 
     // MASTER CONTEXT MENU CONTROLLER
+    // Track pointer globally to handle synthetic contextmenu events in mobile simulators
+    // where e.clientX/Y might be stripped or 0.
+    if (!window._globalPointerTracker) {
+      window._globalPointerTracker = true;
+      document.addEventListener('pointerdown', (e) => {
+        window._lastPointerPos = { x: e.clientX, y: e.clientY };
+      }, { capture: true });
+      
+      // Also track mousemove just in case right-click happens without a down event in some simulators
+      document.addEventListener('mousemove', (e) => {
+        if (e.clientX && e.clientY) window._lastPointerPos = { x: e.clientX, y: e.clientY };
+      }, { capture: true, passive: true });
+    }
+
     // Handles all context menus on the desktop layer, ensuring icons and desklets
     // are correctly identified even in mobile simulation modes.
     document.addEventListener('contextmenu', async (e) => {
@@ -58,11 +72,11 @@ export class DesktopIcons {
       const y = e.clientY || window._lastPointerPos?.y || 0;
       
       // Find the target item using both path and elementFromPoint
-      let itemEl = path.find(el => el.classList && (el.classList.contains('desktop-icon') || el.classList.contains('desklet-frame')));
+      let itemEl = path.find(el => el.classList && (el.classList.contains('desktop-icon') || el.classList.contains('desklet-frame') || el.classList.contains('app-grid-item')));
       
       if (!itemEl) {
         const elAtPoint = document.elementFromPoint(x, y);
-        itemEl = elAtPoint?.closest('.desktop-icon, .desklet-frame');
+        itemEl = elAtPoint?.closest('.desktop-icon, .desklet-frame, .app-grid-item');
       }
 
       // If we found an icon/desklet, inject the event back into it
@@ -86,7 +100,8 @@ export class DesktopIcons {
       if (path.some(el => el.classList && (
         el.classList.contains('app-window') || 
         el.classList.contains('everest-panel') ||
-        el.classList.contains('applet-container')
+        el.classList.contains('applet-container') ||
+        el.classList.contains('app-menu')
       ))) return;
 
       // If we're on the desktop area, show background menu
@@ -144,7 +159,7 @@ export class DesktopIcons {
           },
           { separator: true },
           {
-            icon: '🧩',
+            icon: 'puzzle,🧩',
             label: 'Add Desklets',
             action: () => {
               document.dispatchEvent(new CustomEvent('open-extension-manager', { detail: { type: 'desklets' } }));
@@ -618,7 +633,19 @@ export class DesktopIcons {
 
 
   _showContextMenu(item, x, y) {
-    // Legacy method - mostly replaced by inline listener but kept for safety
+    // Bridges manual pointer triggers (mobile right-clicks and polyfill long-presses) 
+    // into the unified inline contextmenu listener.
+    const iconEl = this.container.querySelector(`.desktop-icon[data-path="${item.path}"]`);
+    if (iconEl) {
+      const injectedEvent = new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        clientX: x,
+        clientY: y,
+        button: 2
+      });
+      iconEl.dispatchEvent(injectedEvent);
+    }
   }
 
   async _generateUniqueName(path, baseName) {

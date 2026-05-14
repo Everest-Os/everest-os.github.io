@@ -87,10 +87,12 @@ export class IconHelper {
       else if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].includes(iconName)) val = icons['image'];
       else if (iconName === 'pdf') val = icons['pdf'];
       else if (['zip', 'rar', 'tar', 'gz', '7z', 'iso'].includes(iconName)) val = icons['archive'];
-      else if (['js', 'json', 'py', 'sh', 'html', 'css', 'c', 'cpp', 'java', 'ts'].includes(iconName)) val = icons['code'];
-      else if (['txt', 'md', 'doc', 'docx', 'odt'].includes(iconName)) val = icons['text'] || icons['file'];
-      else if (['xls', 'xlsx', 'ods', 'csv'].includes(iconName)) val = icons['office'] || icons['file'];
-      else if (['ppt', 'pptx', 'odp'].includes(iconName)) val = icons['office'] || icons['file'];
+      else if (['txt', 'md', 'doc', 'docx', 'odt'].includes(iconName)) {
+        val = (iconName === 'md' ? icons['text-markdown'] : icons['text-plain']) || icons['text'] || icons['file'];
+      }
+      else if (['xls', 'xlsx', 'ods', 'csv'].includes(iconName)) val = icons['office-spreadsheet'] || icons['office'] || icons['file'];
+      else if (['ppt', 'pptx', 'odp'].includes(iconName)) val = icons['office-presentation'] || icons['office'] || icons['file'];
+      else if (['js', 'json', 'py', 'sh', 'html', 'css', 'c', 'cpp', 'java', 'ts'].includes(iconName)) val = icons['application-javascript'] || icons['code'] || icons['file'];
     }
 
     // Final resolution: Themed Icon -> Fallback Emoji -> Global Default
@@ -104,7 +106,14 @@ export class IconHelper {
     const size = options.size || icons.size || 32;
     const className = options.className || '';
 
-    if (val.startsWith('url(') || val.startsWith('http') || val.startsWith('/') || val.startsWith('./') || val.startsWith('~') || val.includes('.svg') || val.includes('.png')) {
+    let iconHtml = '';
+
+    if (val.trim().startsWith('<svg')) {
+      const updatedSvg = val
+        .replace(/width=['"][^'"]+['"]/i, `width='${size}'`)
+        .replace(/height=['"][^'"]+['"]/i, `height='${size}'`);
+      iconHtml = `<span class="inline-svg-icon ${className}" style="display: inline-flex; align-items: center; justify-content: center; width: ${size}px; height: ${size}px; vertical-align: middle;">${updatedSvg}</span>`;
+    } else if (val.startsWith('url(') || val.startsWith('http') || val.startsWith('/') || val.startsWith('./') || val.startsWith('~') || val.includes('.svg') || val.includes('.png')) {
       if (val.startsWith('~')) {
         val = BASE_URL + `fs/home/user${val.slice(1)}`;
       } else if (val.startsWith('/home/user')) {
@@ -115,10 +124,8 @@ export class IconHelper {
       let src = val.startsWith('/') || val.startsWith('./') || val.startsWith('http') ? val : BASE_URL + `system/icons/${val}`;
 
       // Smart Resolution: Determine if we want symbolic or color
-      // If symbolic is not explicitly true, we prefer color.
       const wantSymbolic = options.symbolic === true;
 
-      // If we don't want symbolic, but we have a symbolic name, try to find the color version
       if (!wantSymbolic && iconName.endsWith('-symbolic')) {
         const baseName = iconName.replace('-symbolic', '');
         if (icons[baseName]) {
@@ -127,12 +134,9 @@ export class IconHelper {
         }
       }
 
-      // We use the monochrome mask if:
-      // We explicitly want symbolic rendering, OR the asset is inherently symbolic (from a symbolic folder)
-      // The asset is an SVG (masks don't work well with PNGs for this purpose)
-      const isSymbolicAsset = src.includes('/symbolic/');
+      const isSymbolicAsset = (window.currentThemeSymbolic === true) || src.includes('/symbolic/');
       if ((wantSymbolic || isSymbolicAsset) && src.includes('.svg')) {
-        return `<div class="symbolic-icon ${className}" style="
+        iconHtml = `<div class="symbolic-icon ${className}" style="
           width: ${size}px; 
           height: ${size}px; 
           background-color: currentColor; 
@@ -143,14 +147,24 @@ export class IconHelper {
           display: inline-block; 
           vertical-align: middle;
         "></div>`;
+      } else {
+        iconHtml = `<img src="${src}" class="${className}" style="width: ${size}px; height: ${size}px; object-fit: contain; vertical-align: middle;" />`;
       }
-
-      // Default to color image (img tag preserves SVG/PNG colors)
-      return `<img src="${src}" class="${className}" style="width: ${size}px; height: ${size}px; object-fit: contain; vertical-align: middle;" />`;
+    } else {
+      // Default to emoji span
+      iconHtml = `<span class="${className}" style="font-size: ${size}px; line-height: 1;">${val}</span>`;
     }
 
-    // Default to emoji span
-    return `<span class="${className}" style="font-size: ${size}px; line-height: 1;">${val}</span>`;
+    // Hook: Dynamic Theme Helper
+    if (window.currentThemeIconHelper && typeof window.currentThemeIconHelper.apply === 'function') {
+      try {
+        iconHtml = window.currentThemeIconHelper.apply(iconHtml, iconName, options.color, options);
+      } catch (e) {
+        console.error('IconHelper: dynamic helper error', e);
+      }
+    }
+
+    return iconHtml;
   }
 
   /**

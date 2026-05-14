@@ -37,6 +37,9 @@ window.osAPI = {
   PackageManager: null // initialized in main
 };
 
+// Make IconHelper globally available for applets that don't use window.osAPI
+window.IconHelper = IconHelper;
+
 class EverestSandbox {
   constructor() {
     this.loader = null;
@@ -119,16 +122,17 @@ class EverestSandbox {
     this.panelManager = new PanelManager(this.vfs);
     await this.panelManager.init();
 
+    // Initialize Window Manager
+    const desktopArea = document.getElementById('everest-desktop');
+    this.windowManager = new WindowManager(desktopArea, this.panelManager);
+    window.osAPI.windowManager = this.windowManager;
+
     // Initialize Extension Loader
     this.loader = new ExtensionLoader(this, this.vfs);
     await this.loader.init();
 
     // Initialize Code Editor
     this.editor = new CodeEditor(document.getElementById('code-editor'), this.loader);
-
-    // Initialize Window Manager
-    const desktopArea = document.getElementById('everest-desktop');
-    this.windowManager = new WindowManager(desktopArea, this.panelManager);
 
     // Initialize File Picker
     this.filePicker = new FilePickerApp(this.windowManager, this.vfs);

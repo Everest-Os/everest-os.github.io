@@ -18,6 +18,7 @@ import { Settings, BindingDirection } from './settings.js';
 import { PopupMenu_NS } from './popupMenu.js';
 import { SignalMixin } from './signals.js';
 import { showSystemDialog } from './dialog.js';
+import { IconHelper } from './iconHelper.js';
 
 // ── Global Shims ──────────────────────────────────────────────────────
 if (!Date.prototype.toLocaleFormat) {
@@ -513,6 +514,7 @@ export function createImportsTree() {
       settings: { ...Settings, BindingDirection },
       popupMenu: PopupMenu_NS,
       main: Main,
+      iconHelper: IconHelper,
       appletManager: {
         appletMeta,
         applets: {},
@@ -611,7 +613,7 @@ export function createImportsTree() {
       Cogl,
     },
     misc: {
-      util: Util,
+      util: { ...Util, IconHelper },
       params: { parse: (defaults, provided) => ({ ...defaults, ...provided }) },
       fileUtils: {
         readFileSync: () => '',
@@ -640,6 +642,8 @@ export function createImportsTree() {
     signals: MockSignals,
     searchPath: [],
   };
+
+  globalObj.IconHelper = IconHelper;
 
   return { tree, globalObj, appletMeta, deskletMeta };
 }

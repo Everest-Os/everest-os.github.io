@@ -210,7 +210,7 @@ export class PanelManager {
 
     // Deduplication: Don't add the same applet twice
     const uuid = applet.metadata?.uuid;
-    if (uuid && container.querySelector(`.sandbox-applet[data-uuid="${uuid}"]`)) {
+    if (uuid && container.querySelector(`.applet-shadow-host[data-uuid="${uuid}"]`)) {
       log?.log(`  ⚠️ Applet ${uuid} already exists in ${zone} zone, skipping.`);
       return;
     }
@@ -323,7 +323,7 @@ export class PanelManager {
   _showWindowContextMenu(win, x, y) {
     const items = [
       {
-        icon: '🗘',
+        icon: 'refresh,🗘',
         label: 'Reload',
         action: () => {
           window.dispatchEvent(new CustomEvent('reload-extension', {
@@ -333,7 +333,7 @@ export class PanelManager {
       },
       { separator: true },
       {
-        icon: '🗑️',
+        icon: 'trash,🗑️',
         label: 'Close',
         danger: true,
         action: () => {
@@ -345,7 +345,7 @@ export class PanelManager {
               const frame = document.querySelector(`.desklet-frame[data-uuid="${win.uuid}"]`);
               if (frame) frame.remove();
             } else if (win.type === 'applets') {
-              const el = document.querySelector(`.applet-box[data-uuid="${win.uuid}"]`);
+              const el = document.querySelector(`.applet-shadow-host[data-uuid="${win.uuid}"]`);
               if (el) el.remove();
             }
             this.removeWindow(win.id);
@@ -363,7 +363,7 @@ export class PanelManager {
   _showPanelContextMenu(x, y) {
     const items = [
       {
-        icon: '⚙️',
+        icon: 'settings,⚙️',
         label: 'Panel Settings',
         action: () => {
           document.dispatchEvent(new CustomEvent('launch-app', {
@@ -372,16 +372,16 @@ export class PanelManager {
         }
       },
       {
-        icon: '⚠️',
+        icon: 'warning,⚠️',
         label: 'Troubleshoot...',
         submenu: [
           {
-            icon: '🗘',
+            icon: 'refresh,🗘',
             label: 'Restart Everest Ui',
             action: () => window.location.reload(),
           },
           {
-            icon: '🔍',
+            icon: 'search,🔍',
             label: 'Looking Glass',
             action: () => document.dispatchEvent(new CustomEvent('toggle-looking-glass')),
           }
@@ -389,14 +389,14 @@ export class PanelManager {
       },
       { separator: true },
       {
-        icon: '🧩',
+        icon: 'puzzle,🧩',
         label: 'Add Applets',
         action: () => {
           document.dispatchEvent(new CustomEvent('open-extension-manager', { detail: { type: 'applets' } }));
         },
       },
       {
-        icon: '💻',
+        icon: 'computer,💻',
         label: 'System Settings',
         action: () => {
           document.dispatchEvent(new CustomEvent('launch-app', {

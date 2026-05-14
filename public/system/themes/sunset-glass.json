@@ -1,0 +1,30 @@
+{
+  "id": "sunset-glass",
+  "name": "Sunset Glass",
+  "mode": "dark",
+  "panelMode": "dark",
+  "variables": {
+    "--bg-desktop-rgb": "44, 24, 26",
+    "--bg-surface-rgb": "58, 32, 36",
+    "--bg-panel-rgb": "38, 20, 22",
+    "--bg-menu-rgb": "38, 20, 22",
+    "--accent-rgb": "255, 120, 90",
+    "--text-primary-rgb": "255, 240, 230",
+    "--radius-main": "18px",
+    "--window-radius": "24px",
+    "--menu-radius": "22px",
+    "--menu-width": "640px",
+    "--menu-height": "480px",
+    "--wm-btn-size": "26px",
+    "--panel-icon-size": "20px",
+    "--wm-titlebar-bg": "rgba(255, 255, 255, 0.03)",
+    "--panel-blur": "30px",
+    "--menu-blur": "30px",
+    "--dock-blur": "35px",
+    "--panel-opacity": "0.65",
+    "--menu-opacity": "0.7",
+    "--wm-bg": "rgba(58, 32, 36, 0.55)",
+    "--wm-border": "rgba(255, 120, 90, 0.25)",
+    "--border": "rgba(255, 255, 255, 0.08)"
+  }
+}

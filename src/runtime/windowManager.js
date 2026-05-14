@@ -68,6 +68,8 @@ export class WindowManager {
 
     const frame = document.createElement('div');
     frame.classList.add('app-window');
+    if (window.innerWidth <= 768) frame.classList.add('mobile-window');
+    if (options.customClass) frame.classList.add(options.customClass);
     frame.id = id;
     frame.style.width = (options.width || 600) + 'px';
     frame.style.height = (options.height || 400) + 'px';
@@ -116,7 +118,7 @@ export class WindowManager {
 
     const btnMin = document.createElement('button');
     btnMin.classList.add('app-btn', 'btn-min');
-    btnMin.innerHTML = '&#8722;'; // Minus
+    btnMin.innerHTML = IconHelper.getIcon('window-minimize,−', { size: 12 });
 
     const btnMax = document.createElement('button');
     if (isMobile) {
@@ -125,13 +127,16 @@ export class WindowManager {
       btnMax.innerHTML = IconHelper.getIcon('view-dual,🔳', { size: 14 });
     } else {
       btnMax.classList.add('app-btn', 'btn-max');
-      btnMax.innerHTML = '&#9723;'; // Square
+      btnMax.innerHTML = IconHelper.getIcon('window-maximize,□', { size: 12 });
     }
 
     const btnClose = document.createElement('button');
     btnClose.classList.add('app-btn', 'btn-close');
-    btnClose.innerHTML = '&#10005;'; // X
+    btnClose.innerHTML = IconHelper.getIcon('window-close,✕', { size: 12 });
 
+    if (options.customControls) {
+      options.customControls.forEach(ctrl => controls.appendChild(ctrl));
+    }
     controls.appendChild(btnMin);
     controls.appendChild(btnMax);
     controls.appendChild(btnClose);
@@ -201,6 +206,18 @@ export class WindowManager {
       }
     });
 
+
+    // mobile gesture helpers
+    let lastTap = 0;
+    titleBar.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'touch') return;
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        this.toggleMaximize(id);
+      }
+      lastTap = now;
+    });
+
     btnMin.addEventListener('click', (e) => {
       e.stopPropagation();
       this.minimizeWindow(id);
@@ -254,6 +271,7 @@ export class WindowManager {
       });
     }
 
+    this._updateFsButtonPosition();
     return winObj;
   }
 
@@ -365,6 +383,15 @@ export class WindowManager {
       win.isMaximized = true;
       win.snapState = null; // Clear snap state
     }
+    
+    // Update Maximize button icon
+    const maxBtn = win.frame.querySelector('.btn-max');
+    if (maxBtn) {
+      maxBtn.innerHTML = win.isMaximized ? 
+        IconHelper.getIcon('window-restore,❐', { size: 12 }) : 
+        IconHelper.getIcon('window-maximize,□', { size: 12 });
+    }
+
     this._updateFsButtonPosition();
     this._updateSplitDivider();
   }
@@ -620,6 +647,7 @@ export class WindowManager {
           win.frame.style.height = `${newHeight}px`;
           win.frame.style.left = `${newLeft}px`;
           win.frame.style.top = `${newTop}px`;
+          this._updateFsButtonPosition();
         };
 
         const onPointerUp = (e) => {
@@ -1014,7 +1042,7 @@ export class WindowManager {
 
       // Proximity check: if window top-right corner is near screen top-right
       const winRect = win.frame.getBoundingClientRect();
-      if (winRect.right > dw - 80 && winRect.top < 80) {
+      if (winRect.right > dw - 120 && winRect.top < 120) {
         needsShift = true;
         break;
       }

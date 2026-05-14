@@ -245,14 +245,14 @@ export class LookingGlass {
       </div>`;
 
       // List DOM children
-      const actorEl = ext.type === 'applets'
-        ? document.querySelector(`.sandbox-applet[data-uuid="${uuid}"]`)
+      const domNode = ext.type === 'applets' 
+        ? document.querySelector(`.applet-shadow-host[data-uuid="${uuid}"]`)
         : ext.type === 'desklets'
           ? document.querySelector(`.desklet-frame[data-uuid="${uuid}"]`)
           : null;
 
-      if (actorEl) {
-        const domTree = this._buildDOMTree(actorEl, 1);
+      if (domNode) {
+        const domTree = this._buildDOMTree(domNode, 1);
         tree.appendChild(domTree);
       }
 

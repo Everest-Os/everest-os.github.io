@@ -1,4 +1,4 @@
-const { IconHelper } = window.osAPI;
+const { IconHelper, showSystemDialog } = window.osAPI;
 
 export async function launch(ctx, options = {}) {
   const { windowManager, vfs, filePicker } = ctx;
@@ -240,7 +240,7 @@ export async function launch(ctx, options = {}) {
       updateView();
       windowManager.setTitle(win.id, `Text Editor - ${path.split('/').pop()}`);
     } catch (e) {
-      alert('Failed to load file: ' + e.message);
+      showSystemDialog({ title: 'Error', message: 'Failed to load file: ' + e.message, type: 'alert' });
     }
   };
 
@@ -257,7 +257,7 @@ export async function launch(ctx, options = {}) {
       statusPath.textContent = currentPath;
       windowManager.setTitle(win.id, `Text Editor - ${currentPath.split('/').pop()}`);
     } catch (e) {
-      alert('Failed to save file: ' + e.message);
+      showSystemDialog({ title: 'Error', message: 'Failed to save file: ' + e.message, type: 'alert' });
     }
   };
 

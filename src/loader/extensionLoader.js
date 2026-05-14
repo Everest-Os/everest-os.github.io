@@ -15,8 +15,8 @@ import { IconHelper } from '../runtime/iconHelper.js';
 import { Sandbox } from '../runtime/sandbox.js';
 
 // Robust base URL detection for subfolder deployment
-const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/') 
-  ? import.meta.env.BASE_URL 
+const BASE_URL = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/')
+  ? import.meta.env.BASE_URL
   : (window.location.pathname.includes('/EverestOS') ? '/EverestOS/' : '/');
 
 export class ExtensionLoader {
@@ -76,7 +76,7 @@ export class ExtensionLoader {
             if (this._explicitlyRemoved.has(ext.uuid)) continue;
 
             const instance = await this.loadFromVfs(ext.uuid, ext.vfsPath || `~/Plugins/${ext.type}/${ext.uuid}`, ext.type);
-            
+
             // Self-heal: If the path used is different from the saved path, update config
             if (instance && instance._vfsPath && instance._vfsPath !== ext.vfsPath) {
               userExtensions[i].vfsPath = instance._vfsPath;
@@ -193,10 +193,21 @@ export class ExtensionLoader {
       } catch (e) { }
 
       const modules = {};
+
+      // Try to load stylesheet.css
       try {
-        const modRes = await fetch(`${basePath}/nepaliCalendar.js`);
-        if (modRes.ok) modules['nepaliCalendar.js'] = await modRes.text();
+        const cssRes = await fetch(`${basePath}/stylesheet.css`);
+        if (cssRes.ok) modules['stylesheet.css'] = await cssRes.text();
       } catch (e) { }
+
+      // Try to load any other modules defined in metadata (or just common ones)
+      const potentialModules = ['nepaliCalendar.js'];
+      for (const mod of potentialModules) {
+        try {
+          const modRes = await fetch(`${basePath}/${mod}`);
+          if (modRes.ok) modules[mod] = await modRes.text();
+        } catch (e) { }
+      }
 
       const files = { [mainScript]: mainJs, ...modules };
 
@@ -261,19 +272,24 @@ export class ExtensionLoader {
 
       let settingsSchema = null;
       try {
-        const hasSchema = await this.vfs.exists(`${finalPath}/settings-schema.json`);
+        const schemaPath = `${finalPath}/settings-schema.json`;
+        const hasSchema = await this.vfs.exists(schemaPath);
         if (hasSchema) {
-          const schemaStr = await this.vfs.readFile(`${finalPath}/settings-schema.json`);
+          const schemaStr = await this.vfs.readFile(schemaPath);
           settingsSchema = JSON.parse(schemaStr);
         }
       } catch (e) { }
 
-      // In VFS, we can read all .js files
+      // In VFS, we can read all .js and .css files
       const modules = {};
       const dirContents = await this.vfs.readdir(finalPath);
       for (const item of dirContents) {
-        if (item.type === 'file' && item.name.endsWith('.js') && item.name !== mainScript) {
-          modules[item.name] = await this.vfs.readFile(item.path);
+        if (item.type === 'file') {
+          if (item.name.endsWith('.js') && item.name !== mainScript) {
+            modules[item.name] = await this.vfs.readFile(item.path);
+          } else if (item.name === 'stylesheet.css') {
+            modules[item.name] = await this.vfs.readFile(item.path);
+          }
         }
       }
 
@@ -434,14 +450,27 @@ export class ExtensionLoader {
 
     // Load additional JS modules BEFORE the main file (they might be imported)
     for (const [fileName, code] of Object.entries(files)) {
-      if (fileName === mainFile || !fileName.endsWith('.js')) continue;
-      const moduleName = fileName.replace('.js', '');
-      try {
-        const moduleResult = this._evaluateModule(code, imports, globalObj, moduleName);
-        imports[moduleName] = moduleResult;
-        log?.log(`  ${IconHelper.getIcon('file', { size: 14 })} Loaded module: ${moduleName} (${Object.keys(moduleResult).length} exports)`);
-      } catch (e) {
-        log?.logError(`  ❌ Failed to load module ${moduleName}: ${e.message}`);
+      if (fileName === mainFile) continue;
+
+      if (fileName.endsWith('.js')) {
+        const moduleName = fileName.replace('.js', '');
+        try {
+          const moduleResult = this._evaluateModule(code, imports, globalObj, moduleName);
+          imports[moduleName] = moduleResult;
+          log?.log(`  ${IconHelper.getIcon('file', { size: 14 })} Loaded module: ${moduleName} (${Object.keys(moduleResult).length} exports)`);
+        } catch (e) {
+          log?.logError(`  ❌ Failed to load module ${moduleName}: ${e.message}`);
+        }
+      } else if (fileName === 'stylesheet.css') {
+        // Inject plugin's specific CSS into head
+        let styleTag = document.getElementById(`style-${uuid}`);
+        if (!styleTag) {
+          styleTag = document.createElement('style');
+          styleTag.id = `style-${uuid}`;
+          document.head.appendChild(styleTag);
+        }
+        styleTag.textContent = code;
+        log?.log(`  🎨 Injected stylesheet: ${fileName}`);
       }
     }
 
@@ -588,7 +617,7 @@ export class ExtensionLoader {
     shadowHost.classList.add('applet-shadow-host');
     shadowHost.dataset.uuid = metadata.uuid;
     const shadow = shadowHost.attachShadow({ mode: 'open' });
-    
+
     // Inject design system tokens and basic applet styles
     const style = document.createElement('style');
     style.textContent = `
@@ -598,7 +627,6 @@ export class ExtensionLoader {
       .applet-box:hover { background: rgba(255,255,255,0.1); }
       .applet-icon { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
       .applet-label { font-size: 13px; font-weight: 500; opacity: 0.9; }
-      svg { fill: currentColor; }
     `;
     shadow.appendChild(style);
 
@@ -639,15 +667,15 @@ export class ExtensionLoader {
     try {
       const posStr = await this.vfs.readFile('~/.config/desklet-positions.json');
       const positions = JSON.parse(posStr);
-    // Determine initial dimensions
-    if (positions[uuid]) {
-      if (positions[uuid].rx !== undefined) {
-        rx = positions[uuid].rx;
-        ry = positions[uuid].ry;
-        savedW = positions[uuid].w;
-        savedH = positions[uuid].h;
-        if (positions[uuid].s) frame.dataset.scale = positions[uuid].s;
-      } else {
+      // Determine initial dimensions
+      if (positions[uuid]) {
+        if (positions[uuid].rx !== undefined) {
+          rx = positions[uuid].rx;
+          ry = positions[uuid].ry;
+          savedW = positions[uuid].w;
+          savedH = positions[uuid].h;
+          if (positions[uuid].s) frame.dataset.scale = positions[uuid].s;
+        } else {
           // Legacy pixel support
           const desktop = document.getElementById('everest-desktop');
           const dw = desktop?.clientWidth || window.innerWidth;
@@ -680,7 +708,7 @@ export class ExtensionLoader {
     if (savedH) shadowHost.style.height = savedH + 'px';
     shadowHost.dataset.rx = rx;
     shadowHost.dataset.ry = ry;
-    
+
     const shadow = shadowHost.attachShadow({ mode: 'open' });
     const style = document.createElement('style');
     style.textContent = `
@@ -725,10 +753,10 @@ export class ExtensionLoader {
 
     // Replace the frame with the shadow host
     desklet._frame = shadowHost;
-    
+
     // Leverage the runtime restoration system to configure internal content proportions
     if (desklet._restoreSizeAndScale) {
-      try { desklet._restoreSizeAndScale(); } catch(e) {}
+      try { desklet._restoreSizeAndScale(); } catch (e) { }
     }
 
     const finalFrame = shadowHost;
@@ -740,7 +768,7 @@ export class ExtensionLoader {
       const currentFrame = desklet._frame; // shadowHost
       const desktopWidth = desktop.clientWidth;
       const desktopHeight = desktop.clientHeight;
-      
+
       // Prioritize pre-computed saved dimensions to guarantee instant accuracy with no layout lag
       const dw = savedW !== null ? savedW : (currentFrame.offsetWidth || 0);
       const dh = savedH !== null ? savedH : (currentFrame.offsetHeight || 0);
@@ -757,11 +785,11 @@ export class ExtensionLoader {
     applyPosition();
     setTimeout(applyPosition, 50);
     setTimeout(applyPosition, 300);
-    
+
     // Trigger UI nudges to stabilize sizing
     setTimeout(() => {
-      try { desklet._relayout?.(); } catch(e) {}
-      window.dispatchEvent(new Event('resize')); 
+      try { desklet._relayout?.(); } catch (e) { }
+      window.dispatchEvent(new Event('resize'));
     }, 500);
 
     // Save position on drag end
@@ -788,14 +816,14 @@ export class ExtensionLoader {
           const posStr = await this.vfs.readFile('~/.config/desklet-positions.json');
           positions = JSON.parse(posStr);
         } catch { /* fresh */ }
-        const deskletData = { 
-          rx: newRx, 
+        const deskletData = {
+          rx: newRx,
           ry: newRy,
           w: currentFrame.offsetWidth,
           h: currentFrame.offsetHeight,
           s: currentFrame.dataset.scale || null
         };
-        
+
         positions[uuid] = deskletData;
         await this.vfs.writeFile('~/.config/desklet-positions.json', JSON.stringify(positions, null, 2));
       } catch { /* ok */ }
@@ -812,7 +840,7 @@ export class ExtensionLoader {
     const log = window.__everestConsole;
 
     if (ext.type === 'applets') {
-      const el = document.querySelector(`.sandbox-applet[data-uuid="${uuid}"]`);
+      const el = document.querySelector(`.applet-shadow-host[data-uuid="${uuid}"]`);
       if (el) el.remove();
       try { ext.instance.on_applet_removed_from_panel?.(); } catch (e) { }
     } else if (ext.type === 'desklets') {
@@ -822,6 +850,9 @@ export class ExtensionLoader {
     } else if (ext.type === 'extensions' && ext.instance._enabled && ext.instance.disable) {
       try { ext.instance.disable(); } catch (e) { }
     }
+
+    const styleTag = document.getElementById(`style-${uuid}`);
+    if (styleTag) styleTag.remove();
 
     this._loadedExtensions.delete(uuid);
     this._save();
@@ -845,7 +876,7 @@ export class ExtensionLoader {
   markAsRemoved(uuid) {
     const ext = this._loadedExtensions.get(uuid);
     if (!ext) return;
-    
+
     const vfsPath = ext.metadata?.path || '';
     // Only track explicit removal of system components to prevent their auto-load routines
     if (vfsPath.startsWith('/system')) {
@@ -868,7 +899,7 @@ export class ExtensionLoader {
       } catch (e) {
         positions = {};
       }
-      
+
       if (positions[uuid]) {
         delete positions[uuid];
         await this.vfs.writeFile('~/.config/desklet-positions.json', JSON.stringify(positions, null, 2));
