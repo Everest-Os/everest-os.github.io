@@ -144,7 +144,19 @@ export class ThemeManager {
     root.style.removeProperty('--menu-radius');
     root.style.removeProperty('--menu-height');
     root.style.removeProperty('--wm-btn-size');
+    root.style.removeProperty('--wm-btn-color');
+    root.style.removeProperty('--wm-titlebar-bg');
     root.style.removeProperty('--panel-icon-size');
+    root.style.removeProperty('--bg-panel-rgba');
+    root.style.removeProperty('--panel-border-rgba');
+    root.style.removeProperty('--panel-opacity');
+    root.style.removeProperty('--panel-blur');
+    root.style.removeProperty('--menu-opacity');
+    root.style.removeProperty('--menu-blur');
+    root.style.removeProperty('--window-opacity');
+    root.style.removeProperty('--window-blur');
+    root.style.removeProperty('--wm-bg');
+    root.style.removeProperty('--wm-border');
 
     const panelEl = document.getElementById('everest-panel');
     if (panelEl) {
@@ -174,6 +186,23 @@ export class ThemeManager {
           if (cfg.panelHeight !== undefined) {
             root.style.setProperty('--panel-height', cfg.panelHeight + 'px');
             if (panelEl) panelEl.style.height = cfg.panelHeight + 'px';
+          }
+          if (cfg.wmBtnSize !== undefined) root.style.setProperty('--wm-btn-size', cfg.wmBtnSize + 'px');
+          if (cfg.panelBlur !== undefined) root.style.setProperty('--panel-blur', cfg.panelBlur + 'px');
+          if (cfg.panelColor && cfg.panelOpacity !== undefined) {
+            const hex = cfg.panelColor;
+            const r = parseInt(hex.slice(1, 3), 16) || 0;
+            const g = parseInt(hex.slice(3, 5), 16) || 0;
+            const b = parseInt(hex.slice(5, 7), 16) || 0;
+            root.style.setProperty('--bg-panel-rgba', `rgba(${r}, ${g}, ${b}, ${cfg.panelOpacity})`);
+          }
+          if (cfg.panelBorderColor) {
+            const hex = cfg.panelBorderColor;
+            const r = parseInt(hex.slice(1, 3), 16) || 0;
+            const g = parseInt(hex.slice(3, 5), 16) || 0;
+            const b = parseInt(hex.slice(5, 7), 16) || 0;
+            const opacity = cfg.panelBorderOpacity !== undefined ? cfg.panelBorderOpacity : 0.3;
+            root.style.setProperty('--panel-border-rgba', `rgba(${r}, ${g}, ${b}, ${opacity})`);
           }
         }
         const menuConfigStr = await this.vfs.readFile('~/.config/menu.json');

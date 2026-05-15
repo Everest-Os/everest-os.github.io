@@ -26,19 +26,20 @@
       "vfsPath": "/system/plugins/applets/statusbar/volume@playground"
     },
     {
-      "type": "desklets",
-      "uuid": "sysinfo@playground",
-      "vfsPath": "/system/plugins/desklets/system/sysinfo@playground"
-    },
-    {
       "type": "applets",
       "uuid": "sticky-notes@playground",
       "vfsPath": "/system/plugins/applets/sticky-notes@playground"
+    },
+    {
+      "type": "desklets",
+      "uuid": "sysinfo@playground",
+      "vfsPath": "/system/plugins/desklets/system/sysinfo@playground"
     }
   ],
   "removed": [
     "SevenSegmentClock@lxs242",
     "nepali-date@bishalacharya",
-    "quick-actions@everest"
+    "quick-actions@everest",
+    "nepali-date@khumnath"
   ]
 }

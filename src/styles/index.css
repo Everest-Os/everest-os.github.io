@@ -30,7 +30,7 @@
   --menu-width: 600px;
   --menu-height: 450px;
   --wm-titlebar-bg: rgba(255, 255, 255, 0.04);
-  --wm-btn-size: 24px;
+  --wm-btn-size: 28px;
   --panel-icon-size: 18px;
   --menu-categories-display: flex;
 
@@ -269,8 +269,8 @@ body.night-light::after {
   --window-padding: 12px;
   --touch-target: 42px;
   --panel-height-mobile: 52px;
-  --dock-blur: 24px;
-  --wm-bg: rgba(var(--bg-surface-rgb),0.88);
+  --dock-blur: var(--window-blur, 24px);
+  --wm-bg: rgba(var(--bg-surface-rgb), var(--window-opacity, 0.88));
   --wm-border: rgba(255,255,255,0.08);
 }
 
@@ -281,7 +281,7 @@ body.night-light::after {
   backdrop-filter: blur(var(--dock-blur));
 }
 
-button,.app-btn,.panel-button {
+button,.panel-button {
   min-height: var(--touch-target);
   min-width: var(--touch-target);
 }

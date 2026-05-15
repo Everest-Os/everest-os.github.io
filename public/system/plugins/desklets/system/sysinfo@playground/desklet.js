@@ -112,22 +112,35 @@ class SysInfoDesklet extends Desklet.Desklet {
     _applyCustomStyles() {
         if (!this._container) return;
 
-        // Background and Border Logic
+        // Background, Border, and Blur Logic
         if (this.useThemeBg !== false) {
-            this._container.style.background = 'var(--bg-surface)';
-            this._container.style.border = '1px solid var(--border)';
+            const root = document.documentElement;
+            const themeOpacity = getComputedStyle(root).getPropertyValue('--window-opacity').trim();
+            const themeBlur = getComputedStyle(root).getPropertyValue('--window-blur').trim();
+            
+            // Allow desklet's custom opacity/blur sliders to work on theme background
+            // UNLESS the theme explicitly forces solid/no-blur (e.g. Win95)
+            let finalOpacity = (this.customOpacity !== undefined) ? (this.customOpacity / 100) : 0.88;
+            if (themeOpacity === '1') finalOpacity = 1;
+            
+            let finalBlur = (this.blurRadius !== undefined) ? this.blurRadius + 'px' : '12px';
+            if (themeBlur === '0px') finalBlur = '0px';
+
+            this._container.style.background = `rgba(var(--bg-surface-rgb), ${finalOpacity})`;
+            this._container.style.border = '1px solid var(--wm-border)';
+            const blurStr = `blur(${finalBlur}) saturate(170%)`;
+            this._container.style.backdropFilter = blurStr;
+            this._container.style.WebkitBackdropFilter = blurStr;
         } else {
             const bgHex = this.customBg || '#1e1e1e';
             const opacity = (this.customOpacity !== undefined) ? this.customOpacity : 80;
             this._container.style.background = this._hexToRgba(bgHex, opacity);
             this._container.style.border = `1px solid rgba(255, 255, 255, 0.12)`;
+            const blurStrength = (this.blurRadius !== undefined) ? this.blurRadius : 12;
+            const blurStr = `blur(${blurStrength}px) saturate(170%)`;
+            this._container.style.backdropFilter = blurStr;
+            this._container.style.WebkitBackdropFilter = blurStr;
         }
-
-        // Blur Effects
-        const blurStrength = (this.blurRadius !== undefined) ? this.blurRadius : 12;
-        const blurStr = `blur(${blurStrength}px)`;
-        this._container.style.backdropFilter = blurStr;
-        this._container.style.WebkitBackdropFilter = blurStr;
 
         // Foreground Text Logic
         const useSystemText = (this.useThemeText !== false);
@@ -309,6 +322,10 @@ class SysInfoDesklet extends Desklet.Desklet {
         this.infoList.appendChild(this._renderStatRow('theme', 'preferences-system,🎨', 'Theme', activeTheme));
         this.infoList.appendChild(this._renderStatRow('icons', 'image,🖼️', 'Icons', activeIcons));
         this.infoList.appendChild(this._renderStatRow('display', 'computer,💻', 'Display', screenGeometry));
+        
+        const sysMem = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Browser Allocated';
+        this.infoList.appendChild(this._renderStatRow('memory', 'media-memory,🧠', 'Memory', sysMem));
+
         this.infoList.appendChild(this._renderStatRow('uptime', 'appointment-soon,⏱️', 'OS Uptime', '0h 0m 0s'));
         
         this._updateUptime();

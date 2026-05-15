@@ -192,7 +192,8 @@ export async function launch(ctx, options = {}) {
       windowRadius: appearanceSettings.windowRadius !== undefined ? appearanceSettings.windowRadius : 12,
       color: appearanceSettings.panelColor || '#1e1e1e',
       borderColor: appearanceSettings.panelBorderColor || '#6496ff',
-      borderOpacity: appearanceSettings.panelBorderOpacity !== undefined ? appearanceSettings.panelBorderOpacity : 0.3
+      borderOpacity: appearanceSettings.panelBorderOpacity !== undefined ? appearanceSettings.panelBorderOpacity : 0.3,
+      wmBtnSize: appearanceSettings.wmBtnSize !== undefined ? appearanceSettings.wmBtnSize : 24
     };
 
     body.innerHTML = `
@@ -312,6 +313,14 @@ export async function launch(ctx, options = {}) {
           </div>
           <input type="range" id="window-radius-range" min="0" max="32" value="${s.windowRadius}" style="width:100%;">
         </div>
+        <div style="height:12px;"></div>
+        <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+          <div style="display:flex; justify-content:space-between;">
+            <label>Window Controls Size</label>
+            <span id="wm-btn-size-val">${s.wmBtnSize}px</span>
+          </div>
+          <input type="range" id="wm-btn-size-range" min="16" max="32" value="${s.wmBtnSize}" style="width:100%;">
+        </div>
       </div>
     `;
 
@@ -338,6 +347,8 @@ export async function launch(ctx, options = {}) {
       } else if (key === 'panelHeight') {
         root.style.setProperty('--panel-height', val + 'px');
         if (ctx.panelManager) ctx.panelManager.height = parseInt(val);
+      } else if (key === 'wmBtnSize') {
+        root.style.setProperty('--wm-btn-size', val + 'px');
       } else if (key === 'panelMarginY') {
         root.style.setProperty('--panel-margin-y', val + 'px');
       } else if (key === 'panelMarginX') {
@@ -437,6 +448,12 @@ export async function launch(ctx, options = {}) {
       const val = parseInt(e.target.value);
       body.querySelector('#window-radius-val').textContent = val + 'px';
       updateAppearance('windowRadius', val);
+    });
+
+    body.querySelector('#wm-btn-size-range').addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      body.querySelector('#wm-btn-size-val').textContent = val + 'px';
+      updateAppearance('wmBtnSize', val);
     });
 
     const modeGroup = body.querySelector('#panel-mode-group');
@@ -1965,42 +1982,76 @@ export async function launch(ctx, options = {}) {
   };
 
   const renderAbout = () => {
-    body.innerHTML = `
-      <div style="text-align:center; padding:20px 0;">
-        <div style="margin-bottom:24px; display:inline-flex; align-items:center; justify-content:center; width:120px; height:120px; background:var(--bg-card); border-radius:50%; border:1px solid var(--border); box-shadow:0 4px 15px rgba(0,0,0,0.2); overflow:hidden;">
-          ${IconHelper.getIcon('logo', { size: 180 })}
-        </div>
-        <h2 style="margin-bottom:4px;">EverestOS</h2>
-        <p style="color:var(--text-tertiary); font-size:14px; margin-bottom:24px;">Version 1.2.5</p>
+    const vfs = window.osAPI.vfs;
+    const themeManager = window.osAPI.themeManager;
 
-        <div class="settings-card" style="text-align:left; max-width:500px; margin:0 auto 20px auto; line-height:1.5;">
-          <div style="font-size:13px; margin-bottom:12px;">
+    let storageMode = 'In-Memory Cache';
+    if (!vfs) storageMode = 'Offline / Unknown';
+    else if (vfs.serverAvailable) storageMode = 'Server (Dev Mode)';
+    else if (vfs.db) storageMode = 'IndexedDB (Persistent)';
+
+    const activeTheme = themeManager?.currentTheme || 'mint-dark';
+    const activeIcons = themeManager?.currentIconTheme || 'bloom-dark';
+    const screenGeometry = `${window.screen.width} × ${window.screen.height}`;
+
+    body.innerHTML = `
+      <style>
+        #about-page-content .settings-card { padding: 5px 19px; }
+        #about-page-content .settings-row { padding: 6px 0; min-height: unset; }
+        #about-page-content .settings-row:last-child { border-bottom: none; }
+      </style>
+      <div id="about-page-content" style="text-align:center;">
+        <div style="margin-bottom:8px; display:inline-flex; align-items:center; justify-content:center; width:80px; height:80px; background:var(--bg-card); border-radius:50%; border:1px solid var(--border); box-shadow:0 4px 10px rgba(0,0,0,0.15); overflow:hidden;">
+          ${IconHelper.getIcon('logo', { size: 120 })}
+        </div>
+        <h2 style="margin:0 0 2px 0; font-size:18px;">EverestOS</h2>
+        <p style="color:var(--text-tertiary); font-size:12px; margin:0 0 12px 0;">Version 1.2.5</p>
+
+        <div class="settings-card" style="line-height:1.4;">
+          <div style="font-size:12px;">
             EverestOS is a modular web-based desktop environment inspired by the <strong>Cinnamon Desktop Environment</strong>.
             It features a robust extension system supporting JS-based <strong>desklets</strong> and <strong>applets</strong> using a custom-ported CJS loader and mock <strong>St</strong> libraries.
           </div>
-          <div style="display:flex; justify-content:center; margin-top:16px;">
-            <button id="btn-dev-docs" class="btn-primary btn-sm" style="display:flex; align-items:center; gap:6px;">
+          <div style="display:flex; justify-content:center; margin-top:12px; gap:8px;">
+            <button id="btn-dev-docs" class="btn-primary btn-sm" style="display:flex; align-items:center; gap:6px; font-size:11px; padding:4px 8px;">
               ${IconHelper.getIcon('internet', { size: 14 })} Developer Documentation
+            </button>
+            <button id="btn-github" class="btn-secondary btn-sm" style="display:flex; align-items:center; gap:6px; font-size:11px; padding:4px 8px;">
+              ${IconHelper.getIcon('internet,🌐', { size: 14 })} GitHub Repository
             </button>
           </div>
         </div>
 
-        <div class="settings-card" style="text-align:left; max-width:500px; margin:0 auto;">
+        <div class="settings-card">
           <div class="settings-row">
-            <span style="color:var(--text-secondary);">Kernel</span>
-            <span style="font-family:var(--font-mono);">Everest Core (VFS + Event Bus)</span>
+            <span style="color:var(--text-secondary); display:flex; align-items:center; gap:6px; font-size:12px;">
+              ${IconHelper.getIcon('drive-harddisk,💾', { size: 14 })} Filesystem
+            </span>
+            <span style="font-family:var(--font-mono); font-size:11px;">${storageMode}</span>
           </div>
           <div class="settings-row">
-            <span style="color:var(--text-secondary);">Storage</span>
-            <span style="font-family:var(--font-mono);">IndexedDB (Browser-Native)</span>
+            <span style="color:var(--text-secondary); display:flex; align-items:center; gap:6px; font-size:12px;">
+              ${IconHelper.getIcon('preferences-system,🎨', { size: 14 })} Theme
+            </span>
+            <span style="font-family:var(--font-mono); font-size:11px;">${activeTheme}</span>
           </div>
           <div class="settings-row">
-            <span style="color:var(--text-secondary);">Compatibility</span>
-            <span style="font-family:var(--font-mono);">CommonJS (CJS) + Mock GI/St</span>
+            <span style="color:var(--text-secondary); display:flex; align-items:center; gap:6px; font-size:12px;">
+              ${IconHelper.getIcon('image,🖼️', { size: 14 })} Icons
+            </span>
+            <span style="font-family:var(--font-mono); font-size:11px;">${activeIcons}</span>
           </div>
           <div class="settings-row">
-            <span style="color:var(--text-secondary);">License</span>
-            <span style="font-family:var(--font-mono);">GPL-3.0-or-later</span>
+            <span style="color:var(--text-secondary); display:flex; align-items:center; gap:6px; font-size:12px;">
+              ${IconHelper.getIcon('computer,💻', { size: 14 })} Display
+            </span>
+            <span style="font-family:var(--font-mono); font-size:11px;">${screenGeometry}</span>
+          </div>
+          <div class="settings-row">
+            <span style="color:var(--text-secondary); display:flex; align-items:center; gap:6px; font-size:12px;">
+              ${IconHelper.getIcon('media-memory,🧠', { size: 14 })} Memory
+            </span>
+            <span style="font-family:var(--font-mono); font-size:11px;">${navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Browser Allocated'}</span>
           </div>
         </div>
       </div>
@@ -2013,6 +2064,10 @@ export async function launch(ctx, options = {}) {
           args: ['/home/user/Documents/developer-guides.html']
         }
       }));
+    };
+
+    body.querySelector('#btn-github').onclick = () => {
+      window.open('https://github.com/Everest-Os/everest-os.github.io', '_blank');
     };
   };
 

@@ -1,10 +1,10 @@
 {
   "panelHeight": 48,
   "panelColor": "#2f2d2d",
-  "panelOpacity": 0.5,
-  "panelBlur": 5,
+  "panelOpacity": 0.67,
+  "panelBlur": 12,
   "panelBorderColor": "#2359cd",
-  "panelBorderOpacity": 0.73,
+  "panelBorderOpacity": 0.62,
   "panelMarginY": 13,
   "panelMarginX": 70,
   "panelRadius": 15,
@@ -14,6 +14,6 @@
   "shellTheme": "light",
   "appTheme": "light",
   "contextMenuColor": "#19191e",
-  "contextMenuOpacity": 0.47,
-  "contextMenuBlur": 20
+  "contextMenuOpacity": 0.54,
+  "contextMenuBlur": 18
 }

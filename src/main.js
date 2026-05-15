@@ -63,17 +63,23 @@ class EverestSandbox {
 
     // Initialize Looking Glass first (so logs are captured)
     this.console = new LookingGlass(document.getElementById('looking-glass'));
-    const logo = `        /\\
-       /  \\
-      /    \\
-     /      \\
-    /   /\\   \\
-   /   /  \\   \\
-  /   /    \\   \\
- /   /  /\\  \\   \\
-/___/  /  \\  \\___\\
-       \\  /
-        \\/`;
+    const logo = `    WELCOME TO EVEREST OS    
+        --------------        
+     --------------------     
+   ------------------------   
+  --------------------------  
+ ---------------------------- 
+--------------...-------------
+------------...#..--..----.---
+----.------...###+..+##...-+--
+--..+#.-...+#################.
+..#####..####################+
+.############################.
+ -##########################- 
+  -########################-  
+   -+####################+.   
+     .-################-.     
+        .-+++####+++--        `;
     console.log("%c" + logo, "color: #06b6d4; font-weight: bold; line-height: 1.2; font-family: monospace;");
     this.console.log(logo);
     this.console.log('🏔️  Welcome to Everest OS v1.0.0');

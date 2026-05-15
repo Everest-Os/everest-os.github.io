@@ -2,10 +2,10 @@
   "icon": "menu",
   "showLabel": false,
   "menuWidth": 393,
-  "menuOpacity": 0.46,
-  "menuBlur": 24,
+  "menuOpacity": 0.67,
+  "menuBlur": 12,
   "showCategoryIcons": true,
   "enableSearch": true,
-  "iconSize": 33,
+  "iconSize": 31,
   "menuRadius": null
 }

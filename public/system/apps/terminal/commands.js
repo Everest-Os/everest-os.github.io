@@ -621,6 +621,7 @@ export async function registerCommands(shell) {
   shell.register('neofetch', async (args, { stdout }) => {
     const user = shell.ctx.vfs?.USER || 'user';
     const theme = shell.ctx.themeManager?.currentTheme || 'Everest-Dark';
+    const iconTheme = shell.ctx.themeManager?.currentIconTheme || 'bloom-dark';
     const vfsInstance = shell.ctx.vfs;
     const BASE_URL = vfsInstance?.BASE_URL || (window.location.pathname.includes('/EverestOS') ? '/EverestOS/' : '/');
 
@@ -644,20 +645,22 @@ export async function registerCommands(shell) {
       }
     }
     const info = `
-\x1b[36m        /\\          \x1b[0m \x1b[1m${user}\x1b[0m@\x1b[1meverest-os\x1b[0m
-\x1b[36m       /  \\         \x1b[0m \x1b[2m──────────────────\x1b[0m
-\x1b[36m      /    \\        \x1b[0m \x1b[36mOS:\x1b[0m Everest OS v1.0.0
-\x1b[36m     /      \\       \x1b[0m \x1b[36mHost:\x1b[0m Browser Sandbox
-\x1b[36m    /   /\\   \\      \x1b[0m \x1b[36mKernel:\x1b[0m VFS Hybrid Engine
-\x1b[36m   /   /  \\   \\     \x1b[0m \x1b[36mShell:\x1b[0m psh 2.0.0
-\x1b[36m  /   /    \\   \\    \x1b[0m \x1b[36mResolution:\x1b[0m ${window.innerWidth}x${window.innerHeight}
-\x1b[36m /   /  /\\  \\   \\   \x1b[0m \x1b[36mTheme:\x1b[0m ${theme}
-\x1b[36m/___/  /  \\  \\___\\  \x1b[0m \x1b[36mTerminal:\x1b[0m psh (EverestOS)
-\x1b[36m       \\  /         \x1b[0m \x1b[36mCPU:\x1b[0m ${navigator.userAgent.includes('Chrome') ? 'V8' : navigator.userAgent.includes('Firefox') ? 'SpiderMonkey' : 'JS'} Engine
-\x1b[36m        \\/          \x1b[0m \x1b[36mMemory:\x1b[0m ${navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Browser Allocated'}
-\x1b[36m                    \x1b[0m \x1b[36mStorage:\x1b[0m ${storageMode}
-\x1b[36m                    \x1b[0m
-\x1b[36m                    \x1b[0m \x1b[40m   \x1b[41m   \x1b[42m   \x1b[43m   \x1b[44m   \x1b[45m   \x1b[46m   \x1b[47m   \x1b[0m
+\x1b[0m         \x1b[36m--------------\x1b[0m       \x1b[0m \x1b[1m${user}\x1b[0m@\x1b[1meverest-os\x1b[0m
+\x1b[0m     \x1b[36m--------------------\x1b[0m     \x1b[0m \x1b[2m──────────────────\x1b[0m
+\x1b[0m   \x1b[36m------------------------\x1b[0m   \x1b[0m \x1b[36mOS:\x1b[0m Everest OS v1.0.0
+\x1b[0m  \x1b[36m--------------------------\x1b[0m  \x1b[0m \x1b[36mHost:\x1b[0m Browser Sandbox
+\x1b[0m \x1b[36m----------------------------\x1b[0m \x1b[0m \x1b[36mKernel:\x1b[0m VFS Hybrid Engine
+\x1b[36m--------------\x1b[97m...\x1b[36m-------------\x1b[0m \x1b[36mShell:\x1b[0m psh 2.0.0
+\x1b[36m------------\x1b[97m...\x1b[34m#\x1b[97m..\x1b[36m--\x1b[97m..\x1b[36m----\x1b[97m.\x1b[36m---\x1b[0m \x1b[36mResolution:\x1b[0m ${window.innerWidth}x${window.innerHeight}
+\x1b[36m----\x1b[97m.\x1b[36m------\x1b[97m...\x1b[34m###\x1b[94m+\x1b[97m..\x1b[94m+\x1b[34m##\x1b[97m...\x1b[36m-\x1b[94m+\x1b[36m--\x1b[0m \x1b[36mTheme:\x1b[0m ${theme}
+\x1b[36m--\x1b[97m..\x1b[94m+\x1b[34m#\x1b[97m.\x1b[36m-\x1b[97m...\x1b[94m+\x1b[34m#################\x1b[97m.\x1b[0m \x1b[36mIcons:\x1b[0m ${iconTheme}
+\x1b[97m..\x1b[34m#####\x1b[97m..\x1b[34m####################\x1b[94m+\x1b[0m \x1b[36mTerminal:\x1b[0m psh (EverestOS)
+\x1b[97m.\x1b[34m############################\x1b[97m.\x1b[0m \x1b[36mCPU:\x1b[0m ${navigator.userAgent.includes('Chrome') ? 'V8' : navigator.userAgent.includes('Firefox') ? 'SpiderMonkey' : 'JS'} Engine
+\x1b[0m \x1b[36m-\x1b[34m##########################\x1b[36m-\x1b[0m \x1b[0m \x1b[36mMemory:\x1b[0m ${navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Browser Allocated'}
+\x1b[0m  \x1b[36m-\x1b[34m########################\x1b[36m-\x1b[0m  \x1b[0m \x1b[36mStorage:\x1b[0m ${storageMode}
+\x1b[0m   \x1b[36m-\x1b[94m+\x1b[34m####################\x1b[94m+\x1b[97m.\x1b[0m   \x1b[0m 
+\x1b[0m     \x1b[97m.\x1b[36m-\x1b[34m################\x1b[36m-\x1b[97m.\x1b[0m     \x1b[0m \x1b[40m   \x1b[41m   \x1b[42m   \x1b[43m   \x1b[44m   \x1b[45m   \x1b[46m   \x1b[47m   \x1b[0m
+\x1b[0m        \x1b[97m.\x1b[36m-\x1b[94m+++\x1b[34m####\x1b[94m+++\x1b[36m--\x1b[0m        \x1b[0m
 `;
     stdout.write(info + '\n');
   });

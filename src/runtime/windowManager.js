@@ -118,21 +118,21 @@ export class WindowManager {
 
     const btnMin = document.createElement('button');
     btnMin.classList.add('app-btn', 'btn-min');
-    btnMin.innerHTML = IconHelper.getIcon('window-minimize,−', { size: 12 });
+    btnMin.innerHTML = '–';
 
     const btnMax = document.createElement('button');
     if (isMobile) {
       btnMax.classList.add('app-btn', 'btn-split');
       btnMax.title = 'Split Screen';
-      btnMax.innerHTML = IconHelper.getIcon('view-dual,🔳', { size: 14 });
+      btnMax.innerHTML = IconHelper.getIcon('view-dual,🔳', { size: 16 });
     } else {
       btnMax.classList.add('app-btn', 'btn-max');
-      btnMax.innerHTML = IconHelper.getIcon('window-maximize,□', { size: 12 });
+      btnMax.innerHTML = '◻';
     }
 
     const btnClose = document.createElement('button');
     btnClose.classList.add('app-btn', 'btn-close');
-    btnClose.innerHTML = IconHelper.getIcon('window-close,✕', { size: 12 });
+    btnClose.innerHTML = '×';
 
     if (options.customControls) {
       options.customControls.forEach(ctrl => controls.appendChild(ctrl));
@@ -387,9 +387,7 @@ export class WindowManager {
     // Update Maximize button icon
     const maxBtn = win.frame.querySelector('.btn-max');
     if (maxBtn) {
-      maxBtn.innerHTML = win.isMaximized ? 
-        IconHelper.getIcon('window-restore,❐', { size: 12 }) : 
-        IconHelper.getIcon('window-maximize,□', { size: 12 });
+      maxBtn.innerHTML = win.isMaximized ? '▣' : '◻';
     }
 
     this._updateFsButtonPosition();

@@ -29,7 +29,7 @@ export class AppMenu {
       iconSize: 28,
       menuRadius: null
     };
-
+    this._themeAllowsOverride = true;
   }
 
   async init() {
@@ -70,6 +70,12 @@ export class AppMenu {
 
     window.addEventListener('icon-theme-changed', () => {
       if (this.settings.icon) this._applyMenuIcon(this.settings.icon);
+    });
+
+    window.addEventListener('theme-changed', (e) => {
+      const theme = e.detail?.theme;
+      this._themeAllowsOverride = theme?.allowConfigOverride !== false;
+      this._applyMenuSettings();
     });
 
     if (menuBtn) {
@@ -129,9 +135,9 @@ export class AppMenu {
     this.menuElement.style.left = '0';
     this.menuElement.style.width = '420px';
     this.menuElement.style.maxHeight = '80vh';
-    this.menuElement.style.background = 'var(--bg-menu-rgba)';
-    this.menuElement.style.backdropFilter = 'blur(var(--menu-blur)) saturate(180%)';
-    this.menuElement.style.WebkitBackdropFilter = 'blur(var(--menu-blur)) saturate(180%)';
+    this.menuElement.style.background = 'rgba(var(--bg-menu-rgb), var(--menu-opacity, 0.85))';
+    this.menuElement.style.backdropFilter = 'blur(var(--menu-blur, 20px)) saturate(180%)';
+    this.menuElement.style.WebkitBackdropFilter = 'blur(var(--menu-blur, 20px)) saturate(180%)';
     this.menuElement.style.borderRight = '1px solid var(--border)';
     this.menuElement.style.zIndex = '10000';
     this.menuElement.style.display = 'none';
@@ -490,15 +496,23 @@ export class AppMenu {
       img.style.height = size + 'px';
     }
 
-    // Width & Blur
+    // Width
     this.menuElement.style.width = (this.settings.menuWidth || 420) + 'px';
-    const blur = this.settings.menuBlur !== undefined ? this.settings.menuBlur : 20;
-    this.menuElement.style.backdropFilter = `blur(${blur}px) saturate(180%)`;
-    this.menuElement.style.WebkitBackdropFilter = `blur(${blur}px) saturate(180%)`;
 
-    // Background color using theme variable + custom opacity
-    const opacity = this.settings.menuOpacity !== undefined ? this.settings.menuOpacity : 0.85;
-    this.menuElement.style.background = `rgba(var(--bg-menu-rgb), ${opacity})`;
+    // Background color + blur
+    if (this._themeAllowsOverride) {
+      // Normal themes: use user config values
+      const opacity = this.settings.menuOpacity !== undefined ? this.settings.menuOpacity : 0.85;
+      const blur = this.settings.menuBlur !== undefined ? this.settings.menuBlur : 20;
+      this.menuElement.style.background = `rgba(var(--bg-menu-rgb), ${opacity})`;
+      this.menuElement.style.backdropFilter = `blur(${blur}px) saturate(180%)`;
+      this.menuElement.style.WebkitBackdropFilter = `blur(${blur}px) saturate(180%)`;
+    } else {
+      // Locked themes (e.g. Win95): use CSS variables from the theme JSON
+      this.menuElement.style.background = 'rgba(var(--bg-menu-rgb), var(--menu-opacity, 0.85))';
+      this.menuElement.style.backdropFilter = 'blur(var(--menu-blur, 20px)) saturate(180%)';
+      this.menuElement.style.WebkitBackdropFilter = 'blur(var(--menu-blur, 20px)) saturate(180%)';
+    }
 
     // Category visibility
     const showCats = this.settings.showCategoryIcons !== false;

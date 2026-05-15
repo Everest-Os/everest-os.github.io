@@ -1191,6 +1191,7 @@
 .lg-output {
   flex: 1;
   overflow-y: auto;
+  overflow-x: auto;
   padding: 8px 12px;
   font-family: var(--font-mono);
   font-size: 12px;
@@ -1229,7 +1230,7 @@
 }
 
 .lg-msg {
-  white-space: pre-wrap;
+  white-space: pre;
   flex: 1;
 }
 
@@ -1817,12 +1818,12 @@
 .app-menu {
   position: absolute;
   z-index: 9000;
-  background: rgba(var(--bg-surface-rgb), 0.85);
+  background: rgba(var(--bg-surface-rgb), var(--menu-opacity, 0.85));
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
   border-radius: var(--menu-radius, var(--radius-main));
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  backdrop-filter: blur(var(--menu-blur, 25px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--menu-blur, 25px)) saturate(180%);
   width: var(--menu-width, 600px);
   height: var(--menu-height, 450px);
   display: flex;
@@ -1998,8 +1999,8 @@
   }
 
   .app-btn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     font-size: 16px;
   }
 }
@@ -2025,8 +2026,8 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.app-window.light-window .app-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
+.app-window.light-window .app-btn {
+  background: transparent;
 }
 
 .app-titlebar {
@@ -2035,7 +2036,7 @@
   justify-content: space-between;
   height: 38px;
   background: var(--wm-titlebar-bg, rgba(255, 255, 255, 0.04));
-  padding: 0 16px;
+  padding: 0 8px;
   user-select: none;
   cursor: grab;
   border-bottom: 1px solid var(--border);
@@ -2069,7 +2070,7 @@
 .app-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0;
 }
 
 .app-btn {
@@ -2083,23 +2084,49 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  font-size: 12px;
+  transition: all 0.15s ease;
+  font-size: calc(var(--wm-btn-size, 24px) * 0.72);
+  font-weight: 400;
+  line-height: 1;
 }
 
 .app-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.app-btn.btn-close {
+  color: var(--wm-btn-color, #e84141);
 }
 
 .app-btn.btn-close:hover {
-  background: var(--error-color);
-  color: white;
+  color: var(--wm-btn-color, #ff5555);
+  background: rgba(232, 65, 65, 0.15);
+}
+
+.app-btn.btn-max {
+  color: var(--wm-btn-color, #27ae60);
+}
+
+.app-btn.btn-max:hover {
+  color: var(--wm-btn-color, #2ecc71);
+  background: rgba(39, 174, 96, 0.15);
+}
+
+.app-btn.btn-min {
+  color: var(--wm-btn-color, #f1c40f);
+}
+
+.app-btn.btn-min:hover {
+  color: var(--wm-btn-color, #f9e154);
+  background: rgba(241, 196, 15, 0.15);
+}
+
+.app-btn.btn-split {
+  color: var(--wm-btn-color, var(--accent));
 }
 
 .app-btn.btn-split:hover {
-  background: var(--accent);
-  color: white;
+  background: rgba(var(--accent-rgb), 0.15);
 }
 
 .app-content {
@@ -2244,7 +2271,18 @@
 
 /* mobile-touch-optimized */
 
-@media (max-width:768px){ .app-titlebar,.panel{padding:8px 10px;} .resize-handle{min-width:18px;min-height:18px;} }
+@media (max-width:768px) {
+
+  .app-titlebar,
+  .panel {
+    padding: 8px 10px;
+  }
+
+  .resize-handle {
+    min-width: 18px;
+    min-height: 18px;
+  }
+}
 
 #app-categories {
   display: var(--menu-categories-display, flex);
