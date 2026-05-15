@@ -26,6 +26,7 @@
     "--menu-categories-display": "none",
     "--wm-titlebar-bg": "rgb(0, 0, 128)",
     "--wm-btn-size": "20px",
+    "--wm-btn-color": "#000000",
     "--panel-icon-size": "16px",
     "--panel-blur": "0px",
     "--menu-blur": "0px",

@@ -3,8 +3,8 @@
   "short_name": "Everest",
   "start_url": "./",
   "display": "standalone",
-  "theme_color": "#10b981",
-  "background_color": "#0f172a",
+  "theme_color": "#3f72af",
+  "background_color": "#1a1a5c",
   "icons": [
     {
       "src": "android-chrome-192x192.png",

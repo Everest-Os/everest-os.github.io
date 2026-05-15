@@ -210,8 +210,9 @@ export async function launch(ctx) {
     if (isScaled) label = '<span style="font-size:9px; color:var(--warning); cursor:help;" title="Exceeded browser limit; dynamically scaling to match hardware load">*Scaled</span>';
     else if (isCapped) label = '<span style="font-size:9px; opacity:0.6; cursor:help;" title="Browsers cap reported RAM at 8GB for privacy">*Capped</span>';
 
+    const totalMemDisplay = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : Math.round(totalHeap / 1024 / 1024) + ' MB';
     content.querySelector('#mem-val').innerHTML = `
-      ${Math.round(usedHeap / 1024 / 1024)} MB / ${Math.round(totalHeap / 1024 / 1024)} MB ${label}
+      ${Math.round(usedHeap / 1024 / 1024)} MB / ${totalMemDisplay} ${label}
     `;
 
     // VFS Stats & Storage Estimation

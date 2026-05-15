@@ -157,10 +157,14 @@ export async function launch(ctx, options = {}) {
   buttons.forEach(btn => {
     const b = document.createElement('button');
     b.textContent = btn.label;
+    const isEquals = btn.label === '=';
+    const isOp = btn.type === 'op';
+    const isSpecial = btn.type === 'special';
+    
     b.style.cssText = `
       border: none;
-      background: ${btn.type === 'op' ? 'var(--accent)' : btn.type === 'special' ? 'var(--bg-surface-active)' : 'var(--bg-surface)'};
-      color: ${btn.type === 'op' ? 'white' : 'var(--text-primary)'};
+      background: ${isEquals ? 'var(--accent)' : (isOp || isSpecial) ? 'var(--bg-surface-active)' : 'var(--bg-surface)'};
+      color: ${isEquals ? '#ffffff' : isOp ? 'var(--accent)' : 'var(--text-primary)'};
       font-size: 18px;
       font-weight: 600;
       cursor: pointer;
